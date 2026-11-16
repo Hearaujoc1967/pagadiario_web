@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vitrina de vidrio</title>
+<style>
+html,body{margin:0;height:100%;background:#2d3e4a}
+body{display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif}
+.escena{position:relative;width:min(100vw,72vh);aspect-ratio:720/1000;container-type:inline-size;overflow:hidden}
+.fondo{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* Tambor 3D estilo Next Launcher */
+.tambor{position:absolute;left:18.06%;top:13%;width:62.5%;height:62.5%;perspective:300cqw;pointer-events:none}
+.giro{position:absolute;inset:0;transform-style:preserve-3d}
+.sl{position:absolute;left:50%;top:50%;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.sl .sh{position:absolute;inset:0;background:#06202e;opacity:0;pointer-events:none;z-index:2}
+.src{display:none}
+.cara{position:absolute;top:0;box-sizing:border-box;border-radius:0;padding:0 25cqw;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.4cqw;text-align:center;color:#fff;
+  border:1px solid rgba(255,255,255,.65);box-shadow:inset 0 0 4cqw rgba(255,255,255,.2)}
+.cara.d1{background:linear-gradient(165deg,#2a9fb3,#14587a 50%,#0d3d58)}
+.cara.d2{background:linear-gradient(165deg,#5a55b8,#27226a 50%,#171248)}
+.cara .ico{width:12cqw;height:12cqw;border-radius:50%;background:radial-gradient(circle at 35% 25%,#fff,rgba(255,255,255,.2));box-shadow:0 0 3cqw rgba(255,255,255,.6)}
+.cara h2{margin:0;font-size:6cqw;letter-spacing:.14em}
+.cara p{margin:0;font-size:3cqw;opacity:.85}
+
+/* Toggle de vidrio */
+.toggle{
+  --glass-edge:rgba(255,255,255,.85);--glass-fill:rgba(255,255,255,.18);
+  --on1:#7ff3ec;--on2:#12c9c9;--on3:#0aa9b8;--off1:#f4fbff;--off2:#cfe3ec;--off3:#a8c3d0;
+  position:absolute;left:50%;bottom:1.6%;transform:translateX(-50%);
+  width:34%;aspect-ratio:2.35/1;border:0;padding:0;cursor:pointer;border-radius:999px;container-type:inline-size;
+  background:linear-gradient(180deg,rgba(255,255,255,.35),var(--glass-fill));
+  box-shadow:inset 0 0 0 5px var(--glass-edge),inset 0 0 0 9px rgba(255,255,255,.18),inset 0 10px 18px rgba(255,255,255,.45),inset 0 -8px 16px rgba(70,140,170,.22),0 18px 30px -10px rgba(40,110,140,.45),0 2px 0 rgba(255,255,255,.5);
+  -webkit-tap-highlight-color:transparent}
+.toggle:focus-visible{outline:3px solid #0aa9b8;outline-offset:6px}
+.knob{position:absolute;top:50%;left:6%;height:72%;aspect-ratio:1;border-radius:50%;transform:translateY(-50%);
+  background:radial-gradient(circle at 35% 25%,var(--off1),var(--off2) 55%,var(--off3));
+  box-shadow:0 8px 14px rgba(60,120,150,.35),inset 0 -6px 10px rgba(60,120,150,.25);
+  transition:left .45s cubic-bezier(.5,1.4,.5,1),background .35s,box-shadow .35s}
+.knob::after{content:"";position:absolute;inset:6% 18% 55% 18%;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,0))}
+.toggle[aria-checked="true"] .knob{left:calc(100% - 6% - var(--k,0px));
+  background:radial-gradient(circle at 35% 25%,var(--on1),var(--on2) 55%,var(--on3));
+  box-shadow:0 0 26px 4px rgba(18,201,201,.55),0 8px 14px rgba(10,150,170,.4),inset 0 -6px 12px rgba(0,120,140,.35)}
+.lbl,.knob span{font-weight:700;letter-spacing:.06em;font-size:4.4cqw;white-space:nowrap;user-select:none}
+.lbl{position:absolute;top:0;bottom:0;width:30.6%;display:grid;place-items:center;color:#4a8599;transition:opacity .3s}
+.lbl.l{left:6%}.lbl.r{right:6%}
+.toggle[aria-checked="true"] .lbl.r,.toggle[aria-checked="false"] .lbl.l{opacity:0}
+.knob span{position:absolute;inset:0;display:grid;place-items:center;z-index:1;color:#06444f}
+@media (prefers-reduced-motion:reduce){.knob,.lbl,.giro{transition:none}}
+</style>
+</head>
+<body>
+<div class="escena">
+<svg class="fondo" viewBox="0 0 720 1000" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="pared" cx="50%" cy="0%" r="85%">
+      <stop offset="0" stop-color="#7fa9b8"/>
+      <stop offset=".45" stop-color="#5d8394"/>
+      <stop offset="1" stop-color="#34505f"/>
+    </radialGradient>
+    <linearGradient id="mesa" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9bbcc8"/>
+      <stop offset="1" stop-color="#b9d3da"/>
+    </linearGradient>
+    <linearGradient id="haz" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#e8fbff" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="cuerpo" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity=".45"/>
+      <stop offset=".03" stop-color="#cfe6ee" stop-opacity=".12"/>
+      <stop offset=".5" stop-color="#d8f3fa" stop-opacity=".18"/>
+      <stop offset=".97" stop-color="#cfe6ee" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".45"/>
+    </linearGradient>
+    <linearGradient id="base1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6f8f9a"/>
+      <stop offset=".5" stop-color="#cfe3ea"/>
+      <stop offset="1" stop-color="#6f8f9a"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e9eef0"/>
+      <stop offset=".5" stop-color="#3a4348"/>
+      <stop offset="1" stop-color="#9aa7ab"/>
+    </linearGradient>
+    <linearGradient id="base3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8fbcc0"/>
+      <stop offset="1" stop-color="#6fa0a6"/>
+    </linearGradient>
+    <linearGradient id="rayo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cfeeff" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#cfeeff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="luz" cx="50%" cy="40%" r="60%">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset=".6" stop-color="#d8f0ff"/>
+      <stop offset="1" stop-color="#7fc4ee"/>
+    </radialGradient>
+    <linearGradient id="techo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#060d14"/>
+      <stop offset="1" stop-color="#14293a"/>
+    </linearGradient>
+    <filter id="brillo" x="-20%" y="-50%" width="140%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Pared y mesa -->
+  <rect width="720" height="1000" fill="url(#pared)"/>
+  <polygon points="150,125 570,125 600,800 120,800" fill="url(#rayo)"/>
+  <g transform="translate(0,100)">
+  <rect x="0" y="690" width="720" height="210" fill="url(#mesa)"/>
+  <ellipse cx="360" cy="745" rx="320" ry="30" fill="#fff" opacity=".25"/>
+
+  <!-- Pedestal -->
+  <path d="M42 690 v30 a318 38 0 0 0 636 0 v-30z" fill="url(#base3)"/>
+  <path d="M42 672 v20 a318 38 0 0 0 636 0 v-20z" fill="url(#metal)"/>
+  <path d="M42 676 v-12 a318 38 0 0 1 636 0 v12 a318 38 0 0 1 -636 0z" fill="#dbe8ec"/>
+  <ellipse cx="360" cy="664" rx="318" ry="40" fill="url(#base1)" stroke="#fff" stroke-opacity=".7"/>
+  <ellipse cx="360" cy="662" rx="285" ry="32" fill="#b7d3da" stroke="#6f8f9a" stroke-opacity=".6"/>
+  <ellipse cx="360" cy="660" rx="225" ry="26" fill="#d6edf2" opacity=".7"/>
+
+  <!-- Cilindro de vidrio -->
+  <path d="M130 30 V655 a230 28 0 0 0 450 0 V30z" fill="url(#cuerpo)"/>
+  <rect x="127" y="30" width="3" height="625" fill="#e8f6fa" opacity=".9"/>
+  <rect x="580" y="30" width="3" height="625" fill="#e8f6fa" opacity=".9"/>
+  <rect x="300" y="30" width="150" height="610" fill="url(#haz)"/>
+  <path d="M130 655 a225 28 0 0 0 450 0" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2"/>
+
+  <!-- Tapa superior -->
+  <ellipse cx="355" cy="30" rx="228" ry="16" fill="#cfeaf1" opacity=".75"/>
+  <path d="M128 34 a227 10 0 0 0 454 0" fill="none" stroke="#1b2227" stroke-width="3"/>
+  </g>
+
+  <!-- Cabezal -->
+  <ellipse cx="360" cy="30" rx="380" ry="62" fill="url(#techo)"/>
+  <ellipse cx="360" cy="52" rx="330" ry="34" fill="none" stroke="#2f5f7e" stroke-width="3"/>
+  <rect x="348" y="0" width="24" height="100" fill="#050a10"/>
+  <ellipse cx="360" cy="108" rx="262" ry="46" fill="#0b1823" stroke="#3a6f90" stroke-width="2"/>
+  <ellipse cx="360" cy="124" rx="228" ry="34" fill="#16303f"/>
+  <ellipse cx="360" cy="130" rx="212" ry="28" fill="url(#luz)" filter="url(#brillo)"/>
+  <ellipse cx="360" cy="132" rx="190" ry="22" fill="none" stroke="#7fb8d8" stroke-width="22" stroke-dasharray="2 5" opacity=".75"/>
+  <ellipse cx="360" cy="106" rx="238" ry="38" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-dasharray="7 14" filter="url(#brillo)"/>
+</svg>
+  <div class="tambor">
+    <div class="giro" id="giro"></div>
+  </div>
+  <div class="src">
+    <div class="cara d1" id="d1"><div class="ico"></div><h2>DOCK 1</h2><p>Contenido del primer dock</p></div>
+    <div class="cara d2" id="d2"><div class="ico"></div><h2>DOCK 2</h2><p>Contenido del segundo dock</p></div>
+  </div>
+  <button class="toggle" id="t" role="switch" aria-checked="false" aria-label="Cambiar dock">
+    <span class="lbl l">DOCK 1</span>
+    <span class="lbl r">DOCK 2</span>
+    <span class="knob" id="k"><span id="kt">DOCK 1</span></span>
+  </button>
+</div>
+<script>
+const esc=document.querySelector('.escena'),giro=document.getElementById('giro'),
+t=document.getElementById('t'),k=document.getElementById('k'),kt=document.getElementById('kt');
+const N=36,ARC=176*Math.PI/180;
+let slices=[],rot=0,anim=null;
+function build(){
+  giro.innerHTML='';slices=[];
+  const u=esc.clientWidth/100,r=30.5*u,W=r*ARC,w=W/N,H=80*u;
+  [['d1',0],['d2',Math.PI]].forEach(([id,c])=>{
+    const src=document.getElementById(id);
+    for(let i=0;i<N;i++){
+      const ang=c-ARC/2+(i+.5)*ARC/N;
+      const sl=document.createElement('div');sl.className='sl';
+      sl.style.cssText=`width:${w+1}px;height:${H}px;margin:${-H/2}px 0 0 ${-(w+1)/2}px;transform:rotateY(${ang}rad) translateZ(${r}px)`;
+      const cl=src.cloneNode(true);cl.removeAttribute('id');
+      cl.style.cssText=`width:${W}px;height:${H}px;left:${-i*w}px`;
+      const sh=document.createElement('div');sh.className='sh';
+      sl.append(cl,sh);giro.append(sl);slices.push({sh,ang,sl,dk:id==="d2"?1:0});
+    }
+  });
+  draw(rot);vis(t.getAttribute('aria-checked')==='true'?1:0);
+}
+function draw(a){
+  giro.style.transform=`rotateY(${a}rad)`;
+  for(const s of slices){s.sh.style.opacity=.6*(1-Math.max(Math.cos(s.ang+a),0))}
+}
+function vis(only){for(const s of slices)s.sl.style.visibility=(only===null||s.dk===only)?'':'hidden'}
+function girar(to,act){
+  vis(null);
+  const from=rot,t0=performance.now(),D=1400;
+  cancelAnimationFrame(anim);
+  (function f(now){
+    const p=Math.min((now-t0)/D,1),e=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+    rot=from+(to-from)*e;draw(rot);
+    if(p<1)anim=requestAnimationFrame(f);else vis(act);
+  })(t0);
+}
+let target=0;
+t.addEventListener('click',()=>{
+  const on=t.getAttribute('aria-checked')!=='true';
+  t.setAttribute('aria-checked',on);
+  kt.textContent=on?'DOCK 2':'DOCK 1';
+  target-=Math.PI;girar(target,on?1:0);
+});
+function fit(){t.style.setProperty('--k',k.offsetWidth+'px');build()}
+fit();addEventListener('resize',fit);
+</script>
+</body>
+</html>

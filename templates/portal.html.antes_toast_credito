@@ -1,0 +1,1180 @@
+{% extends "base_cliente.html" %}
+
+{% block title %}Mi Portal - Pagadiario{% endblock %}
+{% block page_title %}Mi Portal{% endblock %}
+{% block breadcrumb %}Mis Préstamos{% endblock %}
+
+{% block content %}
+
+<!-- ============================================== -->
+<!-- BANNER DE ADVERTENCIA: CRÉDITO VIGENTE / MORA -->
+<!-- ============================================== -->
+{% if tiene_prestamo_activo %}
+    {% if esta_en_mora %}
+    <!-- BANNER DE MORA -->
+    <div class="alert alert-danger d-flex align-items-center p-5 mb-5 flash-credito">
+        <i class="ki-duotone ki-information-5 fs-2hx text-danger me-4">
+            <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+        </i>
+        <div class="d-flex flex-column">
+            <h4 class="mb-1 text-danger">Estás en mora</h4>
+            <span>Tienes un crédito vencido hace <strong>{{ dias_mora }} día(s)</strong>. No puedes solicitar un nuevo préstamo hasta que canceles tu deuda actual. Contacta al administrador si necesitas ayuda.</span>
+        </div>
+    </div>
+    {% else %}
+    <!-- BANNER DE CRÉDITO VIGENTE -->
+    <div class="alert alert-warning d-flex align-items-center p-5 mb-5 flash-credito">
+        <i class="ki-duotone ki-information-5 fs-2hx text-warning me-4">
+            <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+        </i>
+        <div class="d-flex flex-column">
+            <h4 class="mb-1 text-warning">Tienes un crédito vigente</h4>
+            <span>Actualmente tienes un préstamo activo (Préstamo #{{ prestamo_activo_info.id }} con saldo de ${{ "{:,.0f}".format(prestamo_activo_info.saldo) }}). Debes cancelarlo antes de solicitar uno nuevo.</span>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+<!-- ============================================== -->
+<!-- FIN BANNER -->
+<!-- ============================================== -->
+
+<!-- FLASH DE BIENVENIDA (se desvanece) -->
+<div id="flash-bienvenida" class="flash-bienvenida">
+    <div class="d-flex align-items-center">
+        <div class="symbol symbol-45px me-3">
+            <span class="symbol-label bg-light-primary text-primary fw-bold fs-4">
+                {{ (cliente_nombre or 'C')[0]|upper }}
+            </span>
+        </div>
+        <div>
+            <div class="text-dark fw-bold fs-6">¡Hola, {{ cliente_nombre }}!</div>
+            <div class="text-muted fs-8">Cédula: {{ cliente_dni }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST GENÉRICO (para mensajes de advertencia/éxito/error) -->
+<div id="toast-generico" class="toast-generico" style="display:none;">
+    <button type="button" class="toast-cerrar" onclick="cerrarToast()">✕</button>
+    <div class="toast-icono">
+        <span class="symbol-label" id="toast-icon-bg">
+            <i class="ki-duotone ki-information-5 fs-1" id="toast-icon">
+                <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+            </i>
+        </span>
+    </div>
+    <div class="toast-titulo" id="toast-titulo">Título</div>
+    <div class="toast-mensaje" id="toast-mensaje">Mensaje</div>
+</div>
+
+{% raw %}
+<style>
+.flash-bienvenida {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border: 1px solid #e4e6ef;
+    border-radius: 12px;
+    padding: 12px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    z-index: 9999;
+    opacity: 0;
+    animation: flashIn 0.4s ease-out forwards, flashOut 0.4s ease-in 4s forwards;
+    max-width: 420px;
+}
+[data-bs-theme="dark"] .flash-bienvenida {
+    background: #1e1e2d;
+    border-color: #2b2b40;
+}
+@keyframes flashIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes flashOut {
+    from { opacity: 1; transform: translateX(-50%) translateY(0); }
+    to   { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+}
+
+/* === TOAST GENÉRICO === */
+.toast-generico {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    border: none;
+    border-radius: 16px;
+    padding: 24px 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    z-index: 99999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    max-width: 460px;
+    width: calc(100% - 40px);
+    cursor: pointer;
+    text-align: center;
+}
+.toast-generico.toast-visible {
+    opacity: 1;
+}
+[data-bs-theme="dark"] .toast-generico {
+    background: #2a2a3d;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+
+/* Ícono */
+.toast-generico .toast-icono {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+.toast-generico .toast-icono .symbol-label {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+.toast-advertencia .toast-icono .symbol-label { background: #fff4de; color: #ffa800; }
+.toast-exito       .toast-icono .symbol-label { background: #e8fff3; color: #50cd89; }
+.toast-error       .toast-icono .symbol-label { background: #fff5f8; color: #f1416c; }
+[data-bs-theme="dark"] .toast-advertencia .toast-icono .symbol-label { background: #4a3a13; color: #ffc700; }
+[data-bs-theme="dark"] .toast-exito       .toast-icono .symbol-label { background: #0f3a25; color: #50cd89; }
+[data-bs-theme="dark"] .toast-error       .toast-icono .symbol-label { background: #4a101c; color: #f1416c; }
+
+/* Texto */
+.toast-generico .toast-titulo {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #181c32;
+    margin-bottom: 8px;
+}
+.toast-generico .toast-mensaje {
+    font-size: 0.95rem;
+    color: #5e6278;
+    line-height: 1.5;
+}
+[data-bs-theme="dark"] .toast-generico .toast-titulo {
+    color: #ffffff;
+}
+[data-bs-theme="dark"] .toast-generico .toast-mensaje {
+    color: #b5b5c3;
+}
+
+/* Botón de cerrar (X) arriba a la derecha */
+.toast-generico .toast-cerrar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    color: #a1a5b7;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    line-height: 1;
+}
+.toast-generico .toast-cerrar:hover {
+    color: #f1416c;
+}
+
+</style>
+{% endraw %}
+
+{% raw %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var flash = document.getElementById('flash-bienvenida');
+    if (flash) {
+        setTimeout(function() {
+            if (flash.parentNode) flash.parentNode.removeChild(flash);
+        }, 4500);
+    }
+});
+</script>
+{% endraw %}
+
+<!-- SOLICITAR NUEVO PRÉSTAMO (STEPPER) -->
+<div class="card mb-5 mb-xl-8" id="card-solicitud">
+    <div class="card-header border-0 pt-5 pb-3">
+        <h3 class="card-title align-items-start flex-column">
+            <span class="card-label fw-bold fs-3 mb-1">Solicitar Nuevo Préstamo</span>
+            <span class="text-muted mt-1 fw-semibold fs-7">Completa los pasos y envía tu solicitud</span>
+        </h3>
+    </div>
+    <div class="card-body py-5">
+
+        <!-- STEPPER VISUAL -->
+        <div class="d-flex justify-content-between align-items-center mb-8 position-relative">
+            <div class="position-absolute top-50 start-0 end-0" style="height: 4px; background: #e4e6ef; z-index: 1;"></div>
+            <div class="position-absolute top-50 start-0 bg-primary" id="stepper-progress" style="height: 4px; z-index: 1; width: 0%; transition: width 0.3s;"></div>
+
+            <div class="d-flex flex-column align-items-center position-relative" style="z-index: 2;">
+                <div class="stepper-circle active" id="step-circle-1">1</div>
+                <span class="mt-2 fw-bold fs-8" id="step-text-1">Cotizar</span>
+            </div>
+            <div class="d-flex flex-column align-items-center position-relative" style="z-index: 2;">
+                <div class="stepper-circle" id="step-circle-2">2</div>
+                <span class="mt-2 fw-bold fs-8 text-muted" id="step-text-2">Datos</span>
+            </div>
+            <div class="d-flex flex-column align-items-center position-relative" style="z-index: 2;">
+                <div class="stepper-circle" id="step-circle-3">3</div>
+                <span class="mt-2 fw-bold fs-8 text-muted" id="step-text-3">Seguridad</span>
+            </div>
+            <div class="d-flex flex-column align-items-center position-relative" style="z-index: 2;">
+                <div class="stepper-circle" id="step-circle-4">4</div>
+                <span class="mt-2 fw-bold fs-8 text-muted" id="step-text-4">Banco</span>
+            </div>
+            <div class="d-flex flex-column align-items-center position-relative" style="z-index: 2;">
+                <div class="stepper-circle" id="step-circle-5">5</div>
+                <span class="mt-2 fw-bold fs-8 text-muted" id="step-text-5">Enviar</span>
+            </div>
+        </div>
+
+        <!-- PASO 1: COTIZAR -->
+        <div class="step-content" id="paso-1">
+            <h4 class="text-dark fw-bold mb-2">¿Cuánto necesitas?</h4>
+            <p class="text-muted fs-7 mb-6">Elige el monto y plazo para tu crédito.</p>
+
+            <div class="mb-6">
+                <label class="form-label fw-bold">Monto solicitado</label>
+                <div class="text-center mb-4">
+                    <span class="text-primary fw-bolder" style="font-size: 38px;" id="display-monto">$500.000</span>
+                </div>
+                <input type="range" class="form-range" id="slider-monto" min="50000" max="20000000" step="50000" value="500000">
+                <div class="d-flex justify-content-between mt-2">
+                    <span class="text-muted fs-8">Mín: $50.000</span>
+                    <span class="text-muted fs-8">Máx: $20.000.000</span>
+                </div>
+                <div class="d-flex gap-2 mt-4 flex-wrap" id="chips-monto">
+                    <button type="button" class="btn btn-sm btn-light-primary chip-monto" data-val="100000">$100.000</button>
+                    <button type="button" class="btn btn-sm btn-light-primary chip-monto" data-val="500000">$500.000</button>
+                    <button type="button" class="btn btn-sm btn-light-primary chip-monto" data-val="1000000">$1.000.000</button>
+                    <button type="button" class="btn btn-sm btn-light-primary chip-monto" data-val="5000000">$5.000.000</button>
+                    <button type="button" class="btn btn-sm btn-light-primary chip-monto" data-val="10000000">$10.000.000</button>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="form-label fw-bold">Plazo (días)</label>
+                <div class="d-flex gap-2 flex-wrap" id="chips-plazo">
+                    <button type="button" class="btn btn-sm btn-light-primary chip-plazo" data-val="7">7 días</button>
+                    <button type="button" class="btn btn-sm btn-light-primary chip-plazo" data-val="14">14 días</button>
+                    <button type="button" class="btn btn-sm btn-light-primary chip-plazo" data-val="21">21 días</button>
+                    <button type="button" class="btn btn-sm btn-light-primary chip-plazo active" data-val="30">30 días</button>
+                    <button type="button" class="btn btn-sm btn-light-primary chip-plazo" data-val="45">45 días</button>
+                    <button type="button" class="btn btn-sm btn-light-primary chip-plazo" data-val="60">60 días</button>
+                </div>
+            </div>
+
+            <div class="bg-light-primary rounded p-5 mb-5">
+                <h5 class="text-primary fw-bold mb-4">📊 Resumen del Préstamo</h5>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-semibold" style="color:#cbd5e1;">Monto:</span>
+                    <span class="text-dark fw-bold" id="r-monto">$500.000</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-semibold" style="color:#cbd5e1;">Interés (20%):</span>
+                    <span class="text-dark fw-bold" id="r-interes">$100.000</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-semibold" style="color:#cbd5e1;">Total a pagar:</span>
+                    <span class="text-primary fw-bolder fs-4" id="r-total">$600.000</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="fw-semibold" style="color:#cbd5e1;">Cuota diaria:</span>
+                    <span class="text-success fw-bold" id="r-cuota">$20.000</span>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-primary w-100" onclick="irPaso(2)">Continuar →</button>
+        </div>
+
+        <!-- PASO 2: DATOS -->
+        <div class="step-content d-none" id="paso-2">
+            <h4 class="text-dark fw-bold mb-2">Tus datos</h4>
+            <p class="text-muted fs-7 mb-6">Confirma tu información personal.</p>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">DNI / Cédula</label>
+                <input type="text" class="form-control" id="dni" value="{{ cliente_dni }}" readonly>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold">Nombre completo</label>
+                <input type="text" class="form-control" id="nombre" value="{{ cliente_nombre }}" readonly>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold">Teléfono</label>
+                <input type="tel" class="form-control" id="telefono" 
+                       value="{{ cliente_datos.telf or '' }}" 
+                       placeholder="Ej: 3101234567" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold">Correo electrónico</label>
+                <input type="email" class="form-control" id="email" 
+                       value="{{ cliente_datos.email or '' }}" 
+                       placeholder="tucorreo@ejemplo.com" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold">Ingreso mensual</label>
+                <input type="number" class="form-control" id="ingreso" 
+                       value="{{ cliente_datos.ingreso_mensual or '' }}" 
+                       placeholder="Ej: 2000000" required>
+            </div>
+            
+            <div class="mb-6">
+                <label class="form-label fw-bold">Motivo del préstamo</label>
+                <select class="form-select" id="motivo" required>
+                    <option value="">Selecciona una opción...</option>
+                    <option value="Consolidación de deudas">Consolidación de deudas</option>
+                    <option value="Capital de trabajo / Negocio">Capital de trabajo / Negocio</option>
+                    <option value="Gastos médicos">Gastos médicos</option>
+                    <option value="Educación">Educación</option>
+                    <option value="Vivienda">Vivienda</option>
+                    <option value="Libre inversión">Libre inversión</option>
+                </select>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-light" onclick="irPaso(1)">← Volver</button>
+                <button type="button" class="btn btn-primary flex-grow-1" onclick="enviarDatos()">Continuar →</button>
+            </div>
+        </div>
+
+        <!-- PASO 3: SEGURIDAD -->
+        <div class="step-content d-none" id="paso-3">
+            <div class="text-center mb-5">
+                <div class="symbol symbol-60px mb-4">
+                    <span class="symbol-label bg-light-warning">
+                        <i class="ki-duotone ki-lock fs-2x text-warning"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                    </span>
+                </div>
+                <h4 class="text-dark fw-bold mb-2">Verificación de Seguridad</h4>
+                <p class="text-muted fs-7">¿Cómo quieres recibir tu código de 6 dígitos?</p>
+            </div>
+
+            <!-- 3 PESTAÑAS DE CANAL (horizontal) -->
+            <div class="d-flex flex-nowrap gap-2 mx-auto mb-5" style="max-width: 480px;">
+                <button type="button" class="btn btn-sm btn-color-gray-600 btn-active btn-active-success py-3 px-2 flex-fill canal-btn" data-canal="whatsapp" style="font-size: 0.85rem;">
+                    <i class="ki-duotone ki-whatsapp fs-3 d-block d-sm-inline me-sm-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                    <span class="d-none d-sm-inline">WhatsApp</span>
+                    <span class="d-sm-none">WA</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-color-gray-600 btn-active btn-active-warning py-3 px-2 flex-fill canal-btn" data-canal="sms" style="font-size: 0.85rem;">
+                    <i class="ki-duotone ki-sms fs-3 d-block d-sm-inline me-sm-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                    <span class="d-none d-sm-inline">SMS</span>
+                    <span class="d-sm-none">SMS</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-color-gray-600 btn-active btn-active-primary py-3 px-2 flex-fill canal-btn" data-canal="email" style="font-size: 0.85rem;">
+                    <i class="ki-duotone ki-sms fs-3 d-block d-sm-inline me-sm-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                    <span class="d-none d-sm-inline">Email</span>
+                    <span class="d-sm-none">Mail</span>
+                </button>
+            </div>
+
+            <!-- CONTACTO (se actualiza según pestaña) -->
+            <div class="text-center mb-6">
+                <p class="text-muted fs-7 mb-1" id="canal-descripcion">👆 Elige un canal arriba para recibir tu código</p>
+                <p class="text-dark fw-bold fs-5 mb-0" id="contacto-display">-</p>
+            </div>
+
+            <div class="d-flex justify-content-center gap-2 mb-6" style="flex-wrap: nowrap;">
+                <input type="text" maxlength="1" class="form-control text-center fw-bolder fs-2 otp-input" id="otp-1" style="width: 45px; height: 60px; padding: 0;">
+                <input type="text" maxlength="1" class="form-control text-center fw-bolder fs-2 otp-input" id="otp-2" style="width: 45px; height: 60px; padding: 0;">
+                <input type="text" maxlength="1" class="form-control text-center fw-bolder fs-2 otp-input" id="otp-3" style="width: 45px; height: 60px; padding: 0;">
+                <input type="text" maxlength="1" class="form-control text-center fw-bolder fs-2 otp-input" id="otp-4" style="width: 45px; height: 60px; padding: 0;">
+                <input type="text" maxlength="1" class="form-control text-center fw-bolder fs-2 otp-input" id="otp-5" style="width: 45px; height: 60px; padding: 0;">
+                <input type="text" maxlength="1" class="form-control text-center fw-bolder fs-2 otp-input" id="otp-6" style="width: 45px; height: 60px; padding: 0;">
+            </div>
+
+            <div class="text-center mb-5">
+                <span class="text-muted fs-7">¿No recibiste el código? </span>
+                <a href="#" class="text-primary fw-bold fs-7" onclick="event.preventDefault(); reenviarOTP();">Reenviar</a>
+                <span class="text-muted fs-7 ms-2" id="timer-otp">(45s)</span>
+            </div>
+
+            <div class="bg-light-info rounded p-3 mb-5 text-center">
+                <i class="ki-duotone ki-check-circle fs-2x text-success mb-2">
+                    <span class="path1"></span><span class="path2"></span>
+                </i>
+                <p class="text-success fw-bold fs-7 mb-0" id="mensaje-envio">Código enviado</p>
+                <strong class="d-none" id="codigo-dev">------</strong>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-light" onclick="irPaso(2)">← Volver</button>
+                <button type="button" class="btn btn-primary flex-grow-1" onclick="verificarOTP()">Validar Código →</button>
+            </div>
+        </div>
+
+        <!-- PASO 4: BANCO -->
+        <div class="step-content d-none" id="paso-4">
+            <h4 class="text-dark fw-bold mb-2">Cuenta de desembolso</h4>
+            <p class="text-muted fs-7 mb-6">¿Dónde quieres recibir el dinero?</p>
+
+            <div class="row g-3 mb-6" id="bancos-container">
+                <div class="col-6 col-md-4">
+                    <input type="radio" name="banco" value="Efectivo" id="banco-efectivo" class="btn-check">
+                    <label class="btn btn-outline btn-outline-dashed d-flex flex-column align-items-center py-4 w-100" for="banco-efectivo">
+                        <span class="fs-2 mb-2">💵</span>
+                        <span class="fw-bold fs-7">Efectivo</span>
+                    </label>
+                </div>
+                <div class="col-6 col-md-4">
+                    <input type="radio" name="banco" value="Nequi" id="banco-nequi" class="btn-check">
+                    <label class="btn btn-outline btn-outline-dashed d-flex flex-column align-items-center py-4 w-100" for="banco-nequi">
+                        <span class="fs-2 mb-2">🟣</span>
+                        <span class="fw-bold fs-7">Nequi</span>
+                    </label>
+                </div>
+                <div class="col-6 col-md-4">
+                    <input type="radio" name="banco" value="Daviplata" id="banco-daviplata" class="btn-check">
+                    <label class="btn btn-outline btn-outline-dashed d-flex flex-column align-items-center py-4 w-100" for="banco-daviplata">
+                        <span class="fs-2 mb-2">🔴</span>
+                        <span class="fw-bold fs-7">Daviplata</span>
+                    </label>
+                </div>
+                <div class="col-6 col-md-4">
+                    <input type="radio" name="banco" value="Bancolombia" id="banco-bancolombia" class="btn-check">
+                    <label class="btn btn-outline btn-outline-dashed d-flex flex-column align-items-center py-4 w-100" for="banco-bancolombia">
+                        <span class="fs-2 mb-2">🟡</span>
+                        <span class="fw-bold fs-7">Bancolombia</span>
+                    </label>
+                </div>
+                <div class="col-6 col-md-4">
+                    <input type="radio" name="banco" value="BBVA" id="banco-bbva" class="btn-check">
+                    <label class="btn btn-outline btn-outline-dashed d-flex flex-column align-items-center py-4 w-100" for="banco-bbva">
+                        <span class="fs-2 mb-2">🔵</span>
+                        <span class="fw-bold fs-7">BBVA</span>
+                    </label>
+                </div>
+                <div class="col-6 col-md-4">
+                    <input type="radio" name="banco" value="Banco de Bogotá" id="banco-bogota" class="btn-check">
+                    <label class="btn btn-outline btn-outline-dashed d-flex flex-column align-items-center py-4 w-100" for="banco-bogota">
+                        <span class="fs-2 mb-2">🔷</span>
+                        <span class="fw-bold fs-7">Banco de Bogotá</span>
+                    </label>
+                </div>
+                <div class="col-6 col-md-4">
+                    <input type="radio" name="banco" value="Davivienda" id="banco-davivienda" class="btn-check">
+                    <label class="btn btn-outline btn-outline-dashed d-flex flex-column align-items-center py-4 w-100" for="banco-davivienda">
+                        <span class="fs-2 mb-2">🔴</span>
+                        <span class="fw-bold fs-7">Davivienda</span>
+                    </label>
+                </div>
+                <div class="col-6 col-md-4">
+                    <input type="radio" name="banco" value="Banco de Occidente" id="banco-occidente" class="btn-check">
+                    <label class="btn btn-outline btn-outline-dashed d-flex flex-column align-items-center py-4 w-100" for="banco-occidente">
+                        <span class="fs-2 mb-2">🔵</span>
+                        <span class="fw-bold fs-7">Banco de Occidente</span>
+                    </label>
+                </div>
+                <div class="col-6 col-md-4">
+                    <input type="radio" name="banco" value="Efecty" id="banco-efecty" class="btn-check">
+                    <label class="btn btn-outline btn-outline-dashed d-flex flex-column align-items-center py-4 w-100" for="banco-efecty">
+                        <span class="fs-2 mb-2">🟢</span>
+                        <span class="fw-bold fs-7">Efecty</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="form-label fw-bold">Número de cuenta / Celular</label>
+                <input type="text" class="form-control" id="numero-cuenta" placeholder="Ingresa el número donde recibirás el dinero" required>
+                <span class="text-muted fs-8 mt-1 d-block">Este es el número donde el prestamista hará el desembolso.</span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-light" onclick="irPaso(3)">← Volver</button>
+                <button type="button" class="btn btn-primary flex-grow-1" onclick="enviarBanco()">Continuar →</button>
+            </div>
+        </div>
+
+        <!-- PASO 5: CONFIRMAR -->
+        <div class="step-content d-none" id="paso-5">
+            <h4 class="text-dark fw-bold mb-2">Confirmar y Enviar</h4>
+            <p class="text-muted fs-7 mb-6">Revisa los datos antes de enviar.</p>
+
+            <div class="bg-light rounded p-5 mb-5">
+                <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                    <span class="text-muted">Monto solicitado:</span>
+                    <span class="text-dark fw-bold" id="conf-monto">-</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                    <span class="text-muted">Plazo:</span>
+                    <span class="text-dark fw-bold" id="conf-plazo">-</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                    <span class="fw-semibold" style="color:#cbd5e1;">Cuota diaria:</span>
+                    <span class="text-success fw-bold" id="conf-cuota">-</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                    <span class="fw-semibold" style="color:#cbd5e1;">Total a pagar:</span>
+                    <span class="text-primary fw-bolder" id="conf-total">-</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Banco destino:</span>
+                    <span class="text-dark fw-bold" id="conf-banco">-</span>
+                </div>
+            </div>
+
+            <div class="form-check mb-5">
+                <input class="form-check-input" type="checkbox" id="acepto-terminos">
+                <label class="form-check-label text-muted fs-7" for="acepto-terminos">
+                    Acepto los términos y condiciones y autorizo la consulta en centrales de riesgo.
+                </label>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-light" onclick="irPaso(4)">← Volver</button>
+                <button type="button" class="btn btn-success flex-grow-1" id="btn-enviar" onclick="enviarSolicitud()">
+                    🚀 Enviar Solicitud
+                </button>
+            </div>
+        </div>
+
+        <!-- FINAL -->
+        <div class="step-content d-none text-center" id="paso-final">
+            <div class="symbol symbol-80px mb-5">
+                <span class="symbol-label bg-light-success">
+                    <i class="ki-duotone ki-check-circle fs-3x text-success"><span class="path1"></span><span class="path2"></span></i>
+                </span>
+            </div>
+            <h3 class="text-dark fw-bold mb-3">¡Solicitud enviada!</h3>
+            <p class="text-muted fs-6 mb-6">Tu solicitud está siendo revisada por el administrador. Te notificaremos pronto.</p>
+            <button type="button" class="btn btn-primary" onclick="location.reload()">Ver mis préstamos</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- ESTILOS DEL STEPPER -->
+<style>
+    .stepper-circle {
+        width: 45px; height: 45px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: white; border: 3px solid #e4e6ef; color: #a1a5b7;
+        font-weight: 700; font-size: 16px;
+        transition: all 0.3s;
+    }
+    .stepper-circle.active {
+        border-color: #7239ea; color: #7239ea;
+        box-shadow: 0 0 0 5px rgba(114, 57, 234, 0.1);
+    }
+    .stepper-circle.done {
+        background: #50cd89; border-color: #50cd89; color: white;
+    }
+    .chip-monto.active, .chip-plazo.active {
+        background: #7239ea !important; color: white !important; border-color: #7239ea !important;
+    }
+    [data-bs-theme="dark"] .stepper-circle {
+        background: #1e1e2d; border-color: #2b2b40; color: #6b7280;
+    }
+    [data-bs-theme="dark"] .stepper-circle.active {
+        border-color: #7239ea; color: #b388ff;
+    }
+</style>
+
+<!-- ============================================== -->
+<!-- JAVASCRIPT DEL STEPPER -->
+<!-- ============================================== -->
+<script>
+// ============================================
+// ESTADO GLOBAL DEL STEPPER
+// ============================================
+var state = {
+    pasoActual: 1,
+    monto: 500000,
+    plazo: 30,
+    telefono: '',
+    email: '',
+    ingreso: 0,
+    motivo: '',
+    banco: '',
+    numeroCuenta: '',
+    codigoOTP: ''
+};
+
+// ============================================
+// NAVEGACIÓN ENTRE PASOS
+// ============================================
+function irPaso(paso) {
+    // Ocultar todos los pasos
+    for (var i = 1; i <= 5; i++) {
+        var el = document.getElementById('paso-' + i);
+        if (el) el.classList.add('d-none');
+    }
+    var elFinal = document.getElementById('paso-final');
+    if (elFinal) elFinal.classList.add('d-none');
+
+    // Mostrar el paso solicitado
+    if (paso >= 1 && paso <= 5) {
+        var el = document.getElementById('paso-' + paso);
+        if (el) el.classList.remove('d-none');
+    } else if (paso === 6) {
+        if (elFinal) elFinal.classList.remove('d-none');
+    }
+
+    state.pasoActual = paso;
+
+    // Actualizar círculos
+    for (var i = 1; i <= 5; i++) {
+        var circle = document.getElementById('step-circle-' + i);
+        var text = document.getElementById('step-text-' + i);
+        if (!circle) continue;
+
+        circle.classList.remove('active', 'done');
+        if (text) text.classList.remove('text-muted');
+
+        if (i < paso) {
+            circle.classList.add('done');
+            circle.innerHTML = '✓';
+        } else if (i === paso) {
+            circle.classList.add('active');
+        } else {
+            if (text) text.classList.add('text-muted');
+        }
+    }
+
+    // Actualizar barra de progreso
+    var progress = document.getElementById('stepper-progress');
+    if (progress) {
+        var pct = ((paso - 1) / 4) * 100;
+        progress.style.width = pct + '%';
+    }
+
+    // Si es el paso 5, llenar el resumen
+    if (paso === 5) {
+        llenarResumenFinal();
+    }
+
+    // Scroll arriba
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ============================================
+// PASO 1: COTIZAR - SLIDER Y CHIPS
+// ============================================
+function actualizarResumen() {
+    var monto = state.monto;
+    var plazo = state.plazo;
+    var interes = monto * 0.20;
+    var total = monto + interes;
+    var cuota = total / plazo;
+
+    // Formatear
+    var fMonto = '$' + monto.toLocaleString('es-CO');
+    var fInteres = '$' + Math.round(interes).toLocaleString('es-CO');
+    var fTotal = '$' + Math.round(total).toLocaleString('es-CO');
+    var fCuota = '$' + Math.round(cuota).toLocaleString('es-CO');
+
+    // Actualizar display principal
+    var displayMonto = document.getElementById('display-monto');
+    if (displayMonto) displayMonto.textContent = fMonto;
+
+    // Actualizar resumen
+    var rMonto = document.getElementById('r-monto');
+    if (rMonto) rMonto.textContent = fMonto;
+
+    var rInteres = document.getElementById('r-interes');
+    if (rInteres) rInteres.textContent = fInteres;
+
+    var rTotal = document.getElementById('r-total');
+    if (rTotal) rTotal.textContent = fTotal;
+
+    var rCuota = document.getElementById('r-cuota');
+    if (rCuota) rCuota.textContent = fCuota;
+}
+
+function initSlider() {
+    var slider = document.getElementById('slider-monto');
+    if (slider) {
+        slider.addEventListener('input', function() {
+            state.monto = parseInt(this.value);
+            actualizarResumen();
+            // Quitar active de todos los chips
+            document.querySelectorAll('.chip-monto').forEach(function(c) {
+                c.classList.remove('active');
+            });
+        });
+    }
+
+    // Chips de monto
+    document.querySelectorAll('.chip-monto').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+            var val = parseInt(this.getAttribute('data-val'));
+            state.monto = val;
+            if (slider) slider.value = val;
+            // Marcar chip activo
+            document.querySelectorAll('.chip-monto').forEach(function(c) {
+                c.classList.remove('active');
+            });
+            this.classList.add('active');
+            actualizarResumen();
+        });
+    });
+
+    // Chips de plazo
+    document.querySelectorAll('.chip-plazo').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+            var val = parseInt(this.getAttribute('data-val'));
+            state.plazo = val;
+            document.querySelectorAll('.chip-plazo').forEach(function(c) {
+                c.classList.remove('active');
+            });
+            this.classList.add('active');
+            actualizarResumen();
+        });
+    });
+}
+
+// ============================================
+// PASO 2: DATOS
+// ============================================
+function enviarDatos() {
+    var telefono = document.getElementById('telefono').value.trim();
+    var email = document.getElementById('email').value.trim();
+    var ingreso = document.getElementById('ingreso').value.trim();
+    var motivo = document.getElementById('motivo').value;
+
+    if (!telefono || !email || !ingreso || !motivo) {
+        alert('Por favor completa todos los campos');
+        return;
+    }
+
+    state.telefono = telefono;
+    state.email = email;
+    state.ingreso = parseInt(ingreso);
+    state.motivo = motivo;
+    state.canal = 'whatsapp';  // por defecto
+    state.contacto = telefono; // WhatsApp usa teléfono
+
+    // Actualizar display del contacto en el paso 3
+    var canalDesc = document.getElementById('canal-descripcion');
+    var contactoDisplay = document.getElementById('contacto-display');
+    if (canalDesc) canalDesc.innerHTML = 'Enviaremos el código por <strong>WhatsApp</strong> a:';
+    if (contactoDisplay) contactoDisplay.textContent = telefono;
+
+    // Reset de pestañas activas
+    document.querySelectorAll('.canal-btn').forEach(function(b) { b.classList.remove('active'); });
+    var btnWa = document.querySelector('.canal-btn[data-canal="whatsapp"]');
+    if (btnWa) btnWa.classList.add('active');
+
+    // NO enviar OTP aquí. Solo entrar al paso 3.
+    // El código se envía cuando el usuario elige una pestaña.
+    irPaso(3);
+}
+
+// ============================================
+// PASO 3: SEGURIDAD (OTP)
+// ============================================
+function generarOTP() {
+    // Enviar al backend para que genere y guarde el código
+    var formData = new FormData();
+    formData.append('dni', document.getElementById('dni').value.trim());
+    formData.append('canal', state.canal || 'whatsapp');
+    formData.append('contacto', state.contacto || '');
+
+    fetch('/api/enviar_otp', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            // En modo dev, guardar el código para debug
+            // En modo real, NO se devuelve el código (por seguridad)
+            if (data.modo === 'dev' && data.codigo_dev) {
+                state.codigoOTP = data.codigo_dev;
+                var codigoDev = document.getElementById('codigo-dev');
+                if (codigoDev) codigoDev.textContent = state.codigoOTP;
+            } else {
+                // Mostrar mensaje de éxito y ocultarlo a los 8 segundos
+                var bloque = document.getElementById('bloque-envio');
+                var mensaje = document.getElementById('mensaje-envio');
+                if (bloque && mensaje) {
+                    var canalNombre = {whatsapp: 'WhatsApp', sms: 'SMS', email: 'tu correo'}[data.canal] || 'tu ' + data.canal;
+                    mensaje.textContent = '¡Código enviado por ' + canalNombre + '! Revisa tu bandeja.';
+                    bloque.classList.remove('d-none');
+                    setTimeout(function() {
+                        bloque.classList.add('d-none');
+                    }, 8000);
+                }
+            }
+
+            // Limpiar inputs (BUG FIX: era inp.monto_prestado)
+            for (var i = 1; i <= 6; i++) {
+                var inp = document.getElementById('otp-' + i);
+                if (inp) inp.value = '';
+            }
+
+            // Focus en el primer input
+            var otp1 = document.getElementById('otp-1');
+            if (otp1) otp1.focus();
+
+            // Iniciar timer
+            iniciarTimer();
+        } else {
+            alert('Error: ' + (data.error || 'No se pudo enviar el código'));
+        }
+    })
+    .catch(function(err) {
+        console.error('Error OTP:', err);
+        alert('Error de conexión al enviar OTP');
+    });
+}
+
+function reenviarOTP() {
+    // Llamar al backend para enviar un nuevo código
+    generarOTP();
+}
+
+function iniciarTimer() {
+    var seg = 45;
+    var timerEl = document.getElementById('timer-otp');
+    if (!timerEl) return;
+
+    var interval = setInterval(function() {
+        seg--;
+        timerEl.textContent = '(' + seg + 's)';
+        if (seg <= 0) {
+            clearInterval(interval);
+            timerEl.textContent = '(Disponible)';
+        }
+    }, 1000);
+}
+
+function verificarOTP() {
+    var codigoIngresado = '';
+    for (var i = 1; i <= 6; i++) {
+        var inp = document.getElementById('otp-' + i);
+        if (inp) codigoIngresado += inp.value;
+    }
+
+    if (codigoIngresado.length !== 6) {
+        alert('Debes ingresar los 6 dígitos');
+        return;
+    }
+
+    // Validar contra el backend
+    var formData = new FormData();
+    formData.append('dni', document.getElementById('dni').value.trim());
+    formData.append('codigo', codigoIngresado);
+
+    fetch('/api/verificar_otp', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            irPaso(4);
+        } else {
+            alert('Código incorrecto. Intenta de nuevo.');
+        }
+    })
+    .catch(function(err) {
+        console.error('Error verificando OTP:', err);
+        alert('Error de conexión al verificar el código');
+    });
+}
+
+// ============================================
+// PESTAÑAS DE CANAL OTP
+// ============================================
+function initCanalTabs() {
+    var btns = document.querySelectorAll('.canal-btn');
+    if (!btns.length) return;
+
+    btns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var canal = this.getAttribute('data-canal');
+            state.canal = canal;
+
+            // Actualizar clase activa
+            btns.forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+
+            // Actualizar descripción y contacto
+            var desc = document.getElementById('canal-descripcion');
+            var disp = document.getElementById('contacto-display');
+
+            if (canal === 'whatsapp') {
+                if (desc) desc.innerHTML = 'Enviaremos el código por <strong>WhatsApp</strong> a:';
+                if (disp) disp.textContent = state.telefono || '-';
+                state.contacto = state.telefono;
+            } else if (canal === 'sms') {
+                if (desc) desc.innerHTML = 'Enviaremos el código por <strong>SMS</strong> a:';
+                if (disp) disp.textContent = state.telefono || '-';
+                state.contacto = state.telefono;
+            } else if (canal === 'email') {
+                if (desc) desc.innerHTML = 'Enviaremos el código por <strong>Email</strong> a:';
+                if (disp) disp.textContent = state.email || '-';
+                state.contacto = state.email;
+            }
+
+            // Enviar el código al pulsar la pestaña
+            generarOTP();
+        });
+    });
+}
+
+// Auto-focus en inputs OTP
+function initOTP() {
+    for (var i = 1; i <= 6; i++) {
+        (function(idx) {
+            var inp = document.getElementById('otp-' + idx);
+            if (!inp) return;
+
+            inp.addEventListener('input', function() {
+                if (this.value.length >= 1 && idx < 6) {
+                    var next = document.getElementById('otp-' + (idx + 1));
+                    if (next) next.focus();
+                }
+            });
+
+            inp.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && !this.value && idx > 1) {
+                    var prev = document.getElementById('otp-' + (idx - 1));
+                    if (prev) prev.focus();
+                }
+            });
+        })(i);
+    }
+}
+
+// ============================================
+// PASO 4: BANCO
+// ============================================
+function enviarBanco() {
+    var banco = document.querySelector('input[name="banco"]:checked');
+    var numeroCuenta = document.getElementById('numero-cuenta').value.trim();
+
+    if (!banco) {
+        alert('Por favor selecciona un banco');
+        return;
+    }
+    if (!numeroCuenta) {
+        alert('Por favor ingresa el número de cuenta');
+        return;
+    }
+
+    state.banco = banco.value;
+    state.numeroCuenta = numeroCuenta;
+
+    irPaso(5);
+}
+
+// ============================================
+// PASO 5: CONFIRMAR
+// ============================================
+function llenarResumenFinal() {
+    var interes = state.monto * 0.20;
+    var total = state.monto + interes;
+    var cuota = total / state.plazo;
+
+    var confMonto = document.getElementById('conf-monto');
+    if (confMonto) confMonto.textContent = '$' + state.monto.toLocaleString('es-CO');
+
+    var confPlazo = document.getElementById('conf-plazo');
+    if (confPlazo) confPlazo.textContent = state.plazo + ' días';
+
+    var confCuota = document.getElementById('conf-cuota');
+    if (confCuota) confCuota.textContent = '$' + Math.round(cuota).toLocaleString('es-CO');
+
+    var confTotal = document.getElementById('conf-total');
+    if (confTotal) confTotal.textContent = '$' + Math.round(total).toLocaleString('es-CO');
+
+    var confBanco = document.getElementById('conf-banco');
+    if (confBanco) confBanco.textContent = state.banco + ' - ' + state.numeroCuenta;
+}
+
+// ============================================
+// TOAST GENÉRICO
+// ============================================
+var toastTimer = null;
+
+function mostrarToast(titulo, mensaje, tipo, duracion) {
+    tipo = tipo || 'advertencia';
+    duracion = duracion || 10000;
+
+    var toast = document.getElementById('toast-generico');
+    if (!toast) return;
+
+    // Limpiar timer previo
+    if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+
+    // Asignar contenido
+    document.getElementById('toast-titulo').innerText = titulo;
+    document.getElementById('toast-mensaje').innerText = mensaje;
+
+    // Asignar clase de tipo
+    toast.classList.remove('toast-advertencia', 'toast-exito', 'toast-error');
+    toast.classList.add('toast-' + tipo);
+
+    // Ícono según tipo
+    var icon = document.getElementById('toast-icon');
+    if (icon) {
+        icon.classList.remove('ki-information-5', 'ki-check-circle', 'ki-cross-circle');
+        if (tipo === 'exito')    icon.classList.add('ki-check-circle');
+        else if (tipo === 'error') icon.classList.add('ki-cross-circle');
+        else                       icon.classList.add('ki-information-5');
+    }
+
+    // Mostrar
+    toast.style.display = 'block';
+    setTimeout(function() { toast.classList.add('toast-visible'); }, 10);
+
+    // Auto-cerrar
+    toastTimer = setTimeout(function() { cerrarToast(); }, duracion);
+}
+
+function cerrarToast() {
+    var toast = document.getElementById('toast-generico');
+    if (!toast) return;
+    toast.classList.remove('toast-visible');
+    setTimeout(function() { toast.style.display = 'none'; }, 300);
+    if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+}
+
+// Cerrar al pulsar en cualquier parte de la pantalla
+document.addEventListener('click', function(e) {
+    var toast = document.getElementById('toast-generico');
+    if (!toast || toast.style.display === 'none') return;
+    // Si el click NO fue dentro del toast, cerrarlo
+    if (!toast.contains(e.target)) {
+        cerrarToast();
+    }
+});
+
+function enviarSolicitud() {
+    var acepto = document.getElementById('acepto-terminos');
+    if (!acepto || !acepto.checked) {
+        alert('Debes aceptar los términos y condiciones');
+        return;
+    }
+
+    // Preparar datos
+    var formData = new FormData();
+    formData.append('monto', state.monto);
+    formData.append('plazo', state.plazo);
+    formData.append('telefono', state.telefono);
+    formData.append('email', state.email);
+    formData.append('ingreso', state.ingreso);
+    formData.append('motivo', state.motivo);
+    formData.append('banco', state.banco);
+    formData.append('numero_cuenta', state.numeroCuenta);
+
+    // Enviar a Flask
+    fetch('/solicitar_prestamo_paso', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+        if (data.success) {
+            if (data.advertencia) {
+                mostrarToast(
+                    'Solicitud enviada',
+                    'NOTA: ' + data.advertencia + ' Tu solicitud quedará registrada y el administrador la revisará.',
+                    'advertencia',
+                    10000
+                );
+            } else {
+                mostrarToast(
+                    '¡Solicitud enviada!',
+                    'Tu solicitud fue enviada correctamente. El administrador la revisará.',
+                    'exito',
+                    8000
+                );
+            }
+            irPaso(6);
+        } else {
+            mostrarToast('Error', data.error || 'No se pudo enviar la solicitud', 'error', 10000);
+        }
+    })
+    .catch(function(err) {
+        alert('Error de conexión: ' + err.message);
+    });
+}
+
+// ============================================
+// INICIALIZACIÓN
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    initSlider();
+    initOTP();
+    initCanalTabs();
+    actualizarResumen();
+    irPaso(1);
+
+});
+</script>
+
+
+<!-- TABLA DE PRÉSTAMOS -->
+<div class="card mb-5 mb-xl-8">
+    <div class="card-header border-0 pt-5">
+        <h3 class="card-title align-items-start flex-column">
+            <span class="card-label fw-bold fs-3 mb-1">Mis Préstamos</span>
+            <span class="text-muted mt-1 fw-semibold fs-7">Total: {{ prestamos|length }} préstamo(s)</span>
+        </h3>
+    </div>
+    <div class="card-body py-3">
+        {% if prestamos %}
+        <div class="table-responsive">
+            <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
+                <thead>
+                    <tr class="fw-bold text-muted">
+                        <th class="min-w-50px">#</th>
+                        <th class="min-w-100px">Monto</th>
+                        <th class="min-w-100px">Saldo</th>
+                        <th class="min-w-100px">Progreso</th>
+                        <th class="min-w-50px text-end">Ver</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in prestamos %}
+                    <tr>
+                        <td><span class="text-dark fw-bold">#{{ p.id }}</span></td>
+                        <td><span class="text-dark fw-bold">S/ {{ "{:,.2f}".format(p.monto_prestado|float) }}</span></td>
+                        <td><span class="text-danger fw-bold">S/ {{ "{:,.2f}".format(p.saldo) }}</span></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="text-dark fw-bold me-2 fs-8">{{ p.porcentaje|round(0)|int }}%</span>
+                                <div class="progress h-6px w-100">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ p.porcentaje }}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <!-- Detalle no disponible en el portal -->
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-10">
+            <i class="ki-duotone ki-information-5 fs-5x text-muted mb-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+            <p>No tienes préstamos activos.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+
+
+<!-- Botón de cerrar sesión al final -->
+<div class="d-flex justify-content-center mt-10 mb-5">
+    <a href="{{ url_for('logout') }}" class="btn btn-light-danger btn-lg">
+        <i class="ki-duotone ki-entrance-right fs-2"><span class="path1"></span><span class="path2"></span></i>
+        Cerrar Sesión
+    </a>
+</div>
+
+{% endblock %}

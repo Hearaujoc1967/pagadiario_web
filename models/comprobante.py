@@ -184,6 +184,10 @@ class ComprobanteModel:
             if match:
                 ref = match.group(1).strip().upper()
                 ref = ref.replace('MI', 'M1').replace('O', '0').replace('I', '1')
+                if ref.startswith('M'):
+                    d = re.sub(r'\D', '', ref[1:])
+                    if len(d) == 7:
+                        ref = 'M' + d
                 return ref
         return None
 

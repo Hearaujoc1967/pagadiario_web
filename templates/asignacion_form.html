@@ -1,68 +1,24 @@
-{% extends "base.html" %}
-
+{% extends "base_pw.html" %}
+{% set page_title = titulo %}
 {% block title %}{{ titulo }} - Pagadiario{% endblock %}
-
-{% block body %}
-
-{% include '_sidebar.html' %}<div class="main-content">
-    <div class="topbar">
-        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-link"></i> {{ titulo }}</h4>
-    </div>
-
-    <div class="p-4">
-        <div class="card-panel">
-            <form method="POST">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Zona *</label>
-                        <select class="form-control" name="id_zona" required>
-                            <option value="">-- Seleccionar --</option>
-                            {% for z in zonas %}
-                                <option value="{{ z.id }}" 
-                                    {% if asignacion and asignacion.id_zona == z.id %}selected{% endif %}>
-                                    {{ z.zona }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Cobrador *</label>
-                        <select class="form-control" name="id_cobrador" required>
-                            <option value="">-- Seleccionar --</option>
-                            {% for c in cobradores %}
-                                <option value="{{ c.id }}" 
-                                    {% if asignacion and asignacion.id_cobrador == c.id %}selected{% endif %}>
-                                    {{ c.nombre }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Sucursal *</label>
-                        <select class="form-control" name="id_sucursal" required>
-                            <option value="">-- Seleccionar --</option>
-                            {% for s in sucursales %}
-                                <option value="{{ s.id }}" 
-                                    {% if asignacion and asignacion.id_sucursal == s.id %}selected{% endif %}>
-                                    {{ s.descripcion }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="d-flex justify-content-between mt-3">
-                    <a href="{{ url_for('zonas') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Cancelar
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Guardar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+{% block content %}
+<form method="POST">
+<div class="card mb-5">
+  <div class="card-header border-0 pt-5"><h3 class="card-title flex-column align-items-start"><span class="fw-bold fs-3">Datos de la asignación</span><span class="text-muted fs-7 mt-1">Los campos con * son obligatorios</span></h3></div>
+  <div class="card-body pt-2"><div class="row g-5">
+    <div class="col-md-6"><label class="form-label fw-semibold required">Zona</label><select class="form-select form-select-solid sel_asig" name="id_zona" required data-placeholder="Seleccionar zona"><option value=""></option>{% for z in zonas %}<option value="{{ z.id }}" {% if asignacion and asignacion.id_zona == z.id %}selected{% endif %}>{{ z.zona }}</option>{% endfor %}</select></div>
+    <div class="col-md-6"><label class="form-label fw-semibold required">Cobrador</label><select class="form-select form-select-solid sel_asig" name="id_cobrador" required data-placeholder="Seleccionar cobrador"><option value=""></option>{% for c in cobradores %}<option value="{{ c.id }}" {% if asignacion and asignacion.id_cobrador == c.id %}selected{% endif %}>{{ c.nombre }}</option>{% endfor %}</select></div>
+    <div class="col-md-6"><label class="form-label fw-semibold required">Sucursal</label><select class="form-select form-select-solid sel_asig" name="id_sucursal" required data-placeholder="Seleccionar sucursal"><option value=""></option>{% for s in sucursales %}<option value="{{ s.id }}" {% if asignacion and asignacion.id_sucursal == s.id %}selected{% endif %}>{{ s.descripcion }}</option>{% endfor %}</select></div>
+  </div></div>
 </div>
-
+<div class="d-flex justify-content-end gap-3 mb-10">
+  <a href="{{ url_for('zonas') }}" class="btn btn-light">Cancelar</a>
+  <button type="submit" class="btn btn-primary">Guardar asignación</button>
+</div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+$(function(){$('.sel_asig').select2({width:'100%',minimumResultsForSearch:Infinity,theme:'bootstrap5',allowClear:false})});
+</script>
 {% endblock %}

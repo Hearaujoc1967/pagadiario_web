@@ -1,0 +1,48 @@
+{% from 'includes/_ki.html' import ki %}
+<!--begin::Aside-->
+<div id="kt_aside" class="aside aside-extended" data-kt-drawer="true" data-kt-drawer-name="aside" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="auto" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_aside_mobile_toggle">
+{% set grupos = [
+ ('home','Inicio','home-2',[('/dashboard','chart-pie-4','Dashboard'),('/mi_perfil','user','Mi perfil'),('/cambiar_password','key','Cambiar contraseña')]),
+ ('gestion','Gestión','people',[('/clientes','people','Clientes'),('/prestamos','dollar','Préstamos'),('/cobradores','profile-user','Cobradores'),('/socios','user-tick','Socios'),('/zonas','geolocation','Zonas'),('/codeudores','people','Codeudores')]),
+ ('finanzas','Finanzas','wallet',[('/caja','calculator','Caja'),('/capital','wallet','Capital'),('/gastos','receipt-square','Gastos'),('/cierre','lock','Cierre por día')]),
+ ('config','Configuración','setting-2',[('/empresa','bank','Empresa'),('/usuarios','user','Usuarios'),('/reportes','document','Reportes'),('/logout','exit-right','Cerrar sesión')])
+] %}
+{% macro ok(url, p) %}{% if p.startswith(url) or p.startswith(url[:-1] ~ '/') or p.startswith(url[:-2] ~ '/') %}1{% endif %}{% endmacro %}
+{% set ns = namespace(act='') %}
+{% for gid, gt, gi, gitems in grupos %}{% for gu, gic, gtx in gitems %}{% if ok(gu, request.path)|trim %}{% set ns.act = gid %}{% endif %}{% endfor %}{% endfor %}
+{% if not ns.act %}{% set ns.act = 'home' %}{% endif %}
+<div class="aside-primary d-flex flex-column align-items-lg-center flex-row-auto">
+  <div class="aside-logo py-10">{{ ki('dollar','fs-2qx text-primary') }}</div>
+  <div class="aside-nav d-flex flex-column align-items-center flex-column-fluid w-100 pt-5">
+    <ul class="nav flex-column" id="kt_aside_nav_tabs">
+    {% for id, titulo, icono, items in grupos %}
+      <li class="nav-item mb-2" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="right" data-bs-dismiss="click" title="{{ titulo }}">
+        <a class="nav-link btn btn-icon btn-active-color-primary btn-color-gray-400 btn-active-light {% if id == ns.act %}active{% endif %}" data-bs-toggle="tab" href="#tab_{{ id }}">{{ ki(icono) }}</a>
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+  <div class="aside-footer d-flex flex-column align-items-center flex-column-auto pb-5" id="kt_aside_footer">
+    <div class="d-flex align-items-center mb-2" id="kt_header_user_menu_toggle">
+      <div class="cursor-pointer symbol symbol-40px" data-kt-menu-trigger="click" data-kt-menu-overflow="true" data-kt-menu-placement="top-start">
+        <span class="symbol-label bg-primary text-white fw-bold fs-3">{{ (session.get('nombre') or 'U')[:1]|upper }}</span><img src="/static/avatars/{{ session.get('id') }}.jpg" alt="" class="position-absolute top-0 start-0 w-100 h-100 rounded" style="object-fit:cover" onerror="this.remove()">
+      </div>
+      {% include 'includes/_menu_usuario.html' %}
+    </div>
+  </div>
+</div>
+<div class="aside-secondary d-flex flex-row-fluid">
+  <div class="aside-workspace my-5 p-5"><div class="tab-content">
+  {% for id, titulo, icono, items in grupos %}
+    <div class="tab-pane fade {% if id == ns.act %}show active{% endif %}" id="tab_{{ id }}">
+      <h3 class="fw-bold text-dark mb-5">{{ titulo }}</h3>
+      <div class="menu menu-column menu-fit menu-rounded menu-title-gray-600 menu-icon-gray-400 menu-state-primary menu-state-icon-primary menu-state-bullet-primary">
+      {% for url, ic, txt in items %}
+        <div class="menu-item"><a class="menu-link {% if ok(url, request.path)|trim %}active{% endif %}" href="{{ url }}"><span class="menu-icon">{{ ki(ic,'fs-3') }}</span><span class="menu-title">{{ txt }}</span></a></div>
+      {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+  </div></div>
+</div>
+</div>

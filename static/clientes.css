@@ -1,0 +1,120 @@
+/* Módulo Clientes — Metronic compacto */
+.stat-card { position:relative; overflow:hidden; padding:1rem 1.1rem; border-radius:14px; background:#fff; border:1px solid #eef2f6; transition:all .25s ease; }
+.stat-card:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(15,23,42,.07); border-color:#e0e7ff; }
+[data-bs-theme="dark"] .stat-card { background:#1e1e2d; border-color:#2b2b40; }
+.stat-card__icon { width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:12px; font-size:1.15rem; flex-shrink:0; }
+.stat-card--primary .stat-card__icon { background:linear-gradient(135deg,#eef2ff,#e0e7ff); color:#6366f1; }
+.stat-card--success .stat-card__icon { background:linear-gradient(135deg,#ecfdf5,#d1fae5); color:#10b981; }
+.stat-card--warning .stat-card__icon { background:linear-gradient(135deg,#fffbeb,#fef3c7); color:#f59e0b; }
+.stat-card--info    .stat-card__icon { background:linear-gradient(135deg,#f5f3ff,#ede9fe); color:#8b5cf6; }
+.stat-card__label { color:#94a3b8; font-size:.65rem; text-transform:uppercase; letter-spacing:.8px; font-weight:700; }
+.stat-card__value { color:#0f172a; font-size:1.5rem; font-weight:800; line-height:1.1; }
+[data-bs-theme="dark"] .stat-card__value { color:#f1f5f9; }
+
+.chart-panel { padding:1rem 1.1rem; border-radius:14px; background:#fff; border:1px solid #eef2f6; }
+[data-bs-theme="dark"] .chart-panel { background:#1e1e2d; border-color:#2b2b40; }
+.chart-panel__title { color:#0f172a; font-weight:700; font-size:.9rem; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
+[data-bs-theme="dark"] .chart-panel__title { color:#f1f5f9; }
+.chart-panel__title i { color:#6366f1; }
+
+.avatar-circle { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; flex-shrink:0; box-shadow:0 3px 8px rgba(99,102,241,.3); }
+
+.badge-estado { display:inline-flex; align-items:center; gap:.3rem; padding:.3rem .6rem; border-radius:999px; font-size:.7rem; font-weight:700; }
+.badge-estado--activo { background:#ecfdf5; color:#059669; }
+.badge-estado--inactivo { background:#f3f4f6; color:#6b7280; }
+.badge-estado--moroso { background:#fef2f2; color:#dc2626; }
+[data-bs-theme="dark"] .badge-estado--activo { background:rgba(16,185,129,.15); color:#34d399; }
+[data-bs-theme="dark"] .badge-estado--inactivo { background:rgba(107,114,128,.2); color:#9ca3af; }
+[data-bs-theme="dark"] .badge-estado--moroso { background:rgba(239,68,68,.15); color:#f87171; }
+
+.reputacion { display:inline-flex; align-items:center; gap:.3rem; padding:.28rem .6rem; border-radius:6px; font-size:.7rem; font-weight:700; background:#fffbeb; color:#d97706; }
+.reputacion--buena { background:#ecfdf5; color:#059669; }
+.reputacion--mala  { background:#fef2f2; color:#dc2626; }
+[data-bs-theme="dark"] .reputacion { background:rgba(245,158,11,.15); color:#fbbf24; }
+
+.cobrador-tag { display:inline-flex; align-items:center; gap:.3rem; padding:.28rem .6rem; border-radius:6px; font-size:.7rem; font-weight:600; background:#f5f3ff; color:#7c3aed; }
+[data-bs-theme="dark"] .cobrador-tag { background:rgba(139,92,246,.15); color:#a78bfa; }
+
+/* --- Tabla compacta --- */
+.tabla-clientes { font-size:.82rem; margin:0; }
+.tabla-clientes thead th {
+    background:#f8fafc; color:#64748b;
+    font-weight:700; font-size:.65rem;
+    text-transform:uppercase; letter-spacing:.5px;
+    border-bottom:1px solid #e2e8f0;
+    padding:.7rem .5rem; white-space:nowrap;
+}
+[data-bs-theme="dark"] .tabla-clientes thead th { background:#13131f; color:#94a3b8; border-color:#2b2b40; }
+.tabla-clientes tbody td { padding:.55rem .5rem; vertical-align:middle; }
+.tabla-clientes tbody tr { border-bottom:1px solid #f1f5f9; transition:background .15s ease; }
+.tabla-clientes tbody tr:hover { background:#f8fafc; }
+[data-bs-theme="dark"] .tabla-clientes tbody tr { border-color:#2b2b40; }
+[data-bs-theme="dark"] .tabla-clientes tbody tr:hover { background:rgba(99,102,241,.05); }
+
+/* --- Headers ordenables --- */
+.tabla-clientes th.sortable { cursor:pointer; user-select:none; position:relative; padding-right:1.3rem; }
+.tabla-clientes th.sortable::after {
+    content:'\f0dc'; font-family:'Font Awesome 6 Free'; font-weight:900;
+    position:absolute; right:.4rem; top:50%; transform:translateY(-50%);
+    opacity:.25; font-size:.65rem;
+}
+.tabla-clientes th.sortable.sort-asc::after  { content:'\f0de'; opacity:1; color:#6366f1; }
+.tabla-clientes th.sortable.sort-desc::after { content:'\f0dd'; opacity:1; color:#6366f1; }
+.tabla-clientes th.sortable:hover::after { opacity:.7; }
+
+/* --- WhatsApp --- */
+.whatsapp-link { transition:all .15s; font-size:.8rem; }
+.whatsapp-link:hover { color:#059669 !important; text-decoration:underline !important; }
+
+/* --- Chips filtro --- */
+.filtro-chip { padding:.4rem .85rem; border-radius:999px; border:1.5px solid #e2e8f0; background:#fff; font-size:.75rem; font-weight:600; color:#64748b; cursor:pointer; transition:all .2s; }
+.filtro-chip:hover { border-color:#6366f1; color:#6366f1; }
+.filtro-chip.active { background:#6366f1; border-color:#6366f1; color:#fff; box-shadow:0 4px 12px rgba(99,102,241,.3); }
+[data-bs-theme="dark"] .filtro-chip { background:#1e1e2d; border-color:#2b2b40; color:#94a3b8; }
+
+/* --- Topbar Metronic --- */
+.topbar .btn-icon { width:38px; height:38px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:10px; border:none; font-size:.95rem; }
+.btn-light-warning { background:#fffbeb; color:#f59e0b; }
+.btn-light-primary { background:#eef2ff; color:#6366f1; }
+.btn-light-primary:hover { background:#e0e7ff; color:#4f46e5; }
+.btn-light-warning:hover { background:#fef3c7; color:#d97706; }
+[data-bs-theme="dark"] .btn-light-primary { background:rgba(99,102,241,.15); color:#a5b4fc; }
+[data-bs-theme="dark"] .btn-light-warning { background:rgba(245,158,11,.15); color:#fbbf24; }
+
+.topbar .dropdown-menu { border:1px solid #eef2f6; border-radius:12px; padding:.4rem 0; min-width:260px; box-shadow:0 10px 30px rgba(15,23,42,.1); }
+[data-bs-theme="dark"] .topbar .dropdown-menu { background:#1e1e2d; border-color:#2b2b40; }
+.dropdown-item { padding:.5rem 1rem; font-size:.82rem; border-radius:6px; margin:2px .3rem; }
+.dropdown-item:hover { background:#f8fafc; }
+[data-bs-theme="dark"] .dropdown-item:hover { background:#252536; }
+
+/* --- Form --- */
+.form-section { padding:1.4rem 1.5rem; background:#fff; border-radius:14px; border:1px solid #eef2f6; margin-bottom:1.2rem; }
+[data-bs-theme="dark"] .form-section { background:#1e1e2d; border-color:#2b2b40; }
+.form-section__title { color:#0f172a; font-weight:700; font-size:.9rem; margin-bottom:1rem; padding-bottom:.75rem; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:.5rem; }
+[data-bs-theme="dark"] .form-section__title { color:#f1f5f9; border-color:#2b2b40; }
+.form-section__title i { color:#6366f1; font-size:1rem; }
+.form-label { font-size:.8rem; font-weight:600; color:#475569; margin-bottom:.35rem; }
+[data-bs-theme="dark"] .form-label { color:#cbd5e1; }
+.form-control, .form-select { font-size:.85rem; padding:.5rem .75rem; }
+.form-actions { display:flex; justify-content:space-between; gap:1rem; padding-top:1.2rem; margin-top:1rem; border-top:1px solid #f1f5f9; }
+[data-bs-theme="dark"] .form-actions { border-color:#2b2b40; }
+.breadcrumb-custom { font-size:.8rem; }
+.breadcrumb-custom a { color:#6366f1; text-decoration:none; font-weight:600; }
+.breadcrumb-custom .active { color:#94a3b8; font-weight:600; }
+
+/* --- Country code select --- */
+.select-codigo { max-width:130px; background:#f8fafc; font-size:.82rem; font-weight:600; }
+[data-bs-theme="dark"] .select-codigo { background:#13131f; }
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .stat-card__value { font-size:1.25rem; }
+    .stat-card__icon { width:38px; height:38px; font-size:1rem; }
+    .stat-card { padding:.85rem; }
+    .form-actions { flex-direction:column-reverse; }
+    .form-actions .btn { width:100%; }
+    .tabla-clientes { font-size:.75rem; }
+    .tabla-clientes thead th { font-size:.6rem; padding:.5rem .3rem; }
+    .tabla-clientes tbody td { padding:.45rem .3rem; }
+    .topbar .btn-icon { width:34px; height:34px; }
+}

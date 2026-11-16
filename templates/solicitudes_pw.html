@@ -1,0 +1,27 @@
+{% extends "base_pw.html" %}
+{% block title %}Solicitudes | PagaDiario{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+  <h2 class="fw-bold mb-1">Solicitudes de préstamo</h2>
+  <div class="text-muted mb-4">Sin resolver primero. El sistema rechaza por defecto; tú decides.</div>
+  {% with msgs = get_flashed_messages(with_categories=true) %}{% for c, m in msgs %}<div class="alert alert-{{ 'success' if c == 'success' else 'warning' }}">{{ m }}</div>{% endfor %}{% endwith %}
+  {% for s in solicitudes %}
+  <div class="card mb-3"><div class="card-body">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <div class="fw-bold fs-5">{{ s.nombre or ('Cliente #' ~ s.id_cliente) }}</div>
+        <div class="text-muted fs-7">${{ '{:,.0f}'.format(s.monto) }} · {{ s.plazo_dias }} días · {{ s.fecha_solicitud.strftime('%d/%m/%Y %H:%M') if s.fecha_solicitud else '' }}</div>
+      </div>
+      <span class="badge badge-light-{{ 'success' if s.estado == 'aprobada' else ('danger' if s.estado == 'rechazada' else 'warning') }}">{{ s.estado }}{{ ' (sistema)' if not s.fecha_respuesta and s.estado == 'rechazada' else '' }}</span>
+    </div>
+    {% if s.comentario_admin %}<div class="text-muted fs-8 mt-2">{{ s.comentario_admin }}</div>{% endif %}
+    {% if not s.fecha_respuesta %}
+    <div class="d-flex gap-2 mt-3">
+      <form method="post" action="/solicitudes/{{ s.id }}/aprobar" onsubmit="return confirm('¿Aprobar esta solicitud?')"><button class="btn btn-sm btn-success">Aprobar</button></form>
+      <form method="post" action="/solicitudes/{{ s.id }}/rechazar" onsubmit="return confirm('¿Rechazar esta solicitud?')"><button class="btn btn-sm btn-danger">Rechazar</button></form>
+    </div>
+    {% endif %}
+  </div></div>
+  {% else %}<div class="text-muted">No hay solicitudes.</div>{% endfor %}
+</div>
+{% endblock %}

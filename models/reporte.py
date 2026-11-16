@@ -110,14 +110,14 @@ class ReporteModel:
         """Agrupa préstamos por cobrador en un rango."""
         return query("""
             SELECT 
-                COALESCE(cb.nombre, 'Sin asignar') AS cobrador,
+                cb.id AS id_cobrador, COALESCE(cb.nombre, 'Sin asignar') AS cobrador,
                 COUNT(p.id) AS total_prestamos,
                 COALESCE(SUM(p.monto_prestado), 0) AS total_monto,
                 COALESCE(SUM(p.total_debe), 0) AS total_debe
             FROM t_prestamo p
             LEFT JOIN t_cobrador cb ON p.id_cobrador = cb.id
             WHERE p.fecha_prestamo >= %s AND p.fecha_prestamo <= %s
-            GROUP BY cb.nombre
+            GROUP BY cb.id, cb.nombre
             ORDER BY total_prestamos DESC
         """, (fecha_i, fecha_f), fetchall=True)
 
@@ -126,14 +126,14 @@ class ReporteModel:
         """Agrupa cobros por cobrador en un rango."""
         return query("""
             SELECT 
-                COALESCE(cb.nombre, 'Sin asignar') AS cobrador,
+                cb.id AS id_cobrador, COALESCE(cb.nombre, 'Sin asignar') AS cobrador,
                 COUNT(dp.id) AS total_pagos,
                 COALESCE(SUM(dp.monto), 0) AS total_cobrado
             FROM t_det_prestamo dp
             LEFT JOIN t_prestamo p ON dp.id_prestamo = p.id
             LEFT JOIN t_cobrador cb ON p.id_cobrador = cb.id
             WHERE dp.fecha_cobro >= %s AND dp.fecha_cobro <= %s
-            GROUP BY cb.nombre
+            GROUP BY cb.id, cb.nombre
             ORDER BY total_cobrado DESC
         """, (fecha_i, fecha_f), fetchall=True)
 

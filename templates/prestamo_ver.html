@@ -1,90 +1,145 @@
-{% extends "base.html" %}
-
+{% extends "base_pw.html" %}
+{% set page_title = "Detalle del préstamo" %}
 {% block title %}Detalle Préstamo - Pagadiario{% endblock %}
-
-{% block body %}
-
-{% include '_sidebar.html' %}<div class="main-content">
-    <div class="topbar">
-        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-eye"></i> Detalle del Préstamo #{{ prestamo.id }}</h4>
+{% macro cop(v) %}${{ "{:,.0f}".format(v or 0).replace(',', '.') }}{% endmacro %}
+{% block content %}
+{% set est = prestamo.estado_prestamo %}
+{% set pagadas = (prestamo.numero_cuotas or 0) - (prestamo.cuotas_debe or 0) %}
+{% set pct = ((pagadas * 100 / prestamo.numero_cuotas) if prestamo.numero_cuotas else 0)|round(0)|int %}
+<div class="card border-0 overflow-hidden mb-5" style="background:linear-gradient(160deg,#009ef7,#0062a3)">
+  <div class="card-body p-6 pb-15">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-4">
+      <div class="d-flex align-items-center">
+        <div class="symbol symbol-60px symbol-circle me-4 flex-shrink-0"><span class="symbol-label bg-white text-primary fs-1 fw-bold">{{ (prestamo.cliente or '?')[0]|upper }}</span></div>
+        <div>
+          <div class="text-white fs-3 fw-bold">{{ prestamo.cliente }}</div>
+          <div class="text-white opacity-75">DNI {{ prestamo.cliente_dni }} · {{ prestamo.cliente_telf }}</div>
+          <div class="text-white opacity-75">Cobrador: {{ prestamo.cobrador or 'Sin asignar' }}</div>
+        </div>
+      </div>
+      <div class="text-end">
+        <span class="badge fs-7 fw-bold mb-2 {% if est == 'Activo' %}badge-light-success{% elif est == 'Por Aprobar' %}badge-light-warning{% else %}badge-light{% endif %}">{{ est }}</span>
+        <div class="text-white opacity-75 fs-7">Préstamo #{{ prestamo.id }} · {{ prestamo.fecha_prestamo }}</div>
+      </div>
     </div>
-
-    <div class="p-4">
-        <div class="card-panel">
-            <h5><i class="fas fa-info-circle"></i> Información del Préstamo</h5>
-            <div class="row">
-                <div class="col-md-6">
-                    <p><strong>Cliente:</strong> {{ prestamo.cliente }} (DNI: {{ prestamo.cliente_dni }})</p>
-                    <p><strong>Teléfono:</strong> {{ prestamo.cliente_telf }}</p>
-                    <p><strong>Cobrador:</strong> {{ prestamo.cobrador or 'Sin asignar' }}</p>
-                    <p><strong>Estado:</strong> {{ prestamo.estado_prestamo }}</p>
-                </div>
-                <div class="col-md-6">
-                    <p><strong>Monto Prestado:</strong> {{ "%.2f"|format(prestamo.monto_prestado or 0) }}</p>
-                    <p><strong>Interés:</strong> {{ "%.2f"|format(prestamo.interes or 0) }}</p>
-                    <p><strong>Total a Pagar:</strong> {{ "%.2f"|format(prestamo.total_prestado or 0) }}</p>
-                    <p><strong>Total Debe:</strong> <span class="text-danger">{{ "%.2f"|format(prestamo.total_debe or 0) }}</span></p>
-                    <p><strong>Cuotas:</strong> {{ prestamo.numero_cuotas }} (Debe: {{ prestamo.cuotas_debe or 0 }})</p>
-                    <p><strong>Fecha Préstamo:</strong> {{ prestamo.fecha_prestamo }}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card-panel">
-            <h5><i class="fas fa-money-bill-wave"></i> Historial de Pagos</h5>
-            {% if pagos %}
-                <table class="table table-striped">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>#</th>
-                            <th>Cuota</th>
-                            <th>Tipo</th>
-                            <th>Monto</th>
-                            <th>Fecha Cobro</th>
-                            <th>Descripción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for p in pagos %}
-                            <tr>
-                                <td>{{ p.id }}</td>
-                                <td>{{ p.cuota }}</td>
-                                <td>{{ p.tipo_pago }}</td>
-                                <td>{{ "%.2f"|format(p.monto or 0) }}</td>
-                                <td>{{ p.fecha_cobro }}</td>
-                                <td>{{ p.descripcion }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p class="text-muted">No hay pagos registrados.</p>
-            {% endif %}
-        </div>
-
-        <div class="d-flex justify-content-between mt-3">
-    <a href="{{ url_for('prestamos') }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Volver a Préstamos
-    </a>
-<div>
-    {% if prestamo.estado_prestamo == 'Por Aprobar' %}
-        <a href="{{ url_for('prestamo_aprobar', id_prestamo=prestamo.id) }}" 
-           class="btn btn-success"
-           onclick="return confirm('¿Aprobar este préstamo? Se activará y comenzará a generar cuotas.');">
-            <i class="fas fa-check-circle"></i> Aprobar Préstamo
-        </a>
-    {% elif prestamo.estado_prestamo == 'Activo' %}
-        <a href="{{ url_for('prestamo_escanear', id_prestamo=prestamo.id) }}" 
-           class="btn btn-info">
-            <i class="fas fa-camera"></i> Escanear Comprobante
-        </a>
-        <a href="{{ url_for('prestamo_pago', id_prestamo=prestamo.id) }}" 
-           class="btn btn-primary">
-            <i class="fas fa-money-bill-wave"></i> Registrar Pago
-        </a>
-    {% endif %}
+    <div class="d-flex flex-wrap gap-3 mt-5">
+      {% if est == 'Por Aprobar' %}
+      <a href="{{ url_for('prestamo_aprobar', id_prestamo=prestamo.id) }}" class="btn btn-sm btn-light btn-active-light-primary fw-bold" onclick="return confirm('¿Aprobar este préstamo? Se activará y comenzará a generar cuotas.');">Aprobar préstamo</a>
+      {% elif est == 'Activo' %}
+      <a href="{{ url_for('prestamo_pago', id_prestamo=prestamo.id) }}" class="btn btn-sm btn-light btn-active-light-primary fw-bold">Registrar pago</a>
+      <a href="{{ url_for('prestamo_escanear', id_prestamo=prestamo.id) }}" class="btn btn-sm btn-transparent text-white border border-white">Escanear comprobante</a>
+      {% endif %}
+      <a href="{{ url_for('prestamos') }}" class="btn btn-sm btn-transparent text-white border border-white">Volver</a>
+    </div>
+  </div>
 </div>
+<div class="card shadow-sm mx-3 mb-5" style="margin-top:-60px;position:relative">
+  <div class="card-body p-5">
+    <div class="row g-3 mb-6">
+      <div class="col-6"><div class="rounded p-4 bg-light-primary"><div class="text-primary fs-8 fw-semibold">Monto prestado</div><div class="fs-4 fw-bolder text-gray-900 text-nowrap">{{ cop(prestamo.monto_prestado) }}</div></div></div>
+      <div class="col-6"><div class="rounded p-4 bg-light-warning"><div class="text-warning fs-8 fw-semibold">Interés</div><div class="fs-4 fw-bolder text-gray-900 text-nowrap">{{ cop(prestamo.interes) }}</div></div></div>
+      <div class="col-6"><div class="rounded p-4 bg-light-success"><div class="text-success fs-8 fw-semibold">Total a pagar</div><div class="fs-4 fw-bolder text-gray-900 text-nowrap">{{ cop(prestamo.total_prestado) }}</div></div></div>
+      <div class="col-6"><div class="rounded p-4 bg-light-danger"><div class="text-danger fs-8 fw-semibold">Total debe</div><div class="fs-4 fw-bolder text-danger text-nowrap">{{ cop(prestamo.total_debe) }}</div></div></div>
+    </div>
+    <div class="d-flex justify-content-between fw-semibold fs-7 mb-2"><span class="text-gray-700">Cuotas pagadas</span><span class="text-gray-900">{{ pagadas }} de {{ prestamo.numero_cuotas }} · {{ pct }}%</span></div>
+    <div class="progress h-8px bg-light-primary"><div class="progress-bar bg-primary" style="width:{{ pct }}%"></div></div>
+    <div class="text-muted fs-8 mt-2">Faltan {{ prestamo.cuotas_debe or 0 }} cuotas</div>
+  </div>
 </div>
+{% set rt = (prestamo.monto_prestado / prestamo.total_prestado) if prestamo.total_prestado else 1 %}
+{% set tipos = pagos|map(attribute='tipo_pago')|unique|list %}
+{% set meses = [] %}{% for p in pagos %}{% set m = (p.fecha_cobro|string)[:7] %}{% if m not in meses %}{% set _ = meses.append(m) %}{% endif %}{% endfor %}{% set meses = meses|sort %}
+<div class="card mb-10">
+  <div class="card-header border-0 pt-5">
+    <h3 class="card-title flex-column align-items-start"><span class="fw-bold fs-3">Historial de pagos</span><span class="text-muted fs-7 mt-1">{{ pagos|length }} movimientos</span></h3>
+  </div>
+  <div class="card-body pt-2">
+    <div class="d-flex gap-2 mb-4">
+      <input type="text" id="q_pagos" class="form-control form-control-solid" placeholder="Buscar pago, cuota o fecha...">
+      <button type="button" class="btn btn-light-primary flex-shrink-0" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Filtros</button>
+      <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true" id="menu_fp">
+        <div class="px-7 py-5">
+          <div class="mb-6"><label class="form-label fw-semibold">Tipo:</label><select id="fp_tipo" class="form-select form-select-solid"><option value="">Todos</option>{% for t in tipos %}<option value="{{ t }}">{{ t }}</option>{% endfor %}</select></div>
+          <div class="mb-6"><label class="form-label fw-semibold">Origen:</label><select id="fp_ori" class="form-select form-select-solid"><option value="">Todos</option><option value="Manual">Manual</option><option value="Comprobante">Comprobante</option></select></div>
+          <div class="mb-8"><label class="form-label fw-semibold">Mes:</label><select id="fp_mes" class="form-select form-select-solid"><option value="">Todos</option>{% for m in meses %}<option value="{{ m }}">{{ m }}</option>{% endfor %}</select></div>
+          <div class="d-flex justify-content-end"><button type="button" id="fp_reset" class="btn btn-sm btn-light btn-active-light-primary me-2">Restablecer</button><button type="button" id="fp_apply" class="btn btn-sm btn-primary">Aplicar</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="table-responsive" style="max-height:60vh;overflow:auto">
+      <table id="tabla_pagos" class="table fs-6 table-row-dashed table-row-gray-300 align-middle gs-0 gy-3" style="width:max-content;min-width:100%">
+        <thead><tr class="fw-bold text-muted text-nowrap"><th>#</th><th>Cuota</th><th>Fecha</th><th>Tipo</th><th>Capital</th><th>Interés</th><th>Monto</th><th>Descripción</th></tr></thead>
+        <tbody>
+        {% for p in pagos %}
+          {% set ori = 'Comprobante' if 'comprobante' in (p.descripcion or '')|lower else 'Manual' %}
+          <tr data-tipo="{{ p.tipo_pago }}" data-ori="{{ ori }}" data-mes="{{ (p.fecha_cobro|string)[:7] }}">
+            <td>{{ p.id }}</td>
+            <td><span class="badge badge-light-primary">{{ p.cuota }}</span></td>
+            <td class="text-nowrap">{{ p.fecha_cobro }}</td>
+            <td class="text-nowrap">{{ p.tipo_pago }}</td>
+            <td class="text-nowrap" data-order="{{ ((p.monto or 0) * rt)|round(0) }}">{{ cop((p.monto or 0) * rt) }}</td>
+            <td class="text-nowrap" data-order="{{ ((p.monto or 0) * (1 - rt))|round(0) }}">{{ cop((p.monto or 0) * (1 - rt)) }}</td>
+            <td class="fw-bolder text-success text-nowrap" data-order="{{ p.monto or 0 }}">{{ cop(p.monto) }}</td>
+            <td class="text-nowrap">{{ p.descripcion }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="text-muted fs-8 mt-3">Capital e interés se reparten en la proporción del préstamo.</div>
+  </div>
+</div>
+<div class="card mb-10">
+  <div class="card-header border-0 pt-5">
+    <h3 class="card-title flex-column align-items-start"><span class="fw-bold fs-3">Cronograma de cuotas</span><span class="text-muted fs-7 mt-1">{{ cronograma|length }} cuotas · una cada {{ dias_cuota }} día{{ 's' if dias_cuota != 1 }}</span></h3>
+  </div>
+  <div class="card-body pt-2">
+    <div class="d-flex flex-nowrap gap-2 mb-4" style="overflow-x:auto" id="pill_cron">
+      <button type="button" class="btn btn-sm btn-primary text-nowrap" data-est="">Todas</button>
+      <button type="button" class="btn btn-sm btn-light-success text-nowrap" data-est="Pagada">Pagadas</button>
+      <button type="button" class="btn btn-sm btn-light-warning text-nowrap" data-est="Pendiente">Pendientes</button>
+      <button type="button" class="btn btn-sm btn-light-danger text-nowrap" data-est="Vencida">Vencidas</button>
+    </div>
+    <div class="table-responsive" style="max-height:60vh;overflow:auto">
+      <table id="tabla_cron" class="table fs-6 table-row-dashed table-row-gray-300 align-middle gs-0 gy-3" style="width:max-content;min-width:100%">
+        <thead><tr class="fw-bold text-muted text-nowrap"><th>Cuota</th><th>Fecha</th><th>Valor</th><th>Capital</th><th>Interés</th><th>Saldo</th><th>Estado</th></tr></thead>
+        <tbody>
+        {% for c in cronograma %}
+          <tr>
+            <td><span class="badge badge-light-primary">{{ c.n }}</span></td>
+            <td class="text-nowrap">{{ c.fecha }}</td>
+            <td class="fw-bolder text-nowrap" data-order="{{ c.cuota|round(0) }}">{{ cop(c.cuota) }}</td>
+            <td class="text-nowrap" data-order="{{ c.capital|round(0) }}">{{ cop(c.capital) }}</td>
+            <td class="text-nowrap" data-order="{{ c.interes|round(0) }}">{{ cop(c.interes) }}</td>
+            <td class="text-nowrap" data-order="{{ c.saldo|round(0) }}">{{ cop(c.saldo) }}</td>
+            <td><span class="badge {% if c.estado == 'Pagada' %}badge-light-success{% elif c.estado == 'Vencida' %}badge-light-danger{% else %}badge-light-warning{% endif %}">{{ c.estado }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="text-muted fs-8 mt-3">Fechas calculadas desde la fecha del préstamo, sin saltar domingos ni festivos.</div>
+  </div>
+</div>
+{% endblock %}
 
+{% block head %}<link href="{{ url_for('static', filename='metronic/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet">{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='metronic/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+<script>
+(function(){
+const T=$('#tabla_pagos').DataTable({dom:'t<"d-flex justify-content-between align-items-center mt-3"ip>',pageLength:10,order:[[0,'desc']]});
+let F={tipo:'',ori:'',mes:''};$('#fp_tipo,#fp_ori,#fp_mes').select2({minimumResultsForSearch:Infinity,dropdownParent:$('#menu_fp')});
+$.fn.dataTable.ext.search.push((st,d,i)=>{if(st.nTable.id!=='tabla_pagos')return true;const g=st.aoData[i].nTr.dataset;return (!F.tipo||g.tipo===F.tipo)&&(!F.ori||g.ori===F.ori)&&(!F.mes||g.mes===F.mes)});
+$('#q_pagos').on('input',function(){T.search(this.value).draw()});
+$('#fp_apply').on('click',()=>{F={tipo:$('#fp_tipo').val(),ori:$('#fp_ori').val(),mes:$('#fp_mes').val()};$('#menu_fp').prev()[0].click();T.draw()});
+$('#fp_reset').on('click',()=>{F={tipo:'',ori:'',mes:''};$('#fp_tipo,#fp_ori,#fp_mes').val('').trigger('change');$('#menu_fp').prev()[0].click();T.draw()});
+})();
+</script>
+<script>
+(function(){
+const T2=$('#tabla_cron').DataTable({dom:'t<"d-flex justify-content-between align-items-center mt-3"ip>',pageLength:10,ordering:false,language:{paginate:{previous:'<',next:'>'},info:'Mostrando _START_ a _END_ de _TOTAL_',infoEmpty:'Sin cuotas',infoFiltered:''}});
+$('#pill_cron button').on('click',function(){const b=$(this);$('#pill_cron button').each(function(){const x=$(this);x.removeClass('btn-primary').addClass(x.data('est')==''?'btn-light-primary':x.attr('class').match(/btn-light-\w+/)[0])});b.removeClass(b.attr('class').match(/btn-light-\w+/)[0]).addClass('btn-primary');const v=b.data('est');T2.column(6).search(v?'^'+v+'$':'',true,false).draw()});
+})();
+</script>
 {% endblock %}

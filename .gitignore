@@ -44,3 +44,18 @@ test_db.py
 bd/conexión.py
 # Adminer (herramienta de BD, no es parte del proyecto)
 static/adminer-*.php
+# Seguridad: certificados y sesion del bot
+ssl_pw/
+bot_whatsapp/.wwebjs_auth/
+bot_whatsapp/.bot_token
+bot_whatsapp/qr.png
+bot_whatsapp/node_modules/
+
+# Secretos y basura
+.oauth_*
+*.tar.gz
+*.bak
+*.bak[0-9]*
+.gitignore.bak*
+.ai/
+

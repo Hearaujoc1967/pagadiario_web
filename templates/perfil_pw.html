@@ -1,0 +1,19 @@
+{% extends "base_pw.html" %}
+{% set page_title = "Mi perfil" %}
+{% block title %}Mi perfil - Pagadiario{% endblock %}
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="alert alert-{{ category }} p-4 mb-5">{{ message }}</div>{% endfor %}{% endwith %}
+<form method="POST" enctype="multipart/form-data">
+<div class="card border-0 overflow-hidden mb-5" style="background:linear-gradient(160deg,#6610f2,#3d0a91)"><div class="card-body p-5 text-center">
+<div class="symbol symbol-100px symbol-circle mb-3"><span class="symbol-label bg-white text-primary fw-bold fs-1">{{ (u.nombre or 'U')[:1]|upper }}</span><img id="av_img" src="/static/avatars/{{ u.id }}.jpg" alt="" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%"></div>
+<div class="text-white fs-3 fw-bold">{{ u.nombre }}</div><div class="text-white fs-7 opacity-75">{{ u.email or u.login }}</div>
+</div></div>
+<div class="card mb-5"><div class="card-header border-0 pt-5"><h3 class="card-title flex-column align-items-start"><span class="fw-bold fs-3">Datos personales</span><span class="text-muted fs-7 mt-1">Usuario: {{ u.login }} · Registro: {{ u.fecha_registro }}</span></h3></div>
+<div class="card-body pt-2"><div class="row g-5">
+<div class="col-md-6"><label class="form-label fw-semibold required">Nombre</label><input type="text" class="form-control form-control-solid" name="nombre" value="{{ u.nombre or '' }}" required></div>
+<div class="col-md-6"><label class="form-label fw-semibold">Correo</label><input type="email" class="form-control form-control-solid" name="email" value="{{ u.email or '' }}" placeholder="correo@ejemplo.com"></div>
+<div class="col-12"><label class="form-label fw-semibold">Foto de perfil (JPG o PNG, máx. 2 MB)</label><input type="file" class="form-control form-control-solid" name="foto" accept="image/jpeg,image/png"></div>
+</div></div></div>
+<div class="d-flex justify-content-end gap-3 mb-10"><a href="{{ url_for('cuenta_admin') }}" class="btn btn-light">Cambiar contraseña</a><button type="submit" class="btn btn-primary">Guardar perfil</button></div>
+</form>
+{% endblock %}

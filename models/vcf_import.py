@@ -3,6 +3,7 @@
 Módulo para importar contactos desde archivos .vcf (vCard 2.1 y 3.0)
 """
 import re
+import quopri
 from datetime import datetime
 
 
@@ -10,13 +11,13 @@ class VCFImportModel:
 
     @staticmethod
     def decodificar_quoted_printable(texto):
-        """Decodifica texto en formato QUOTED-PRINTABLE (ej: =4F=6D=61=72)."""
+        """Decodifica texto QUOTED-PRINTABLE (ej: =4F=6D=61=72) dejando intactos ; y espacios."""
         try:
-            # Convertir =XX a bytes y decodificar
-            bytes_texto = bytes.fromhex(
-                re.sub(r'=([0-9A-F]{2})', r'\1', texto)
-            )
-            return bytes_texto.decode('utf-8', errors='ignore')
+            crudo = quopri.decodestring(texto.encode('latin-1', errors='ignore'))
+            try:
+                return crudo.decode('utf-8')
+            except UnicodeDecodeError:
+                return crudo.decode('latin-1')
         except Exception:
             return texto
 

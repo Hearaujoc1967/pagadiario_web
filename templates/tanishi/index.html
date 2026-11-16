@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Tanishi Finance - portal profesional de préstamos y servicios financieros. Explora más de 25 categorías de crédito.">
+<meta name="theme-color" content="#07111f">
+<meta name="robots" content="index,follow">
+<title>Pagadiario Web | Préstamos y Servicios Financieros</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="{{ url_for('static', filename='tanishi/estilos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='tanishi/tanishi_glass.css') }}">
+</head>
+
+<body class="glass">
+<div class="noise"></div>
+<div class="alert" aria-label="Fraud and service alert">
+  <div class="alert-track">
+    ⚠️ ALERTA DE FRAUDE: Nunca comparta OTP, PIN o contraseña &nbsp; • &nbsp;
+    PERSONAL LOAN &nbsp; • &nbsp; BUSINESS LOAN &nbsp; • &nbsp; HOME LOAN &nbsp; • &nbsp;
+    CAR LOAN &nbsp; • &nbsp; LAP &nbsp; • &nbsp; CONSTRUCTION LOAN &nbsp; • &nbsp;
+    CREDIT CARD &nbsp; • &nbsp; DEMAT ACCOUNT &nbsp; • &nbsp; INSURANCE ASSISTANCE &nbsp; • &nbsp;
+    📞 FOUNDER: BHARAT SINGH +91 9027043168 &nbsp; • &nbsp;
+    WhatsApp +91 7599718020 &nbsp; • &nbsp; VERIFY ALL CHARGES BEFORE PAYMENT
+  </div>
+</div>
+<button class="theme-toggle glass-button" id="themeToggle" aria-label="Tema"></button>
+<button class="mobile-nav-toggle glass-button" id="navToggle" aria-label="Menu"><i class="fas fa-bars"></i></button>
+<div id="mobileNav" style="display:none"></div>
+<div class="container">
+<div class="glass-card profile-header">
+  <div class="avatar"><img src="{{ url_for('static', filename='img/icono.png') }}" alt="Pagadiario Web"></div>
+  <h1>Pagadiario Web</h1>
+  <h2>Préstamos y Servicios Financieros</h2>
+  <p>Su confianza, nuestra responsabilidad</p>
+  <div class="profile-links">
+    <button class="btn btn-gold" onclick="location.href='{{ url_for('login') }}'"><i class="fas fa-user-shield"></i> Admin Login</button>
+    <button class="btn btn-green" onclick="location.href='{{ url_for('login') }}'"><i class="fas fa-user-tie"></i> Staff Login</button>
+  </div>
+</div>
+<nav class="glass-nav" id="glassNav"><ul>
+  <li><a href="#home" class="active"><i class="fas fa-house"></i> Inicio</a></li>
+  <li><a href="#about"><i class="fas fa-circle-info"></i> Acerca de</a></li>
+  <li><a href="#services"><i class="fas fa-briefcase"></i> Servicios</a></li>
+  <li><a href="#process"><i class="fas fa-list-check"></i> Cómo Funciona</a></li>
+  <li><a href="#partners"><i class="fas fa-building-columns"></i> Aliados</a></li>
+  <li><a href="#faqs"><i class="fas fa-circle-question"></i> Preguntas</a></li>
+  <li><a href="#contact"><i class="fas fa-comments"></i> Contacto</a></li>
+</ul></nav>
+<main id="home">
+<section class="hero glass-card section-card">
+  <div>
+    <span class="badge"><i class="fas fa-shield-halved"></i> Asistencia financiera y soporte digital</span>
+    <h1>Soluciones financieras,<br><span>hechas simples.</span></h1>
+    <p>Explora opciones de préstamos y servicios financieros con Tanishi Finance. Elegibilidad, aprobación, tasa de interés y condiciones finales están sujetas a la evaluación del prestamista/aliado.<</p>
+    <div class="hero-buttons">
+      <button class="btn btn-gold" onclick="location.href='{{ url_for('login') }}'"><i class="fas fa-paper-plane"></i> Iniciar Solicitud</button>
+      <a class="btn btn-dark" href="tel:+919027043168"><i class="fas fa-phone"></i> Llamar Ahora</a>
+    </div>
+    <div class="trust-row">
+      <div><b>28+</b><span>Categorías de servicio</span></div>
+      <div><b>24×7</b><span>Acceso en línea</span></div>
+      <div><b>11K+</b><span>Clientes Satisfechos</span></div>
+    </div>
+  </div>
+  <div class="hero-card">
+    <h3><i class="fas fa-route" style="color:var(--gold)"></i> Simple application journey</h3>
+    <div class="step"><i class="fas fa-file-pen"></i><div><strong>1. Submit enquiry</strong><small>Comparte tus datos básicos en el formulario.</small></div></div>
+    <div class="step"><i class="fas fa-phone-volume"></i><div><strong>2. Verification</strong><small>Our team can contact you for required information.</small></div></div>
+    <div class="step"><i class="fas fa-building-columns"></i><div><strong>3. Lender assessment</strong><small>El prestamista evalúa elegibilidad y documentos.</small></div></div>
+    <div class="step"><i class="fas fa-circle-check"></i><div><strong>4. Decision</strong><small>Aprobación, tasa y condiciones según el prestamista.</small></div></div>
+  </div>
+
+</section>
+<section class="stats glass-card section-card">
+  <div class="stat-grid">
+    <div class="stat"><b>Personal</b><span>Asistencia con préstamos</span></div>
+    <div class="stat"><b>Negocios</b><span>Asistencia de fondos</span></div>
+    <div class="stat"><b>Hogar</b><span>Financiamiento de vivienda</span></div>
+    <div class="stat"><b>Tarjetas</b><span>Asistencia con tarjetas</span></div>
+  </div>
+</section>
+<section class="section glass-card section-card" id="services">
+  <div class="section-head"><div class="eyebrow">Nuestros Servicios</div><h2>Elige tu necesidad financiera</h2><p>Comienza con una consulta. El prestamista/aliado correspondiente determinará la elegibilidad y las condiciones finales.</p></div>
+  <div class="grid">
+    <article class="card"><div class="icon"><i class="fas fa-user-tie"></i></div><h3>Préstamo Personal</h3><p>Explora opciones de financiamiento personal para solicitantes elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-store"></i></div><h3>Préstamo Empresarial</h3><p>Asistencia de fondos para necesidades empresariales elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-building"></i></div><h3>Préstamo MiPyME</h3><p>Asistencia financiera para micro, pequeñas y medianas empresas elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-house"></i></div><h3>Préstamo Hipotecario</h3><p>Asistencia de financiamiento de vivienda sujeta a evaluación del prestamista.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-house-chimney"></i></div><h3>Préstamo Construcción</h3><p>Opciones de financiamiento para construcción residencial elegible.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-house"></i></div><h3>Préstamo Remodelación</h3><p>Asistencia financiera para mejoras y remodelación de vivienda elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-map"></i></div><h3>Préstamo Terreno</h3><p>Explora opciones de financiamiento para compra de terreno residencial.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-building-columns"></i></div><h3>Préstamo con Garantía</h3><p>Opciones de financiamiento con garantía sobre propiedad residencial o comercial elegible.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-arrow-right-arrow-left"></i></div><h3>Transferencia de Saldo</h3><p>Explora opciones de transferencia para préstamos existentes elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-plus-circle"></i></div><h3>Ampliación de Préstamo</h3><p>Opciones adicionales de financiamiento para clientes existentes elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-car"></i></div><h3>Préstamo Automotriz</h3><p>Explora opciones de financiamiento vehicular para clientes elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-motorcycle"></i></div><h3>Préstamo Motos</h3><p>Asistencia financiera para compra de motos nuevas o usadas elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-truck"></i></div><h3>Préstamo Vehículo Comercial</h3><p>Asistencia de financiamiento vehicular para necesidades comerciales elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-graduation-cap"></i></div><h3>Préstamo Educativo</h3><p>Opciones de financiamiento para estudios superiores elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-coins"></i></div><h3>Préstamo con Oro</h3><p>Opciones de financiamiento con garantía sobre oro, mediante prestamistas participantes.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-heart-pulse"></i></div><h3>Préstamo Médico</h3><p>Asistencia financiera para gastos médicos y de salud elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-ring"></i></div><h3>Préstamo Matrimonio</h3><p>Opciones de financiamiento personal para gastos planificados elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-gears"></i></div><h3>Préstamo Maquinaria</h3><p>Asistencia financiera para maquinaria y equipos empresariales elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-file-invoice-dollar"></i></div><h3>Capital de Trabajo</h3><p>Asistencia de capital de trabajo para necesidades de flujo de caja elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-chart-line"></i></div><h3>Préstamo Empresarial a Plazo</h3><p>Opciones estructuradas de financiamiento empresarial sujetas a evaluación del prestamista.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-rotate"></i></div><h3>Crédito / Sobregiro</h3><p>Consultas sobre capital de trabajo y flujo de caja elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-seedling"></i></div><h3>Préstamo Agrícola</h3><p>Asistencia financiera para necesidades agropecuarias elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-tractor"></i></div><h3>Préstamo Agropecuario</h3><p>Opciones de financiamiento para compra de maquinaria agrícola elegible.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-solar-panel"></i></div><h3>Préstamo Solar</h3><p>Asistencia financiera para proyectos solares residenciales o comerciales elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-file-invoice"></i></div><h3>Financiamiento de Facturas</h3><p>Opciones de financiamiento empresarial con facturas o cuentas por cobrar elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-credit-card"></i></div><h3>Préstamo Electrodomésticos</h3><p>Opciones de financiamiento para compras de electrodomésticos elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-chart-line"></i></div><h3>Cuenta de Valores</h3><p>Asistencia con consultas para apertura de cuentas digitales.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+    <article class="card"><div class="icon"><i class="fas fa-credit-card"></i></div><h3>Tarjeta de Crédito</h3><p>Explora opciones de tarjetas con bancos aliados elegibles.</p><button class="apply" onclick="location.href='{{ url_for('login') }}'">Solicitar</button></article>
+  </div>
+</section>
+<section class="section glass-card section-card" id="about">
+  <div class="section-head">
+    <div class="eyebrow">Acerca de Tanishi Finance</div>
+    <h2>Asistencia confiable, comunicación clara</h2>
+    <p>Ayudamos a los clientes a explorar opciones de servicios financieros y conectar su consulta con el proceso adecuado. La elegibilidad, aprobación, tasa, plazo y cargos finales los decide el prestamista/aliado correspondiente.</p>
+  </div>
+  <div class="about-grid">
+    <div class="about-card">
+      <h3><i class="fas fa-handshake" style="color:var(--gold)"></i> Nuestro Compromiso</h3>
+      <p>Nuestro enfoque es simple: recopilar la información básica correcta, comunicar el proceso con claridad y ayudar al cliente a entender el siguiente paso. Nunca compartas OTP, contraseñas o PIN confidenciales con nadie.</p>
+      <div class="quick-contact">
+        <a class="btn btn-gold" href="tel:+919027043168"><i class="fas fa-phone"></i> Llamar Ahora</a>
+        <a class="btn btn-green" href="https://wa.me/917599718020" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Consultar</a>
+      </div>
+    </div>
+    <div class="founder-card">
+      <div class="founder-label">Fundador</div>
+      <h3>Bharat Singh</h3>
+      <p style="color:#475569">Tanishi Finance</p>
+      <p style="margin-top:12px"><a class="btn btn-dark" href="tel:+919027043168"><i class="fas fa-phone"></i> Llamar Ahora</a></p>
+      <p style="margin-top:6px"><a class="btn btn-green" href="https://wa.me/917599718020" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Consultar</a></p>
+    </div>
+  </div>
+</section>
+<section class="section glass-card section-card" id="process">
+  <div class="section-head"><div class="eyebrow">Cómo Funciona</div><h2>Un proceso transparente de 4 pasos</h2><p>No se garantiza la aprobación en este sitio. La decisión final es del prestamista correspondiente.</p></div>
+  <div class="process">
+    <div class="p"><div class="p-num">PASO 01</div><h3>Solicitud</h3><p>Envía tus datos básicos en el formulario.</p></div>
+    <div class="p"><div class="p-num">PASO 02</div><h3>Contacto</h3><p>Nuestro equipo puede contactarte para verificación.</p></div>
+    <div class="p"><div class="p-num">PASO 03</div><h3>Evaluación</h3><p>El prestamista/aliado verifica elegibilidad y documentos.</p></div>
+    <div class="p"><div class="p-num">PASO 04</div><h3>Decisión</h3><p>Los términos y la aprobación dependen del prestamista.</p></div>
+  </div>
+</section>
+<section class="section glass-card section-card" id="partners">
+  <div class="section-head"><div class="eyebrow">Red Bancaria y Financiera</div><h2>Nuestra Red Bancaria y Financiera</h2><p>Las instituciones aliadas se muestran abajo con sus marcas. La disponibilidad depende del producto, perfil del cliente, ubicación y convenios activos.</p></div>
+  <div class="network-badge"><strong>278+</strong><span>Instituciones bancarias y financieras públicas y privadas* — la disponibilidad varía según el producto y el perfil.</span></div>
+  <div class="partners">
+    <div class="partner-card"><img class="partner-logo" src="https://commons.wikimedia.org/wiki/Special:Redirect/file/State_Bank_of_India.svg" alt="State Bank of India logo"><div class="partner-name">State Bank of India</div></div>
+    <div class="partner-card"><img class="partner-logo" src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Punjab_National_Bank_new_logo.svg" alt="Punjab National Bank logo"><div class="partner-name">Punjab National Bank</div></div>
+    <div class="partner-card"><img class="partner-logo" src="https://commons.wikimedia.org/wiki/Special:Redirect/file/HDFC_Bank_Logo.svg" alt="HDFC Bank logo"><div class="partner-name">HDFC Bank</div></div>
+    <div class="partner-card"><img class="partner-logo" src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_of_IDFC_First_Bank.svg" alt="IDFC FIRST Bank logo"><div class="partner-name">IDFC FIRST Bank</div></div>
+    <div class="partner-card"><img class="partner-logo" src="https://www.google.com/s2/favicons?domain=kotak.bank.in&sz=128" alt="Kotak Mahindra Bank logo"><div class="partner-name">Kotak Mahindra Bank</div></div>
+    <div class="partner-card"><img class="partner-logo" src="https://www.google.com/s2/favicons?domain=adityabirlacapital.com&sz=128" alt="Aditya Birla Capital logo"><div class="partner-name">Aditya Birla Capital</div></div>
+    <div class="partner-card"><img class="partner-logo" src="https://www.google.com/s2/favicons?domain=hindujahousingfinance.com&sz=128" alt="Hinduja Housing Finance logo"><div class="partner-name">Hinduja Housing Finance</div></div>
+    <div class="partner-card"><img class="partner-logo" src="https://www.google.com/s2/favicons?domain=truhomefinance.in&sz=128" alt="TruHome Finance logo"><div class="partner-name">TruHome Finance</div></div>
+  </div>
+  <p class="partner-note">*La cifra 278+ se muestra como referencia de red. Actualícela si cambia el número de aliados activos verificados. Los logos se muestran solo para identificación; su presencia no implica respaldo ni garantía de aprobación.</p>
+</section>
+<section class="section glass-card section-card" id="faqs">
+  <div class="section-head"><div class="eyebrow">Preguntas Frecuentes</div><h2>Preguntas comunes</h2></div>
+  <div class="faqs">
+    <div class="faq"><button class="faq-q">¿Está garantizada la aprobación? <i class="fas fa-plus"></i></button><div class="faq-a">No. La aprobación, monto, tasa de interés, plazo y otras condiciones dependen del prestamista correspondiente y sus políticas.</div></div>
+    <div class="faq"><button class="faq-q">¿Qué documentos se solicitan? <i class="fas fa-plus"></i></button><div class="faq-a">Los requisitos varían según el producto y el prestamista. Generalmente se solicitan documentos de identidad, comprobante de ingresos y extractos bancarios.</div></div>
+    <div class="faq"><button class="faq-q">¿Puedo solicitar con bajo puntaje? <i class="fas fa-plus"></i></button><div class="faq-a">Puedes enviar una consulta, pero la elegibilidad la determina el prestamista. Un bajo puntaje puede afectar la aprobación, monto o tasa.</div></div>
+    <div class="faq"><button class="faq-q">¿Hay algún costo? <i class="fas fa-plus"></i></button><div class="faq-a">Cualquier cargo del prestamista/aliado debe comunicarse antes del pago. No pagues a desconocidos ni compartas OTP/PIN/contraseñas.</div></div>
+    <div class="faq"><button class="faq-q">¿Cómo se usan mis datos? <i class="fas fa-plus"></i></button><div class="faq-a">Los datos enviados se usan para gestionar tu consulta y contactarte sobre el servicio seleccionado. Evita ingresar contraseñas, OTP o PIN bancarios.</div></div>
+  </div>
+</section>
+<section class="section glass-card section-card" id="contact">
+  <div class="section-head"><div class="eyebrow">Contacto</div><h2>Hable con Tanishi Finance</h2><p>Gerente: Bharat Rajput</p></div>
+  <div style="max-width:800px;margin:auto;background:#0d1b2a;border:1px solid #26364b;border-radius:20px;padding:28px;display:grid;gap:14px;text-align:center">
+    <div><a class="btn btn-gold" href="tel:+919027043168"><i class="fas fa-phone"></i> Llamar Ahora</a></div>
+    <div><a class="btn btn-green" href="https://wa.me/917599718020" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Consultar</a></div>
+    <div><button class="btn btn-gold" onclick="location.href='{{ url_for('login') }}'">Enviar Solicitud</button></div>
+  </div>
+</section>
+</main>
+<footer class="glass-card">
+  <div class="footer-inner">
+    <div><h4>Tanishi Finance</h4><p><strong>Founder: Bharat Singh</strong></p><p>Su confianza, nuestra responsabilidad.</p><p style="margin-top:8px">Portal de asistencia en servicios financieros. La aprobación y condiciones finales dependen del prestamista/aliado.</p></div>
+    
+<div class="customer-rating" aria-label="Calificación del Cliente">
+  <h4><i class="fas fa-star"></i> Customer Rating</h4>
+  <div class="rating-stars" role="group" aria-label="Califica a Tanishi Finance de 1 a 5 estrellas">
+    <button type="button" data-rating="1" aria-label="1 estrella">★</button>
+    <button type="button" data-rating="2" aria-label="2 estrellas">★</button>
+    <button type="button" data-rating="3" aria-label="3 estrellas">★</button>
+    <button type="button" data-rating="4" aria-label="4 estrellas">★</button>
+    <button type="button" data-rating="5" aria-label="5 estrellas">★</button>
+  </div>
+  <div class="rating-note" id="ratingNote">Califica tu experiencia</div>
+</div>
+
+<div><h4>Enlaces Rápidos</h4><ul><li><a href="#services">Servicios</a></li><li><a href="#process">Cómo Funciona</a></li><li><a href="#faqs">Preguntas Frecuentes</a></li></ul><div style="margin-top:14px;color:#94a3b8;font-size:13px;line-height:1.5"><i class="fas fa-location-dot"></i> C39, New Anand Vihar, Loni, Ghaziabad - 201102</div></div>
+    <div><h4>Seguridad</h4><ul><li>Nunca comparta OTP/PIN/contraseña</li><li>Verifique cargos antes de pagar</li><li>Use canales oficiales del prestamista</li></ul></div>
+  </div>
+  <div class="copyright">© <span id="year"></span> Tanishi Finance. All rights reserved.</div>
+</footer>
+</div>
+<a class="wa" href="https://wa.me/917599718020" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+
+<!-- Application Modal -->
+<div class="overlay" id="applyOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3>Iniciar Solicitud</h3><button class="close" onclick="cerrarSolicitud()">&times;</button></div>
+    <div class="modal-body">
+      <form id="applyForm">
+        <div class="form-grid">
+          <div class="field"><label>Nombre Completo *</label><input id="name" required maxlength="80" autocomplete="name"></div>
+          <div class="field"><label>Número de Teléfono *</label><input id="mobile" required maxlength="10" inputmode="numeric" placeholder="Teléfono (10 dígitos)"></div>
+          <div class="field"><label>Préstamo / Servicio *</label><select id="loanType" required><option value="">Seleccionar</option><option>Préstamo Personal</option><option>Préstamo Empresarial</option><option>Préstamo MiPyME</option><option>Préstamo Hipotecario</option><option>Préstamo Construcción</option><option>Préstamo Remodelación</option><option>Préstamo Terreno</option><option>Préstamo con Garantía</option><option>Transferencia de Saldo</option><option>Ampliación de Préstamo</option><option>Préstamo Automotriz</option><option>Préstamo Motos</option><option>Préstamo Vehículo Comercial</option><option>Préstamo Educativo</option><option>Préstamo con Oro</option><option>Préstamo Médico</option><option>Préstamo Matrimonio</option><option>Préstamo Maquinaria</option><option>Capital de Trabajo</option><option>Préstamo Empresarial a Plazo</option><option>Crédito / Sobregiro</option><option>Préstamo Agrícola</option><option>Préstamo Agropecuario</option><option>Préstamo Solar</option><option>Financiamiento de Facturas</option><option>Préstamo Electrodomésticos</option><option>Cuenta de Valores</option><option>Tarjeta de Crédito</option><option>Consulta General</option></select></div>
+          <div class="field"><label>Monto Requerido</label><input id="amount" inputmode="numeric" placeholder="Ej: 500000"></div>
+          <div class="field"><label>Ciudad</label><input id="city" maxlength="60"></div>
+          <div class="field"><label>Empleo / Negocio</label><select id="employment"><option value="">Seleccionar</option><option>Empleado</option><option>Independiente</option><option>Dueño de Negocio</option><option>Otro</option></select></div>
+          <div class="field full"><label>Mensaje / Requisito</label><textarea id="message" maxlength="500" placeholder="Cuéntanos brevemente tu necesidad"></textarea></div>
+        </div>
+        <div class="form-note">No ingrese OTP, PIN de cajero, PIN de UPI, contraseñas u otra información confidencial en este formulario.</div>
+        <button class="btn btn-gold" style="width:100%" type="submit">Enviar Solicitud</button>
+      </form>
+      <div class="success" id="successBox">
+        <i class="fas fa-circle-check"></i>
+        <h3>Solicitud Recibida Exitosamente</h3>
+        <p style="color:#475569;margin-top:8px">Gracias por elegir Tanishi Finance. Tu solicitud ha sido registrada exitosamente.</p>
+        <div class="lead-id" id="leadId"></div>
+        <p style="color:#64748b;font-size:13px">Guarda este ID de referencia. Nuestro equipo lo usará para identificar tu solicitud.</p>
+        <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:16px">
+          <a id="successWhatsApp" class="btn btn-green" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp Reference</a>
+          <button class="btn btn-dark" onclick="cerrarSolicitud()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Login/Dashboard Modal -->
+<div class="overlay" id="loginOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3 id="loginTitle">Login</h3><button class="close" onclick="cerrarLogin()">&times;</button></div>
+    <div id="loginArea" class="login-box">
+      <p>Frontend demo login. For a live production website, authentication must be connected to a secure server/database.</p>
+      <div class="field"><label>Username</label><input id="loginUser" autocomplete="username"></div>
+      <div class="field" style="margin-top:12px"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password"></div>
+      <button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="hacerLogin()">Login</button>
+      <div class="demo-note">Demo credentials: Admin / admin123 &nbsp; | &nbsp; Staff / staff123</div>
+      <div id="loginError" role="alert" aria-live="polite" style="color:#dc2626;font-size:12px;margin-top:10px"></div>
+    </div>
+    <div id="dashboard" class="dashboard">
+      <div class="dash-top"><div><strong id="dashRole"></strong><div style="color:#64748b;font-size:12px">Lead management dashboard</div></div><div style="display:flex;gap:8px"><button class="btn btn-white" onclick="exportarCSV()"><i class="fas fa-download"></i> Export</button><button class="btn btn-dark" onclick="cerrarSesion()">Logout</button></div></div>
+      <div class="dashboard-toolbar">
+        <input id="leadSearch" placeholder="Buscar nombre, teléfono o ID" oninput="renderDashboard()">
+        <select id="leadFilter" onchange="renderDashboard()"><option value="">Todos los estados</option><option>Nuevo</option><option>Contactado</option><option>Documentos</option><option>Ingreso</option><option>PD</option><option>Aprobado</option><option>Desembolsado</option><option>Rechazado</option><option>Cerrado</option></select>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><b id="kTotal">0</b><span>Total Leads</span></div>
+        <div class="kpi"><b id="kToday">0</b><span>Today</span></div>
+        <div class="kpi"><b id="kPending">0</b><span>Pending</span></div>
+        <div class="kpi"><b id="kDone">0</b><span>Cerrado</span></div>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Lead ID</th><th>Name</th><th>Mobile</th><th>Service</th><th>Fecha</th><th>Status</th></tr></thead><tbody id="leadTable"></tbody></table>
+      </div>
+      <div id="emptyDash" class="dash-empty">No leads found on this browser yet.</div>
+    </div>
+  </div>
+</div>
+
+
+<div class="overlay" id="detailsOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3>Lead Details</h3><button class="close" onclick="cerrarDetalle()">&times;</button></div>
+    <div class="modal-body">
+      <div id="leadDetails" class="details-box"></div>
+      <button class="btn btn-dark" onclick="cerrarDetalle()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="mobile-cta" aria-label="Quick actions">
+  <a class="m-call" href="tel:+919027043168"><i class="fas fa-phone"></i>Llamar</a>
+  <a class="m-wa" href="https://wa.me/917599718020" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i>Consultar</a>
+  <button class="m-apply" onclick="location.href='{{ url_for('login') }}'"><i class="fas fa-paper-plane"></i>Solicitar Ahora</button>
+</div>
+
+
+
+<script src="{{ url_for('static', filename='tanishi/tanishi.js') }}"></script>
+<script>window.addEventListener('pageshow',function(e){if(e.persisted){location.reload();}});</script>
+<script>
+(function(){
+var nav=document.getElementById('glassNav'),nt=document.getElementById('navToggle'),tt=document.getElementById('themeToggle');
+function setNav(o){nav.classList.toggle('mobile-active',o);nt.innerHTML=o?'<i class="fas fa-xmark"></i>':'<i class="fas fa-bars"></i>';}
+window.alternarNavMovil=function(){setNav(!nav.classList.contains('mobile-active'));};
+window.cerrarNavMovil=function(){setNav(false);};
+nt.addEventListener('click',window.alternarNavMovil);
+nav.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){setNav(false);});});
+function icon(){tt.innerHTML=document.body.classList.contains('dark-theme')?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>';}
+try{if(localStorage.getItem('tanishi_theme')==='dark')document.body.classList.add('dark-theme');}catch(e){}
+icon();
+tt.addEventListener('click',function(){document.body.classList.toggle('dark-theme');icon();try{localStorage.setItem('tanishi_theme',document.body.classList.contains('dark-theme')?'dark':'light');}catch(e){}});
+var ss=[].slice.call(document.querySelectorAll('main section[id]'));
+window.addEventListener('scroll',function(){var c='';ss.forEach(function(s){if(window.pageYOffset>=s.offsetTop-200)c=s.id;});nav.querySelectorAll('a').forEach(function(a){a.classList.toggle('active',a.getAttribute('href')==='#'+c);});});
+})();
+</script>
+</body>
+</html>

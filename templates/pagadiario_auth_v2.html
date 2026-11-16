@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PAGADIARIO WEB</title>
+<style>
+:root{
+  --ink:#16161f;--muted:#5d6070;--indigo:#6b6bf0;--indigo2:#8a8af7;--teal:#8ee6dc;--orange:#ff9f4a;
+  --err:#d23b4e;--ok:#1f9d6b;
+  --card:rgba(255,255,255,.22);--card-b:rgba(255,255,255,.75);
+  --gl1:rgba(255,255,255,.66);--gl2:rgba(255,255,255,.26);--gl-b:rgba(255,255,255,.85);
+  --sh:rgba(86,92,140,.34);
+}
+[data-theme="dark"]{
+  --ink:#f1f2f8;--muted:#aeb2c4;
+  --card:rgba(255,255,255,.07);--card-b:rgba(255,255,255,.28);
+  --gl1:rgba(255,255,255,.2);--gl2:rgba(255,255,255,.07);--gl-b:rgba(255,255,255,.35);
+  --sh:rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{
+  min-height:100dvh;display:grid;place-items:center;padding:14px;color:var(--ink);
+  font-family:"Plus Jakarta Sans","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  background:
+    radial-gradient(120% 70% at 105% -5%,#2e3b4e 0%,#5b6a7c 28%,transparent 62%),
+    radial-gradient(70% 45% at -10% 105%,#4a586a 0%,transparent 60%),
+    linear-gradient(165deg,#f4eae0 0%,#ece2d9 50%,#ddd6d0 100%);
+  background-attachment:fixed;position:relative;overflow-x:hidden;
+}
+[data-theme="dark"] body{background:
+    radial-gradient(120% 70% at 105% -5%,#3a4a63 0%,transparent 60%),
+    radial-gradient(70% 45% at -10% 105%,#2b3446 0%,transparent 60%),
+    linear-gradient(165deg,#1b202b,#10131b);background-attachment:fixed}
+/* sombras difusas del fondo original */
+body::before,body::after{content:"";position:fixed;pointer-events:none;filter:blur(34px);opacity:.5;z-index:0}
+body::before{width:55vmax;height:18vmax;right:-12vmax;top:22vh;background:#2f3b4d;transform:rotate(-24deg);border-radius:40%}
+body::after{width:30vmax;height:12vmax;left:-8vmax;bottom:6vh;background:#e9dfd5;transform:rotate(20deg);border-radius:50%;opacity:.7}
+
+/* TARJETA DE VIDRIO */
+.card{
+  position:relative;z-index:1;width:min(440px,100%);min-height:calc(100dvh - 28px);max-height:none;
+  padding:24px 20px 20px;border-radius:30px;display:flex;flex-direction:column;
+  background:linear-gradient(160deg,rgba(255,255,255,.34),var(--card) 45%,rgba(255,255,255,.12));
+  border:1.5px solid var(--card-b);
+  backdrop-filter:blur(26px) saturate(1.5);-webkit-backdrop-filter:blur(26px) saturate(1.5);
+  box-shadow:0 30px 60px -18px rgba(30,36,60,.5),
+    inset 0 1.5px 1px rgba(255,255,255,.95),inset 0 -2px 8px rgba(255,255,255,.25),
+    inset 6px 0 20px -10px rgba(170,150,255,.45),inset -6px 0 20px -10px rgba(120,230,220,.4);
+}
+.top{position:absolute;top:18px;right:18px;display:flex;gap:8px;z-index:2}
+.head{text-align:center;padding-top:6px}
+.logo{height:86px;display:grid;place-items:center}
+.logo img{height:86px;max-width:100%}
+h1{margin:6px 0 14px;font-size:1.28rem;letter-spacing:.22em;font-weight:800}
+
+/* elementos de vidrio */
+.glass{
+  background:linear-gradient(180deg,var(--gl1),var(--gl2));
+  border:1px solid var(--gl-b);
+  box-shadow:0 10px 22px -8px var(--sh),inset 0 1.5px 1px rgba(255,255,255,.9),inset 0 -8px 14px rgba(255,255,255,.12);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.round{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:1.05rem;cursor:pointer;color:var(--ink);padding:0}
+.social{display:flex;justify-content:center;gap:14px;margin-bottom:14px}
+.social a{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;text-decoration:none;color:var(--ink);font-weight:800;font-size:1.3rem}
+.g{background:conic-gradient(from -45deg,#ea4335 0 25%,#fbbc05 0 50%,#34a853 0 75%,#4285f4 0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.fb{width:26px;height:26px;border-radius:50%;background:#1877f2;color:#fff;font-size:1rem;display:grid;place-items:center}
+.info{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:10px 16px;border-radius:999px;font-size:.82rem;font-weight:600;margin-bottom:6px}
+.info span{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.info svg{width:17px;height:17px}
+
+form{display:none;flex-direction:column;gap:10px;flex:1;margin-top:8px}
+form.active{display:flex}
+.field{display:flex;align-items:center;gap:10px;min-height:52px;padding:0 10px 0 16px;border-radius:999px}
+.field:focus-within{outline:2px solid var(--indigo);outline-offset:2px}
+.field>svg{width:20px;height:20px;flex:none;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.field input,.field select{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:.98rem;color:var(--ink);padding:13px 0;outline:0}
+.field input::placeholder{color:var(--muted)}
+.field select{flex:none;width:92px;padding:13px 0;appearance:none;-webkit-appearance:none;cursor:pointer}
+.field select option{color:#16161f}
+.eye{background:none;border:0;padding:6px;cursor:pointer;display:grid;place-items:center}
+.eye svg{width:22px;height:22px;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:2px 2px 0;font-size:.88rem}
+.chk{display:flex;align-items:center;gap:8px;cursor:pointer}
+input[type=checkbox]{width:19px;height:19px;accent-color:var(--indigo)}
+.hint{font-size:.78rem;color:var(--muted);text-align:center;margin:-2px 0 0}
+.bars{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:-6px 14px 0}
+.bars i{height:4px;border-radius:4px;background:rgba(120,120,150,.3);transition:background .2s}
+
+.btn{height:54px;border-radius:999px;border:1px solid var(--gl-b);font:inherit;font-weight:700;font-size:1.05rem;color:#fff;cursor:pointer;letter-spacing:.02em;transition:transform .15s,opacity .2s}
+.btn:active{transform:scale(.97)}
+.primary{background:linear-gradient(180deg,var(--indigo2),var(--indigo));
+  box-shadow:0 16px 24px -10px rgba(98,98,234,.75),inset 0 1.5px 1px rgba(255,255,255,.55)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:saturate(.5)}
+.pillsm{border-radius:999px;padding:9px 16px;font:inherit;font-size:.82rem;font-weight:700;cursor:pointer;
+  background:linear-gradient(180deg,#b4f5ec,var(--teal));color:#0d3b36;border:1px solid var(--gl-b);
+  box-shadow:0 8px 16px -6px rgba(110,220,205,.8),inset 0 1px 1px rgba(255,255,255,.8);white-space:nowrap}
+.pillsm:disabled{opacity:.55}
+.msg{text-align:center;font-size:.85rem;min-height:1.2em;margin:2px 0 0}
+.ok{color:var(--ok)}.bad{color:var(--err)}
+.spacer{flex:1;min-height:6px}
+
+/* On/Off TOGGLE */
+.foot{display:flex;justify-content:flex-end;margin-top:10px}
+.tog{position:relative;width:156px;height:52px;border-radius:999px;border:1px solid var(--gl-b);cursor:pointer;padding:0;
+  display:flex;align-items:center;justify-content:flex-end;padding-right:20px;
+  font:inherit;font-weight:800;font-size:.9rem;letter-spacing:.04em;color:#fff;
+  background:linear-gradient(90deg,var(--indigo),#a9a9f8);
+  box-shadow:0 14px 22px -10px rgba(98,98,234,.8),inset 0 1.5px 1px rgba(255,255,255,.5);transition:background .3s}
+.tog .k{position:absolute;top:5px;left:5px;width:40px;height:40px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#ffc48a,var(--orange));
+  box-shadow:0 4px 10px rgba(0,0,0,.3),inset 0 1px 2px rgba(255,255,255,.7);transition:transform .28s cubic-bezier(.3,1.3,.5,1)}
+.tog.reg{background:linear-gradient(90deg,#b4f5ec,var(--teal));color:#0d3b36;justify-content:flex-start;padding:0 0 0 22px}
+.tog.reg .k{transform:translateX(104px)}
+:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:360px){.info{font-size:.72rem;padding:9px 10px}}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="top">
+    <button class="round glass" type="button" aria-label="Inicio">🔮</button>
+    <button class="round glass" type="button" id="theme" aria-label="Cambiar tema">🌙</button>
+  </div>
+
+  <header class="head">
+    <div class="logo">
+      <!-- Pon tu imagen en logo.png junto a este archivo; si no existe se muestra la esfera -->
+      <img src="logo.png" alt="" id="logoImg">
+    </div>
+    <h1>PAGADIARIO WEB</h1>
+  </header>
+
+  <div class="social">
+    <a class="glass" href="/auth/google" aria-label="Google"><span class="g">G</span></a>
+    <a class="glass" href="/auth/facebook" aria-label="Facebook"><span class="fb">f</span></a>
+    <a class="glass" href="/auth/github" aria-label="GitHub"><svg width="26" height="26" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+  </div>
+
+  <div class="info glass" aria-live="off">
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.2 7-11a7 7 0 0 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Bogotá</span>
+    <span id="date">—</span><span id="time">—</span><span id="temp">⛅ --°C</span>
+  </div>
+
+  <!-- LOGIN -->
+  <form id="fLogin" class="active" novalidate>
+    <div class="spacer" style="max-height:34px"></div>
+    <label class="field glass"><i data-i="user"></i><input id="lUser" placeholder="Usuario o Cédula" autocomplete="username"></label>
+    <label class="field glass"><i data-i="lock"></i><input id="lPass" type="password" placeholder="Contraseña" autocomplete="current-password">
+      <button type="button" class="eye" data-eye="lPass" aria-label="Mostrar contraseña"><i data-i="eyeoff"></i></button></label>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="lShow"> Mostrar contraseña</label>
+      <button type="button" class="pillsm" id="forgot">Forgot Password?</button>
+    </div>
+    <p class="msg" id="lMsg" role="status"></p>
+    <div class="spacer"></div>
+    <button class="btn primary" type="submit">Iniciar Sesión</button>
+  </form>
+
+  <!-- REGISTRO -->
+  <form id="fReg" novalidate>
+    <label class="field glass"><i data-i="id"></i><input id="rCed" inputmode="numeric" placeholder="Cédula" autocomplete="off"></label>
+    <label class="field glass"><i data-i="user"></i><input id="rName" placeholder="Nombre completo" autocomplete="name"></label>
+    <label class="field glass"><i data-i="phone"></i>
+      <select id="rCc" aria-label="País">
+        <option value="57">🇨🇴 +57</option><option value="52">🇲🇽 +52</option><option value="51">🇵🇪 +51</option>
+        <option value="593">🇪🇨 +593</option><option value="58">🇻🇪 +58</option><option value="1">🇺🇸 +1</option><option value="34">🇪🇸 +34</option>
+      </select>
+      <input id="rTel" type="tel" inputmode="numeric" maxlength="12" placeholder="Teléfono (WhatsApp)" autocomplete="tel-national"></label>
+    <div class="field glass"><i data-i="shield"></i><input id="rCode" inputmode="numeric" maxlength="6" placeholder="Código WhatsApp">
+      <button type="button" class="pillsm" id="send">Enviar código</button></div>
+    <label class="field glass"><i data-i="mail"></i><input id="rMail" type="email" placeholder="Email" autocomplete="email"></label>
+    <label class="field glass"><i data-i="lock"></i><input id="rPass" type="password" placeholder="Contraseña" autocomplete="new-password">
+      <button type="button" class="eye" data-eye="rPass" aria-label="Mostrar contraseña"><i data-i="eyeoff"></i></button></label>
+    <div class="bars" id="bars"><i></i><i></i><i></i><i></i></div>
+    <p class="hint">Usa 8 o más caracteres con letras, números y símbolos.</p>
+    <label class="field glass"><i data-i="lock"></i><input id="rPass2" type="password" placeholder="Confirmar contraseña" autocomplete="new-password">
+      <button type="button" class="eye" data-eye="rPass2" aria-label="Mostrar contraseña"><i data-i="eyeoff"></i></button></label>
+    <label class="chk"><input type="checkbox" id="rTerms"> Acepto los términos y condiciones</label>
+    <p class="msg" id="rMsg" role="status"></p>
+    <div class="spacer"></div>
+    <button class="btn primary" id="rBtn" type="submit" disabled>Registrarse</button>
+  </form>
+
+  <div class="foot">
+    <button class="tog" id="tog" type="button" role="switch" aria-checked="false" aria-label="Cambiar entre Login y Registro">
+      <span class="k"></span><span id="togLb">REGISTRO</span></button>
+  </div>
+</main>
+
+<script>
+/* ===== Configuración: ajusta a tu backend ===== */
+const API={login:"/api/login",register:"/api/register",sendCode:"/api/send-code"};
+const $=id=>document.getElementById(id);
+
+/* Iconos */
+const P={
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
+ lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+ eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+ eyeoff:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/>',
+ id:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.5-1.5 2-2 3-2s2.5.5 3 2M14 10h4M14 14h4"/>',
+ phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+ shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+ mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'};
+function ico(root){root.querySelectorAll("i[data-i]").forEach(el=>{
+  const s=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  s.setAttribute("viewBox","0 0 24 24");s.innerHTML=P[el.dataset.i];
+  s.dataset.i=el.dataset.i;el.replaceWith(s);});}
+ico(document);
+
+/* Logo de respaldo: esfera de vidrio */
+$("logoImg").onerror=function(){this.outerHTML='<svg width="86" height="86" viewBox="0 0 100 100"><defs><radialGradient id="o" cx="35%" cy="30%"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#9aa0ff"/><stop offset="1" stop-color="#2b2f9e"/></radialGradient></defs><circle cx="50" cy="50" r="38" fill="url(#o)"/><path d="M18 68c14 18 50 18 64 0" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="4" stroke-linecap="round"/></svg>'};
+
+/* Tema */
+$("theme").onclick=()=>{const d=document.documentElement.dataset.theme!=="dark";
+  document.documentElement.dataset.theme=d?"dark":"light";$("theme").textContent=d?"☀️":"🌙";};
+
+/* Fecha, hora y clima (Bogotá) */
+function tick(){const n=new Date(),o={timeZone:"America/Bogota"};
+  $("date").textContent=n.toLocaleDateString("es-CO",{...o,weekday:"short",day:"numeric",month:"short"}).replace(/\./g,"");
+  $("time").textContent=n.toLocaleTimeString("es-CO",{...o,hour:"2-digit",minute:"2-digit",hour12:false});}
+tick();setInterval(tick,15000);
+fetch("https://api.open-meteo.com/v1/forecast?latitude=4.711&longitude=-74.072&current_weather=true")
+ .then(r=>r.json()).then(j=>{$("temp").textContent="⛅ "+Math.round(j.current_weather.temperature)+"°C"}).catch(()=>{});
+
+/* Toggle Login <-> Registro */
+const tog=$("tog");
+function show(reg){
+  $("fLogin").classList.toggle("active",!reg);$("fReg").classList.toggle("active",reg);
+  tog.classList.toggle("reg",reg);tog.setAttribute("aria-checked",reg);
+  $("togLb").textContent=reg?"LOG IN":"REGISTRO";
+}
+tog.onclick=()=>show(!tog.classList.contains("reg"));
+
+/* Ojo de contraseña + checkbox */
+function eye(id,on){const inp=$(id);inp.type=on?"text":"password";
+  document.querySelectorAll('[data-eye="'+id+'"] svg').forEach(s=>{s.innerHTML=P[on?"eye":"eyeoff"]});}
+document.querySelectorAll("[data-eye]").forEach(b=>b.onclick=()=>eye(b.dataset.eye,$(b.dataset.eye).type==="password"));
+$("lShow").onchange=e=>eye("lPass",e.target.checked);
+
+function say(el,t,ok){el.textContent=t;el.className="msg "+(ok?"ok":"bad");}
+async function post(url,d){const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});
+  let j={};try{j=await r.json()}catch(_){} if(!r.ok)throw new Error(j.error||j.detail||"Error "+r.status);return j;}
+
+/* LOGIN */
+$("forgot").onclick=()=>say($("lMsg"),"Contacta al administrador para restablecer tu contraseña.",true);
+$("fLogin").onsubmit=async e=>{e.preventDefault();
+  const usuario=$("lUser").value.trim(),password=$("lPass").value;
+  if(!usuario||!password)return say($("lMsg"),"Ingresa usuario y contraseña.");
+  try{say($("lMsg"),"Ingresando…",true);const j=await post(API.login,{usuario,password});
+    say($("lMsg"),"Bienvenido.",true);if(j.redirect)location.href=j.redirect;}
+  catch(x){say($("lMsg"),x.message);}};
+
+/* REGISTRO: fuerza de contraseña y habilitar botón */
+const score=p=>[p.length>=8,/[a-z]/i.test(p),/\d/.test(p),/[^A-Za-z0-9]/.test(p)].filter(Boolean).length;
+function telOk(){const t=$("rTel").value.replace(/\D/g,"");return $("rCc").value==="57"?/^3\d{9}$/.test(t):/^\d{7,12}$/.test(t);}
+function validate(){
+  const p=$("rPass").value,s=score(p),col=["#d23b4e","#e8873a","#e6c13a","#1f9d6b"][Math.max(s-1,0)];
+  [...$("bars").children].forEach((b,i)=>b.style.background=i<s&&p?col:"");
+  const ok=/^\d{5,12}$/.test($("rCed").value.trim())&&$("rName").value.trim().length>=3&&telOk()
+    &&/^\d{6}$/.test($("rCode").value.trim())&&/^\S+@\S+\.\S+$/.test($("rMail").value.trim())
+    &&s===4&&p===$("rPass2").value&&$("rTerms").checked;
+  $("rBtn").disabled=!ok;return ok;}
+$("fReg").addEventListener("input",validate);$("fReg").addEventListener("change",validate);
+
+/* Enviar código (60 s) */
+let tm;$("send").onclick=async()=>{
+  if(!telOk())return say($("rMsg"),"Revisa el teléfono.");
+  const b=$("send");let s=60;b.disabled=true;
+  try{await post(API.sendCode,{telefono:"+"+$("rCc").value+$("rTel").value.replace(/\D/g,"")});
+    say($("rMsg"),"Código enviado a tu WhatsApp.",true);}
+  catch(x){say($("rMsg"),x.message);b.disabled=false;return;}
+  b.textContent=s+" s";clearInterval(tm);
+  tm=setInterval(()=>{b.textContent=--s+" s";if(s<=0){clearInterval(tm);b.disabled=false;b.textContent="Enviar código";}},1000);};
+
+$("fReg").onsubmit=async e=>{e.preventDefault();if(!validate())return;
+  const d={cedula:$("rCed").value.trim(),nombre:$("rName").value.trim(),
+    telefono:"+"+$("rCc").value+$("rTel").value.replace(/\D/g,""),codigo:$("rCode").value.trim(),
+    email:$("rMail").value.trim(),password:$("rPass").value};
+  try{say($("rMsg"),"Creando cuenta…",true);await post(API.register,d);
+    say($("rMsg"),"Cuenta creada. Ya puedes ingresar.",true);setTimeout(()=>show(false),1200);}
+  catch(x){say($("rMsg"),x.message);}};
+</script>
+</body>
+</html>

@@ -1,8 +1,9 @@
 # models/cliente.py
 from database import query
 
+
 class ClienteModel:
-    
+
     @staticmethod
     def listar_todos():
         """Devuelve todos los clientes con sus joins."""
@@ -24,13 +25,13 @@ class ClienteModel:
             LEFT JOIN t_cobrador ON t_cliente.id_cobrador = t_cobrador.id
             ORDER BY t_cliente.id DESC
         """, fetchall=True)
-    
+
     @staticmethod
     def contar():
         """Cuenta el total de clientes."""
         resultado = query("SELECT COUNT(*) AS total FROM t_cliente", fetchone=True)
         return resultado['total'] if resultado else 0
-    
+
     @staticmethod
     def obtener_por_id(id_cliente):
         """Obtiene un cliente por su ID."""
@@ -46,7 +47,7 @@ class ClienteModel:
             LEFT JOIN t_cobrador ON t_cliente.id_cobrador = t_cobrador.id
             WHERE t_cliente.id = %s
         """, (id_cliente,), fetchone=True)
-    
+
     @staticmethod
     def crear(datos):
         """Crea un nuevo cliente."""
@@ -72,7 +73,7 @@ class ClienteModel:
             datos.get('referencia_1', ''),
             datos.get('referencia_2', '')
         ), commit=True)
-    
+
     @staticmethod
     def actualizar(id_cliente, datos):
         """Actualiza un cliente existente."""
@@ -100,18 +101,63 @@ class ClienteModel:
             datos.get('referencia_2', ''),
             id_cliente
         ), commit=True)
-    
+
     @staticmethod
     def eliminar(id_cliente):
         """Elimina un cliente."""
         return query("DELETE FROM t_cliente WHERE id = %s", (id_cliente,), commit=True)
-    
+
     @staticmethod
     def listar_estados():
         """Lista los estados posibles."""
         return query("SELECT * FROM t_tipo_estado_cliente", fetchall=True)
-    
+
     @staticmethod
     def listar_reputaciones():
         """Lista las reputaciones posibles."""
         return query("SELECT * FROM t_reputacion", fetchall=True)
+
+    # ===== NUEVOS MÉTODOS (Día 3) =====
+
+    @staticmethod
+    def estadisticas():
+        """Resumen numérico del módulo Clientes."""
+        total = query("SELECT COUNT(*) AS t FROM t_cliente", fetchone=True)
+        activos = query("""
+            SELECT COUNT(*) AS t FROM t_cliente c
+            JOIN t_tipo_estado_cliente e ON c.id_tipo_estado_cliente = e.id
+            WHERE e.descripcion = 'Activo'
+        """, fetchone=True)
+        cobradores = query("""
+            SELECT COUNT(DISTINCT id_cobrador) AS t
+            FROM t_cliente WHERE id_cobrador IS NOT NULL
+        """, fetchone=True)
+        total_n = total['t'] if total else 0
+        activos_n = activos['t'] if activos else 0
+        return {
+            'total': total_n,
+            'activos': activos_n,
+            'inactivos': total_n - activos_n,
+            'cobradores': cobradores['t'] if cobradores else 0,
+        }
+
+    @staticmethod
+    def buscar(termino):
+        """Busca clientes por nombre, DNI, negocio o teléfono."""
+        patron = f"%{termino}%"
+        return query("""
+            SELECT 
+                t_cliente.*,
+                t_tipo_estado_cliente.descripcion AS estado,
+                t_reputacion.descripcion AS reputacion,
+                t_cobrador.nombre AS cobrador
+            FROM t_cliente
+            LEFT JOIN t_tipo_estado_cliente ON t_cliente.id_tipo_estado_cliente = t_tipo_estado_cliente.id
+            LEFT JOIN t_reputacion ON t_cliente.id_reputacion = t_reputacion.id
+            LEFT JOIN t_cobrador ON t_cliente.id_cobrador = t_cobrador.id
+            WHERE t_cliente.nombre LIKE %s
+               OR t_cliente.dni LIKE %s
+               OR t_cliente.nombre_negocio LIKE %s
+               OR t_cliente.telf LIKE %s
+            ORDER BY t_cliente.id DESC
+        """, (patron, patron, patron, patron), fetchall=True)

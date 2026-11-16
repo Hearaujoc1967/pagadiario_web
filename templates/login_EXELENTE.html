@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagadiario - Acceso y Registro</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at 50% 20%, #ff80b3 0%, transparent 35%), radial-gradient(circle at 80% 45%, #809fff 0%, transparent 40%), radial-gradient(circle at 20% 60%, #a64dff 0%, transparent 45%), radial-gradient(circle at 50% 85%, #ff9933 0%, transparent 45%), #f3f0f7;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.1);
+        }
+        body.dark-mode { --glass-bg: rgba(15, 23, 42, 0.45); --glass-border: rgba(255, 255, 255, 0.18); --input-bg: rgba(15, 23, 42, 0.4); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            width: 100vw; height: 100dvh; 
+            display: flex; justify-content: center; align-items: center;
+            background: var(--bg-gradient); background-attachment: fixed;
+            overflow: hidden; transition: background 0.6s ease;
+        }
+        body::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1.5px, transparent 1.5px); background-size: 25px 25px; z-index: -1; pointer-events: none; }
+        
+        .background-shape { position: absolute; border-radius: 50%; filter: blur(2px); z-index: 0; }
+        .shape-1 { width: 300px; height: 300px; background: linear-gradient(#1845ad, #23a2f6); top: -50px; left: -50px; animation: move-complex 4s ease-in-out infinite alternate; }
+        .shape-2 { width: 280px; height: 280px; background: linear-gradient(to right, #ff512f, #f09819); bottom: -60px; right: -30px; animation: move-complex-2 5s ease-in-out infinite alternate; }
+        .shape-3 { width: 150px; height: 150px; background: linear-gradient(#2ef0de, #23c6b6); top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.6; animation: pulse-rotate 3s infinite; }
+        
+        .glass-form {
+            position: relative; width: 92%; max-width: 420px; height: 95%; max-height: 850px;
+            background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border); border-top: 1px solid rgba(255, 255, 255, 0.4); border-left: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); border-radius: 24px; z-index: 10;
+            padding: 20px 25px; display: flex; flex-direction: column; 
+        }
+        
+        .header-logo { position: relative; margin-top: -40px; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 20; flex-shrink: 0; }
+        .header-logo img { height: 80px; width: auto; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.4)); }
+        .header-logo h1 { color: #000; font-size: 1.1rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-align: center; text-shadow: 1px 1px 3px rgba(255,255,255,0.8); }
+        body.dark-mode .header-logo h1 { color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+        
+        .top-controls { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; z-index: 99; }
+        .control-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--input-bg); border: 1.5px solid var(--glass-border); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .control-btn .sun-icon { display: none; }
+        body.dark-mode .control-btn .moon-icon { display: none; }
+        body.dark-mode .control-btn .sun-icon { display: block; }
+        
+        .social-row { display: flex; justify-content: center; gap: 15px; margin-top: 15px; margin-bottom: 15px; flex-shrink: 0; }
+        .glass-btn { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,0.5); box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; text-decoration: none;}
+        .glass-btn:hover { transform: scale(1.1); }
+        .glass-btn svg { width: 20px; height: 20px; }
+        
+        .widget-container {
+            display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.5); border: 1px solid var(--glass-border);
+            padding: 8px 15px; border-radius: 15px; font-size: 0.75rem; font-weight: 600; color: #0f172a;
+            margin-bottom: 15px; width: 100%; flex-shrink: 0; transition: all 0.3s;
+        }
+        .widget-item { display: flex; align-items: center; gap: 5px; }
+        /* Ocultar widget al girar */
+        .glass-form.reg .widget-container { max-height: 0; padding: 0; margin: 0; border: none; opacity: 0; overflow: hidden; }
+        
+        .flip-card { position: relative; width: 100%; flex: 1; perspective: 1000px; min-height: 0; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .view-wrapper { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; flex-direction: column; height: 100%; }
+        #login-wrapper { pointer-events: auto; }
+        #register-wrapper { transform: rotateY(180deg); pointer-events: none; }
+        
+        .form-section { display: none; width: 100%; height: 100%; flex-direction: column; }
+        .form-section.active { display: flex; }
+        
+        /* === LOGIN LAYOUT === */
+        #login-view form { position: relative;
+            position: relative; display: flex; flex-direction: column; height: 100%; width: 100%; }
+        #login_avatar_container { display: none; justify-content: center; margin-top: 10px; margin-bottom: 20px; }
+        #login_avatar_img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.9); box-shadow: 0 8px 20px rgba(0,0,0,0.3); background: #fff; }
+        .login-fields { margin-top: auto; margin-bottom: auto; display: flex; flex-direction: column; gap: 16px; }
+        
+        .input-group { width: 100%; position: relative; }
+        .input-group i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #fff; font-size: 1.1rem; z-index: 2; pointer-events: none; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        .glass-input { width: 100%; background: var(--input-bg); border: 1px solid var(--glass-border); padding: 14px 20px 14px 45px; border-radius: 35px; color: #fff; font-size: 15px; outline: none; transition: 0.3s; }
+        .glass-input::placeholder { color: rgba(255, 255, 255, 0.6); }
+        .glass-input:focus { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.8); box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
+        
+        .toggle-password { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); z-index: 10; cursor: pointer; color: #fff; font-size: 1.2rem; }
+        
+        .options-row { display: flex; justify-content: space-between; align-items: center; padding: 0 5px; margin-top: -5px; width: 100%; }
+        .remember-label { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #fff; cursor: pointer; }
+        .remember-label input { accent-color: #2563eb; width: 14px; height: 14px; cursor: pointer; }
+        .forgot-link { background: linear-gradient(180deg, #ff4b4b 0%, #c40000 100%); color: #ffffff; padding: 6px 14px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 3px 0 #7a0000, 0 5px 10px rgba(0,0,0,0.3); text-shadow: 0 1px 1px rgba(0,0,0,0.6); cursor: pointer; }
+        
+        /* === BOTONES Y SWITCH === */
+        .bottom-action-area { display: flex; flex-direction: column; gap: 8px; width: 100%; padding-bottom: 5px; margin-top: auto; }
+        .btn-submit { width: 100%; padding: 15px; background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 35px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 5px 0 #1e8449, 0 8px 15px rgba(0,0,0,0.3); text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        
+        .switch-wrapper { display: flex; justify-content: flex-end; width: 100%; }
+        .switch { position: relative; display: inline-block; width: 110px; height: 36px; flex-shrink: 0; cursor: pointer; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #e74c3c; border-radius: 36px; transition: .4s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); }
+        .switch-text { position: absolute; top: 50%; transform: translateY(-50%); color: white; font-size: 0.7rem; font-weight: 700; transition: .4s; z-index: 1; }
+        .slider:before { position: absolute; content: ""; height: 28px; width: 28px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: .4s; box-shadow: 0 2px 5px rgba(0,0,0,0.4); z-index: 2; }
+        input:checked + .slider { background-color: #2ecc71; }
+        input:checked + .slider:before { transform: translateX(74px); }
+        input:checked + .slider .switch-text { left: 12px; right: auto; }
+        input:not(:checked) + .slider .switch-text { left: auto; right: 12px; }
+
+        /* === REGISTRO (Interlineado Original) === */
+        #register-view form { display: flex; flex-direction: column; height: 100%; width: 100%; overflow-y: auto; scrollbar-width: none; padding-bottom: 4px; }
+        #register-view form::-webkit-scrollbar { display: none; }
+        #register-view .glass-input { padding: 6px 15px 6px 42px; font-size: 12px; }
+        #register-view .input-group i { font-size: 0.9rem; left: 18px; top: 16px; transform: translateY(-50%); }
+         /* Alineación exacta del ojito */
+        #register-view .input-group { margin-bottom: 12px; } /* Interlineado perfecto */
+        
+        .country-dropdown-wrapper { position: absolute; left: 42px; top: 16px; transform: translateY(-50%); z-index: 10; display: flex; align-items: center; }
+        .country-trigger { background: transparent; border: none; font-size: 0.75rem; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        .country-menu { position: absolute; top: 150%; left: -10px; width: 140px; max-height: 120px; overflow-y: auto; background: rgba(255, 255, 255, 0.95); border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); display: none; flex-direction: column; z-index: 100; padding: 4px 0; }
+        .country-menu.show { display: flex; }
+        .country-option { padding: 6px 10px; font-size: 0.65rem; color: #333; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .country-option:hover { background: rgba(0,0,0,0.05); }
+        #signup_telefono { padding-left: 95px !important; }
+
+        .btn-send-code { position: absolute; right: 6px; top: 16px; transform: translateY(-50%); background: linear-gradient(180deg, #ff4b4b 0%, #c40000 100%); color: white; border: 1px solid rgba(255,255,255,0.6); padding: 4px 10px; border-radius: 20px; font-size: 0.55rem; font-weight: 700; cursor: pointer; z-index: 5; height: fit-content; }
+
+        .password-meter { display: flex; gap: 4px; margin: 5px 10px 2px 15px; width: calc(100% - 25px); }
+        .password-meter .segment { flex: 1; height: 3px; background: rgba(0,0,0,0.2); border-radius: 2px; transition: background 0.3s; }
+        .password-meter .segment.active-weak { background: #e74c3c; }
+        .password-meter .segment.active-medium { background: #f1c40f; }
+        .password-meter .segment.active-strong { background: #2ecc71; }
+        .password-meter .segment.active-very { background: #27ae60; }
+        .password-hint { font-size: 0.6rem; color: rgba(255,255,255,0.8); margin: -2px 0 5px 15px; font-weight: 500; text-shadow: 0 1px 2px rgba(0,0,0,0.5); transition: color 0.3s; }
+        .password-hint.debil { color: #ff4b4b; }
+        .password-hint.fuerte { color: #2ecc71; }
+
+        .terms-checkbox { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; color: #fff; margin: 2px 0 8px 10px; cursor: pointer; font-weight: 600; }
+        .terms-checkbox input { accent-color: #2ecc71; width: 12px; height: 12px; cursor: pointer; }
+
+        .btn-submit-dark { width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.8); color: rgba(255, 255, 255, 0.5); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 35px; font-size: 16px; font-weight: 600; cursor: not-allowed; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+
+        /* Feedback flotante */
+        .campo-feedback { position: absolute !important; top: -10px !important; left: 20px !important; margin: 0 !important; height: auto !important; display: block !important; z-index: 10; background: #ef4444; color: #fff !important; border-radius: 6px; padding: 2px 8px; font-size: 0.65rem !important; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+        .campo-feedback.ok { background: #10b981; }
+        .campo-feedback:empty { display: none !important; }
+
+        /* Alertas flotantes Login */
+        
+        
+        .alert-flask {
+            position: absolute !important;
+            top: 10px !important; /* Lo bajamos un poco para que no tape el clima */
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            width: 90% !important;
+            max-width: 320px !important;
+            padding: 10px 15px !important;
+            border-radius: 35px !important;
+            font-size: 0.85rem !important;
+            font-weight: 700 !important;
+            text-align: center !important;
+            background: rgba(255, 255, 255, 0.95) !important; 
+            backdrop-filter: blur(10px) !important;
+            border: 2px solid #ef4444 !important;
+            color: #b91c1c !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important;
+            z-index: 999 !important;
+            transition: opacity 0.5s ease !important; /* Transición para el desvanecimiento */
+        }
+        
+        .alert-success {
+            border: 2px solid #10b981 !important;
+            color: #047857 !important;
+        }
+
+        
+        .alert-success {
+            border: 2px solid #10b981 !important;
+            color: #047857 !important;
+        }
+
+        
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.show { display: flex; }
+        .modal-content { width: 85%; max-width: 350px; padding: 25px; text-align: center; border-radius: 20px; background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 15px 35px rgba(0,0,0,0.4); color: #fff; }
+        .modal-content input { width: 100%; padding: 10px; border-radius: 20px; border: none; margin: 15px 0; background: rgba(255,255,255,0.2); color: #fff; }
+        
+        @keyframes move-complex { 0% { transform: translate(0, 0) rotate(0deg); } 50% { transform: translate(40px, 40px) rotate(45deg); } 100% { transform: translate(-20px, 60px) rotate(90deg); } }
+        @keyframes move-complex-2 { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-50px, -30px) scale(1.1); } 100% { transform: translate(20px, -50px) scale(0.9); } }
+        @keyframes pulse-rotate { 0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); } 50% { transform: translate(-50%, -50%) scale(1.2) rotate(180deg); } 100% { transform: translate(-50%, -50%) scale(1) rotate(360deg); } }
+    
+        /* Ojito del Login perfectamente alineado */
+        
+
+
+        #register-view .input-group {
+            margin-bottom: 12px;
+        }
+        /* Este estilo evita que el campo Contraseña empuje los segmentos hacia abajo */
+        #register-view .input-group.nopush {
+            margin-bottom: 0;
+        }
+
+</style>
+
+
+
+<style>
+    /* === 1. MENSAJES DEL REGISTRO: FUERA, ARRIBA A LA DERECHA === */
+    #register-view .input-group {
+        position: relative !important;
+    }
+    
+    #register-view .input-group .campo-feedback {
+        position: absolute !important; 
+        top: -12px !important;        /* Fuera del campo, hacia arriba */
+        right: 5px !important;        /* Pegado a la derecha */
+        left: auto !important;                  
+        bottom: auto !important;                
+        margin: 0 !important;
+        padding: 2px 8px !important;
+        font-size: 0.65rem !important;
+        font-weight: 700 !important;
+        background: #ef4444 !important;
+        color: #ffffff !important;
+        border-radius: 6px !important;
+        z-index: 99 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        white-space: nowrap !important;
+        pointer-events: none !important;
+        display: block !important;
+        transform: none !important; /* Quitamos el centrado */
+    }
+    
+    #register-view .input-group .campo-feedback:empty { display: none !important; }
+    #register-view .input-group .campo-feedback.ok { background: #10b981 !important; }
+
+    /* Devolvemos el padding normal al input (el mensaje ya no está adentro) */
+    #register-view .input-group .glass-input { padding-right: 15px !important; }
+
+    /* ==========================================
+       2. SIMETRÍA EXACTA DE LOS BOTONES
+       ========================================== */
+    /* Hacemos que el formulario de registro sea un Flexbox de altura completa */
+    #register-view form {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        width: 100% !important;
+        overflow: hidden !important; /* Evita que el form entero haga scroll */
+    }
+
+    /* Contenedor para los inputs con scroll interno */
+    #register-view .inputs-wrapper {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        scrollbar-width: none !important; /* Ocultar barra en Firefox */
+        padding-right: 5px !important; /* Un poco de aire para el scroll */
+    }
+    #register-view .inputs-wrapper::-webkit-scrollbar { display: none !important; }
+
+    /* El área de botones se ancla al fondo automáticamente */
+    #register-view .bottom-action-area {
+        margin-top: auto !important;
+        flex-shrink: 0 !important;
+        padding-bottom: 0 !important;
+    }
+</style>
+
+
+
+
+
+
+
+<style>
+    /* Ocultar placeholder nativo */
+    .glass-input::placeholder { color: transparent !important; }
+
+    /* === LOGIN === */
+    #login-view .floating-label {
+        position: absolute;
+        pointer-events: none;
+        left: 45px;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: all 0.2s ease;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 15px;
+        font-weight: 500;
+        z-index: 10;
+    }
+    #login-view .glass-input:focus ~ .floating-label,
+    #login-view .glass-input:not(:placeholder-shown) ~ .floating-label {
+        top: -10px;
+        left: 15px;
+        font-size: 0.55rem;
+        background: #2563eb;
+        color: #ffffff !important;
+        padding: 1px 6px;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+        z-index: 99;
+    }
+
+    /* === REGISTRO === */
+    #register-view .input-group {
+        margin-bottom: 16px !important; /* Damos más espacio para que la etiqueta quepa */
+    }
+    #register-view .floating-label {
+        position: absolute;
+        pointer-events: none;
+        left: 42px;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: all 0.2s ease;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 12px;
+        font-weight: 500;
+        z-index: 10;
+    }
+    #register-view .glass-input:focus ~ .floating-label,
+    #register-view .glass-input:not(:placeholder-shown) ~ .floating-label {
+        top: -8px; /* Altura exacta para no chocar con el de arriba */
+        left: 15px;
+        font-size: 0.45rem; /* Tamaño pequeño y delicado */
+        background: #2563eb;
+        color: #ffffff !important;
+        padding: 1px 6px;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+        z-index: 99;
+    }
+
+    /* Ajuste para el teléfono (que empieza más a la derecha) */
+    #register-view #signup_telefono ~ .floating-label {
+        left: 95px;
+    }
+    #register-view #signup_telefono:focus ~ .floating-label,
+    #register-view #signup_telefono:not(:placeholder-shown) ~ .floating-label {
+        left: 15px;
+    }
+</style>
+
+
+
+
+
+
+
+<style>
+    /* === AJUSTE MATEMÁTICO EXACTO DEL REGISTRO === */
+    
+    /* 1. Aire arriba para la Cédula (Baja el inicio del bloque) */
+    #register-view .inputs-wrapper {
+        padding-top: 15px !important; 
+        padding-bottom: 25px !important; /* Aire para que los botones no queden pegados */
+    }
+
+    /* 2. Subir 3 milímetros (aprox 12px) los Términos */
+    #register-view .terms-checkbox {
+        margin-top: -12px !important; 
+        margin-bottom: 15px !important; /* Separación para que no choque con el botón */
+        position: relative;
+        z-index: 5;
+    }
+</style>
+
+<style>
+    /* Eliminar el hueco entre la contraseña y la barra de segmentos */
+    #register-view .password-meter {
+        margin-top: -14px !important; /* Sube la barra para pegarla al input */
+    }
+</style>
+
+<style>
+    /* === 1. MENSAJE DEL LOGIN (ARRIBA A LA DERECHA) === */
+    #login-view .campo-feedback {
+        position: absolute !important;
+        top: -10px !important;
+        right: 15px !important;
+        left: auto !important;
+        margin: 0 !important;
+        padding: 2px 8px !important;
+        font-size: 0.65rem !important;
+        font-weight: 700 !important;
+        background: #10b981 !important;
+        color: #ffffff !important;
+        border-radius: 6px !important;
+        z-index: 99 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        white-space: nowrap !important;
+        pointer-events: none !important;
+        display: block !important;
+    }
+    #login-view .campo-feedback:empty { display: none !important; }
+
+    /* === 2. LOS TRES OJITOS PERFECTAMENTE CENTRADOS === */
+    
+
+    /* === 3. AJUSTE PARA QUE EL MENSAJE DEL REGISTRO NO TAPE EL OJITO === */
+    #register-view #signup_password ~ .campo-feedback,
+    #register-view #signup_password2 ~ .campo-feedback {
+        right: 45px !important; 
+    }
+</style>
+
+
+
+
+
+
+<style>
+    /* === OJITOS PERFECTAMENTE CENTRADOS (Estructura de depuración sin el color rojo) === */
+    .toggle-password {
+        position: absolute !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        right: 15px !important;
+        z-index: 9999 !important;
+        cursor: pointer !important;
+        
+        /* LA MAGIA: Caja fija que fuerza el centrado */
+        width: 35px !important;
+        height: 35px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        
+        /* Colores limpios */
+        background: transparent !important;
+        border: none !important;
+    }
+    
+    .toggle-password i {
+        color: #ffffff !important;
+        font-size: 1.1rem !important;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+    }
+
+    /* Asegurar que el contenedor padre sea el punto de referencia */
+    .input-group {
+        position: relative !important;
+    }
+</style>
+</head>
+</head>
+<body>
+
+    <div class="background-shape shape-1"></div>
+    <div class="background-shape shape-2"></div>
+    <div class="background-shape shape-3"></div>
+
+    <div class="glass-form">
+        
+       <div class="header-logo">
+            <img src="{{ url_for('static', filename='img/icono.png') }}" alt="Logo Pagadiario">
+            <h1>PAGADIARIO WEB</h1>
+        </div>
+
+        <div class="top-controls">
+            <div class="control-btn" id="bgToggle" title="Cambiar diseño de fondo">🔮</div>
+            <div class="control-btn" id="themeToggle" title="Cambiar modo claro/oscuro">
+                <span class="moon-icon">🌙</span>
+                <span class="sun-icon">☀️</span>
+            </div>
+        </div>
+
+        <div class="social-row">
+            <a href="/auth/google" class="glass-btn"><svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.65 0 3.13.57 4.3 1.69l3.21-3.21C17.55 1.73 14.97 1 12 1 7.35 1 3.39 3.66 1.48 7.56l3.87 3c.91-2.73 3.47-4.52 6.65-4.52z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.43h6.44c-.28 1.46-1.1 2.7-2.34 3.53l3.63 2.82c2.13-1.96 3.36-4.85 3.36-8.44z"/><path fill="#FBBC05" d="M5.35 14.56c-.23-.69-.36-1.43-.36-2.2s.13-1.51.36-2.2L1.48 7.16C.53 9.07 0 11.21 0 13.5s.53 4.43 1.48 6.34l3.87-3.28z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.63-2.82c-1.1.74-2.52 1.18-4.33 1.18-3.18 0-5.74-1.79-6.65-4.52l-3.87 3C3.39 20.34 7.35 23 12 23z"/></svg></a>
+            <a href="/auth/facebook" class="glass-btn"><svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+            <a href="/auth/github" class="glass-btn"><svg viewBox="0 0 24 24" fill="#24292F"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.05-.015-2.055-3.34.72-4.045-1.61-4.045-1.61-.546-1.393-1.333-1.764-1.333-1.764-1.09-.747.08-.732.08-.732 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.31 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+        </div>
+
+        <div class="widget-container" id="weather-widget">
+            <div class="widget-item"><i class="fa-solid fa-location-dot"></i> Bogotá</div>
+            <div class="widget-item"><span id="widget-date">--/--</span></div>
+            <div class="widget-item"><span id="widget-time">--:--</span></div>
+            <div class="widget-item"><i class="fa-solid fa-cloud-sun"></i> <span id="widget-temp">--°C</span></div>
+        </div>
+
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                
+                <div class="view-wrapper" id="login-wrapper">
+                    <div id="login-view" class="form-section active">
+                        <form method="POST" action="{{ url_for('login') }}" novalidate>
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                              {% if messages %}
+                                {% for category, message in messages %}
+                                  <div class="alert-flask alert-{{ 'danger' if category == 'danger' else 'success' }}">{{ message }}</div>
+                                {% endfor %}
+                              {% endif %}
+                            {% endwith %}
+
+                            <div id="login_avatar_container">
+                                <img id="login_avatar_img" src="" alt="Avatar">
+                            </div>
+
+                            <div class="login-fields">
+                                <div class="input-group">
+                                    <i class="ri-user-3-line"></i>
+                                    <input type="text" id="login_user" class="glass-input" name="txt_nombre_ususario" value="{{ request.form.get('txt_nombre_ususario', '') }}" placeholder=" " required><label class="floating-label" for="login_user">Usuario o Cédula</label>
+                                    <small class="campo-feedback" id="feedback-login-user"></small>
+                                </div>
+                                <div class="input-group">
+                                    <i class="ri-lock-2-line"></i>
+                                    <input type="password" id="login_password" name="txt_pass" class="glass-input" placeholder=" " required style="padding-right: 45px;"><label class="floating-label" for="login_password">Contraseña</label>
+                                    <span class="toggle-password" onclick="toggleEye('login_password', this)"><i class="ri-eye-off-line"></i></span>
+                                    <small class="campo-feedback" id="feedback-login-password"></small>
+                                </div>
+
+                                <div class="options-row">
+                                    <label class="remember-label">
+                                        <input type="checkbox" id="show-password-login"> Mostrar contraseña
+                                    </label>
+                                    <a href="#" class="forgot-link" id="btn-forgot-pwd">Forgot Password?</a>
+                                </div>
+                            </div>
+
+                            <div class="bottom-action-area">
+                                <button type="submit" class="btn-submit">Iniciar Sesión</button>
+                                <div class="switch-wrapper">
+                                    <label class="switch">
+                                        <input type="checkbox" id="switch-login" onchange="toggleForm(this)">
+                                        <span class="slider">
+                                            <span class="switch-text" id="text-login">REGISTRO</span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="view-wrapper" id="register-wrapper">
+                    <div id="register-view" class="form-section">
+                        <form id="form-signup" method="POST" action="{{ url_for('registro_view') }}">
+                            <div class="inputs-wrapper">
+                            <div class="input-group">
+                                <i class="ri-profile-line"></i>
+                                <input type="text" class="glass-input" id="signup_cedula" placeholder=" " required><label class="floating-label" for="signup_cedula">Cédula</label>
+                                <small class="campo-feedback" id="feedback-cedula"></small>
+                            </div>
+                            <div class="input-group">
+                                <i class="ri-user-line"></i>
+                                <input type="text" class="glass-input" id="signup_nombre" placeholder=" " required><label class="floating-label" for="signup_nombre">Nombre completo</label>
+                                <small class="campo-feedback" id="feedback-nombre"></small>
+                            </div>
+                            <div class="input-group">
+                                <i class="ri-phone-line"></i>
+                                <input type="hidden" id="signup_pais" value="57">
+                                <div class="country-dropdown-wrapper">
+                                    <button type="button" class="country-trigger" id="countryTrigger">
+                                        <span id="selectedFlag">🇨🇴</span> <span id="selectedCode">+57</span> <i class="fas fa-chevron-down" style="font-size:0.5rem; margin-left:2px; text-shadow:none;"></i>
+                                    </button>
+                                    <div class="country-menu" id="countryMenu">
+                                        <div class="country-option" data-val="57" data-flag="🇨🇴">🇨🇴 +57 Colombia</div>
+                                        <div class="country-option" data-val="58" data-flag="🇻🇪">🇻🇪 +58 Venezuela</div>
+                                        <div class="country-option" data-val="593" data-flag="🇪🇨">🇪🇨 +593 Ecuador</div>
+                                        <div class="country-option" data-val="51" data-flag="🇵🇪">🇵🇪 +51 Perú</div>
+                                        <div class="country-option" data-val="507" data-flag="🇵🇦">🇵🇦 +507 Panamá</div>
+                                        <div class="country-option" data-val="52" data-flag="🇲🇽">🇲🇽 +52 México</div>
+                                        <div class="country-option" data-val="54" data-flag="🇦🇷">🇦🇷 +54 Argentina</div>
+                                        <div class="country-option" data-val="56" data-flag="🇨🇱">🇨🇱 +56 Chile</div>
+                                        <div class="country-option" data-val="55" data-flag="🇧🇷">🇧🇷 +55 Brasil</div>
+                                        <div class="country-option" data-val="34" data-flag="🇪🇸">🇪🇸 +34 España</div>
+                                        <div class="country-option" data-val="1" data-flag="🇺🇸">🇺🇸 +1 EE.UU.</div>
+                                    </div>
+                                </div>
+                                <input type="tel" class="glass-input" id="signup_telefono" placeholder=" " required><label class="floating-label" for="signup_telefono">Teléfono (WhatsApp)</label>
+                                <small class="campo-feedback" id="feedback-telefono"></small>
+                            </div>
+                            <div class="input-group">
+                                <i class="ri-shield-check-line"></i>
+                                <input type="text" class="glass-input" id="signup_otp" placeholder=" " required style="padding-right: 115px;"><label class="floating-label" for="signup_otp">Código WhatsApp</label>
+                                <button type="button" id="btn-enviar-otp" class="btn-send-code">Enviar código</button>
+                                <small class="campo-feedback" id="feedback-otp"></small>
+                            </div>
+                            <div class="input-group">
+                                <i class="ri-mail-line"></i>
+                                <input type="email" class="glass-input" id="signup_email" placeholder=" " required><label class="floating-label" for="signup_email">Email</label>
+                                <small class="campo-feedback" id="feedback-email"></small>
+                            </div>
+                            <div class="input-group nopush">
+                                <i class="ri-lock-line"></i>
+                                <input type="password" id="signup_password" class="glass-input" placeholder=" " required style="padding-right: 35px;"><label class="floating-label" for="signup_password">Contraseña</label>
+                                <span class="toggle-password" onclick="toggleEye('signup_password', this)"><i class="ri-eye-off-line"></i></span>
+                                <small class="campo-feedback" id="feedback-password"></small>
+                            </div>
+                            <div class="password-meter" id="meter-password">
+                                <div class="segment"></div><div class="segment"></div><div class="segment"></div><div class="segment"></div>
+                            </div>
+                            <div class="password-hint" id="password-hint">Usa 8 o más caracteres con letras, números y símbolos.</div>
+
+                            <div class="input-group">
+                                <i class="ri-lock-line"></i>
+                                <input type="password" id="signup_password2" class="glass-input" placeholder=" " required style="padding-right: 35px;"><label class="floating-label" for="signup_password2">Confirmar contraseña</label>
+                                <span class="toggle-password" onclick="toggleEye('signup_password2', this)"><i class="ri-eye-off-line"></i></span>
+                                <small class="campo-feedback" id="feedback-password2"></small>
+                            </div>
+
+                            <label class="terms-checkbox">
+                                <input type="checkbox" id="confirm-terms" required> Acepto los términos y condiciones
+                            </label>
+                            </div> <!-- Cierre de inputs-wrapper -->
+
+                            <div class="bottom-action-area">
+                                <button type="submit" id="btn-registrar" class="btn-submit-dark" disabled>Registrarse</button>
+                                <div class="switch-wrapper">
+                                    <label class="switch">
+                                        <input type="checkbox" id="switch-signup" checked onchange="toggleForm(this)">
+                                        <span class="slider">
+                                            <span class="switch-text" id="text-signup">LOG IN</span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de recuperación -->
+    <div class="modal-overlay" id="forgotModal">
+        <div class="modal-content">
+            <h2>Recuperar Contraseña</h2>
+            <p style="font-size: 0.85rem; margin: 10px 0;">Ingresa tu correo o cédula para enviarte un enlace de recuperación.</p>
+            <input type="text" id="recover_input" placeholder="Email o Cédula">
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="btn-cancel-recover" style="flex: 1; padding: 10px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer;">Cancelar</button>
+                <button id="btn-send-recover" style="flex: 1; padding: 10px; border-radius: 20px; border: none; background: #2ecc71; color: #fff; font-weight: bold; cursor: pointer;">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    
+
+
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ==========================================
+    // 1. RELOJ Y CLIMA
+    // ==========================================
+    function updateClock() {
+        const now = new Date();
+        const optionsDate = { weekday: 'short', month: 'short', day: 'numeric' };
+        const dateEl = document.getElementById('widget-date');
+        const timeEl = document.getElementById('widget-time');
+        if(dateEl) dateEl.textContent = now.toLocaleDateString('es-ES', optionsDate);
+        if(timeEl) timeEl.textContent = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    async function fetchWeather() {
+        try {
+            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=4.6097&longitude=-74.0817&current_weather=true');
+            const data = await res.json();
+            const tempEl = document.getElementById('widget-temp');
+            if(tempEl) tempEl.textContent = Math.round(data.current_weather.temperature) + '°C';
+        } catch (error) {
+            const tempEl = document.getElementById('widget-temp');
+            if(tempEl) tempEl.textContent = '--°C';
+        }
+    }
+    fetchWeather();
+
+    // ==========================================
+    // 2. TEMA Y FONDO
+    // ==========================================
+    document.getElementById('themeToggle')?.addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+    });
+
+    const backgrounds = [
+        `radial-gradient(circle at 50% 20%, #ff80b3 0%, transparent 35%), radial-gradient(circle at 80% 45%, #809fff 0%, transparent 40%), radial-gradient(circle at 20% 60%, #a64dff 0%, transparent 45%), radial-gradient(circle at 50% 85%, #ff9933 0%, transparent 45%), #f3f0f7`,
+        `radial-gradient(circle at 20% 20%, #00f2fe 0%, transparent 40%), radial-gradient(circle at 80% 80%, #4facfe 0%, transparent 40%), radial-gradient(circle at 50% 50%, #f77062 0%, transparent 50%), #0f172a`,
+        `radial-gradient(circle at 10% 90%, #134e5e 0%, transparent 50%), radial-gradient(circle at 90% 10%, #71b280 0%, transparent 50%), radial-gradient(circle at 50% 50%, #2c3e50 0%, transparent 60%), #1a252c`,
+        `radial-gradient(circle at 30% 30%, #3b82f6 0%, transparent 45%), radial-gradient(circle at 70% 70%, #1d4ed8 0%, transparent 45%), #090d16`
+    ];
+    let bgIndex = 0;
+    document.getElementById('bgToggle')?.addEventListener('click', function() {
+        bgIndex = (bgIndex + 1) % backgrounds.length;
+        document.documentElement.style.setProperty('--bg-gradient', backgrounds[bgIndex]);
+        document.body.style.background = backgrounds[bgIndex];
+        document.body.style.backgroundAttachment = 'fixed';
+    });
+
+    // ==========================================
+    // 3. OJITOS (LOGIN Y REGISTRO)
+    // ==========================================
+    window.toggleEye = function (id, el) {
+        var input = document.getElementById(id); if (!input) return;
+        var show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        el.innerHTML = show ? '<i class="ri-eye-line"></i>' : '<i class="ri-eye-off-line"></i>';
+        
+        if(id === 'login_password') {
+            const check = document.getElementById('show-password-login');
+            if(check) check.checked = show;
+        }
+    };
+
+    document.getElementById('show-password-login')?.addEventListener('change', function() {
+        const passInput = document.getElementById('login_password');
+        passInput.type = this.checked ? 'text' : 'password';
+        const eyeIcon = passInput.nextElementSibling.querySelector('i');
+        if(this.checked) { eyeIcon.className = 'ri-eye-line'; } 
+        else { eyeIcon.className = 'ri-eye-off-line'; }
+    });
+
+    // ==========================================
+    // 4. GIRO DE TARJETA (CON TIMER)
+    // ==========================================
+    window.toggleForm = function(checkbox) {
+        const card = document.querySelector('.flip-card-inner');
+        const glassForm = document.querySelector('.glass-form');
+        
+        if (checkbox.id === 'switch-login' && checkbox.checked) {
+            document.getElementById('text-login').textContent = "ACCESO";
+            document.getElementById('switch-signup').checked = true;
+            document.getElementById('text-signup').textContent = "LOG IN";
+            
+            setTimeout(() => {
+                card.style.transform = "rotateY(180deg)";
+                document.getElementById('login-view').classList.remove('active');
+                document.getElementById('register-view').classList.add('active');
+                document.getElementById('login-wrapper').style.pointerEvents = 'none';
+                document.getElementById('register-wrapper').style.pointerEvents = 'auto';
+                glassForm.classList.add('reg');
+            }, 400);
+        } else if (checkbox.id === 'switch-signup' && !checkbox.checked) {
+            document.getElementById('text-signup').textContent = "REGISTRO";
+            document.getElementById('switch-login').checked = false;
+            document.getElementById('text-login').textContent = "REGISTRO";
+            
+            setTimeout(() => {
+                card.style.transform = "rotateY(0deg)";
+                document.getElementById('register-view').classList.remove('active');
+                document.getElementById('login-view').classList.add('active');
+                document.getElementById('register-wrapper').style.pointerEvents = 'none';
+                document.getElementById('login-wrapper').style.pointerEvents = 'auto';
+                glassForm.classList.remove('reg');
+            }, 400);
+        }
+    };
+
+    // ==========================================
+    // 5. VALIDACIÓN DE LOGIN (AVATAR Y DISPONIBILIDAD)
+    // ==========================================
+    var loginUser = document.getElementById('login_user');
+    var feedbackLogin = document.getElementById('feedback-login-user');
+    var avatarContainer = document.getElementById('login_avatar_container');
+    var avatarImg = document.getElementById('login_avatar_img');
+    var timerLogin;
+
+    if (loginUser) {
+        loginUser.addEventListener('input', function() {
+            clearTimeout(timerLogin);
+            var val = this.value.trim();
+            
+            if (val.length < 3) {
+                feedbackLogin.textContent = ''; feedbackLogin.className = 'campo-feedback';
+                avatarContainer.style.display = 'none';
+                return;
+            }
+            feedbackLogin.textContent = '...'; feedbackLogin.className = 'campo-feedback';
+
+            timerLogin = setTimeout(function() {
+                var fd = new FormData(); fd.append('valor', val);
+                fetch('/api/validar_login_usuario', { method: 'POST', body: fd })
+                    .then(r => r.json())
+                    .then(d => {
+                        if (d.existe) {
+                            feedbackLogin.textContent = '✓ Disponible'; feedbackLogin.className = 'campo-feedback ok';
+                            avatarImg.src = d.avatar; avatarContainer.style.display = 'flex';
+                        } else {
+                            feedbackLogin.textContent = '⚠ Usuario No existe'; feedbackLogin.className = 'campo-feedback';
+                            avatarContainer.style.display = 'none';
+                        }
+                    }).catch(() => {
+                        feedbackLogin.textContent = 'Error de conexión'; feedbackLogin.className = 'campo-feedback';
+                    });
+            }, 500);
+        });
+    }
+
+    // ==========================================
+    // 6. VALIDACIONES DEL REGISTRO
+    // ==========================================
+    function setFeedback(id, msg, tipo) {
+        var el = document.getElementById(id); if (!el) return;
+        el.textContent = msg || '';
+        el.className = 'campo-feedback' + (tipo === 'ok' ? ' ok' : '');
+    }
+
+    function validarCampo(campo, valor, feedbackId, callback) {
+        var fd = new FormData(); fd.append('campo', campo); fd.append('valor', valor);
+        fetch('/api/validar_campo', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(d => {
+                if (d.existe) { setFeedback(feedbackId, '⚠ Ya registrado', 'error'); callback(false); }
+                else { setFeedback(feedbackId, '✓ Disponible', 'ok'); callback(true); }
+            }).catch(() => { setFeedback(feedbackId, '⚠ Error de red', 'error'); callback(false); });
+    }
+
+    
+    // === ESTADO DEL BOTÓN REGISTRARSE ===
+    var estado = { 
+        cedula: false, nombre: false, telefono: false, email: false, 
+        password: false, password2: false, terms: false, otp: false 
+    };
+    var btn = document.getElementById('btn-registrar');
+    
+    function actualizarBoton() {
+        var ok = estado.cedula && estado.nombre && estado.telefono && estado.email && 
+                 estado.password && estado.password2 && estado.terms && estado.otp;
+        if (btn) btn.disabled = !ok;
+    }
+    
+    function setFeedback(id, msg, tipo) {
+        var el = document.getElementById(id); if (!el) return;
+        el.textContent = msg || '';
+        el.className = 'campo-feedback' + (tipo === 'ok' ? ' ok' : '');
+    }
+    
+    function validarCampo(campo, valor, feedbackId, callback) {
+        var fd = new FormData(); fd.append('campo', campo); fd.append('valor', valor);
+        fetch('/api/validar_campo', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(d => {
+                if (d.existe) { setFeedback(feedbackId, '⚠ Ya registrado', 'error'); callback(false); }
+                else { setFeedback(feedbackId, '✓ Disponible', 'ok'); callback(true); }
+            }).catch(() => { setFeedback(feedbackId, '⚠ Error de red', 'error'); callback(false); });
+    }
+
+    // Cédula
+    var cedula = document.getElementById('signup_cedula');
+    var timerCedula;
+    if (cedula) cedula.addEventListener('input', function() {
+        clearTimeout(timerCedula); var v = this.value.trim();
+        if (v.length < 5) { setFeedback('feedback-cedula', v ? '⚠ Cédula muy corta (mín. 5)' : '', v ? 'error' : ''); estado.cedula = false; actualizarBoton(); return; }
+        timerCedula = setTimeout(() => { validarCampo('cedula', v, 'feedback-cedula', (ok) => { estado.cedula = ok; actualizarBoton(); }); }, 500);
+    });
+
+    // Nombre
+    var nombre = document.getElementById('signup_nombre');
+    var timerNombre;
+    if (nombre) nombre.addEventListener('input', function() {
+        clearTimeout(timerNombre); var v = this.value.trim();
+        if (v.length < 5) { setFeedback('feedback-nombre', v ? '⚠ Nombre muy corto (mín. 5)' : '', v ? 'error' : ''); estado.nombre = false; actualizarBoton(); return; }
+        timerNombre = setTimeout(() => { validarCampo('nombre', v, 'feedback-nombre', (ok) => { estado.nombre = ok; actualizarBoton(); }); }, 500);
+    });
+
+    // Teléfono
+    var tel = document.getElementById('signup_telefono');
+    var timerTel;
+    if (tel) tel.addEventListener('input', function() {
+        clearTimeout(timerTel); var d_ = this.value.replace(/\D/g,'').replace(/^0+/,'');
+        var codigoPais = document.getElementById('signup_pais').value;
+        var v = d_.length < 7 ? '' : codigoPais + d_;
+        if (v.length < 7) { setFeedback('feedback-telefono', v ? '⚠ Teléfono incompleto' : '', v ? 'error' : ''); estado.telefono = false; actualizarBoton(); return; }
+        timerTel = setTimeout(() => { validarCampo('telefono', v, 'feedback-telefono', (ok) => { estado.telefono = ok; actualizarBoton(); }); }, 500);
+    });
+
+    // Email
+    var email = document.getElementById('signup_email');
+    var timerEmail;
+    if (email) email.addEventListener('input', function() {
+        clearTimeout(timerEmail); var v = this.value.trim();
+        var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!re.test(v)) { setFeedback('feedback-email', v ? '⚠ Inválido' : '', v ? 'error' : ''); estado.email = false; actualizarBoton(); return; }
+        timerEmail = setTimeout(() => { validarCampo('email', v, 'feedback-email', (ok) => { estado.email = ok; actualizarBoton(); }); }, 500);
+    });
+
+    // Contraseñas
+    var pass = document.getElementById('signup_password');
+    var pass2 = document.getElementById('signup_password2');
+    var meter = document.querySelectorAll('#meter-password .segment');
+    var hint = document.getElementById('password-hint');
+
+    if (pass) {
+        pass.addEventListener('input', function() {
+            var v = this.value; var fuerza = 0;
+            if (v.length >= 8) fuerza++;
+            if (/[A-Z]/.test(v) && /[a-z]/.test(v)) fuerza++;
+            if (/\d/.test(v)) fuerza++;
+            if (/[^A-Za-z0-9]/.test(v)) fuerza++;
+            
+            meter.forEach(function(seg, i) {
+                seg.className = 'segment';
+                if (i < fuerza) {
+                    if (fuerza === 1) seg.classList.add('active-weak');
+                    else if (fuerza === 2) seg.classList.add('active-medium');
+                    else if (fuerza === 3) seg.classList.add('active-strong');
+                    else seg.classList.add('active-very');
+                }
+            });
+
+            if (hint) {
+                hint.classList.remove('fuerte', 'debil');
+                if (v.length === 0) hint.textContent = 'Usa 8 o más caracteres con letras, números y símbolos.';
+                else if (fuerza === 1) { hint.textContent = '⚠ Contraseña débil. Agrega mayúsculas y números.'; hint.classList.add('debil'); }
+                else if (fuerza === 2) hint.textContent = 'Aceptable. Agrega números o símbolos para mejorar.';
+                else if (fuerza === 3) { hint.textContent = '✓ Contraseña fuerte.'; hint.classList.add('fuerte'); }
+                else if (fuerza === 4) { hint.textContent = '✓ Contraseña muy fuerte.'; hint.classList.add('fuerte'); }
+            }
+
+            if (v.length === 0) setFeedback('feedback-password', '', '');
+            else if (v.length < 8) setFeedback('feedback-password', '⚠ Muy corta', 'error');
+            else if (fuerza === 1) setFeedback('feedback-password', '⚠ Débil', 'error');
+            else setFeedback('feedback-password', '✓ Válida', 'ok');
+
+            
+    estado.password = v.length >= 8;
+    if (pass2.value) pass2.dispatchEvent(new Event('input'));
+    actualizarBoton();
+    
+        });
+    }
+
+    if (pass2) {
+        pass2.addEventListener('input', function() {
+            if (!pass.value) { setFeedback('feedback-password2', '', ''); estado.password2 = false; actualizarBoton(); return; }
+            if (pass.value === this.value) { setFeedback('feedback-password2', '✓ Coinciden', 'ok'); estado.password2 = true; }
+            else { setFeedback('feedback-password2', '⚠ No coinciden', 'error'); estado.password2 = false; }
+            actualizarBoton();
+        });
+    }
+
+    // Selector de país
+    var trigger = document.getElementById('countryTrigger');
+    var menu = document.getElementById('countryMenu');
+    var hiddenVal = document.getElementById('signup_pais');
+    var flag = document.getElementById('selectedFlag');
+    var code = document.getElementById('selectedCode');
+    if (trigger && menu) {
+        trigger.addEventListener('click', function(e) { e.stopPropagation(); menu.classList.toggle('show'); });
+        document.querySelectorAll('.country-option').forEach(opt => {
+            opt.addEventListener('click', function(e) {
+                e.stopPropagation();
+                hiddenVal.value = this.getAttribute('data-val');
+                flag.textContent = this.getAttribute('data-flag');
+                code.textContent = '+' + hiddenVal.value;
+                menu.classList.remove('show');
+            });
+        });
+        document.addEventListener('click', () => { menu.classList.remove('show'); });
+    }
+
+    
+    var terms = document.getElementById('confirm-terms');
+    if (terms) terms.addEventListener('change', function() {
+        estado.terms = this.checked;
+        actualizarBoton();
+    });
+    actualizarBoton(); // Llama al inicio para que esté deshabilitado
+
+
+    // Validar que el OTP tenga algo escrito para activar el botón
+    var otpInput = document.getElementById('signup_otp');
+    if (otpInput) {
+        otpInput.addEventListener('input', function() {
+            estado.otp = this.value.trim().length >= 4; // Asumimos que el código tiene al menos 4 dígitos
+            actualizarBoton();
+        });
+    }
+
+    // OTP y Submit
+
+    document.getElementById('btn-enviar-otp')?.addEventListener('click', function() {
+        var b = this, ced = document.getElementById('signup_cedula').value.trim();
+        var n = (document.getElementById('signup_telefono').value || '').replace(/\D/g, '').replace(/^0+/, '');
+        var codigoPais = document.getElementById('signup_pais').value;
+        var num = n ? codigoPais + n : '';
+        if (!ced || num.length < 9) { setFeedback('feedback-otp', 'Falta cédula o teléfono', 'error'); return; }
+        b.disabled = true; var fd = new FormData(); fd.append('dni', ced); fd.append('canal', 'whatsapp'); fd.append('contacto', num);
+        fetch('/api/enviar_otp', { method: 'POST', body: fd }).then(r => r.json()).then(d => {
+            if (d.success) { setFeedback('feedback-otp', '✓ Enviado', 'ok'); setTimeout(() => b.disabled = false, 45000); }
+            else { setFeedback('feedback-otp', d.error || 'Error', 'error'); b.disabled = false; }
+        }).catch(() => { setFeedback('feedback-otp', 'Error de red', 'error'); b.disabled = false; });
+    });
+
+    document.getElementById('form-signup')?.addEventListener('submit', function(e) {
+        e.preventDefault(); var btn = document.getElementById('btn-registrar'); btn.disabled = true;
+        var fd = new FormData();
+        fd.append('dni', document.getElementById('signup_cedula').value.trim());
+        fd.append('nombre', document.getElementById('signup_nombre').value.trim());
+        fd.append('telefono', (document.getElementById('signup_pais').value + document.getElementById('signup_telefono').value.replace(/\D/g, '')));
+        fd.append('email', document.getElementById('signup_email').value.trim());
+        fd.append('password', document.getElementById('signup_password').value);
+        fd.append('password2', document.getElementById('signup_password2').value);
+        fd.append('codigo_otp', document.getElementById('signup_otp').value.trim());
+        
+        fetch('/api/registro_cliente', { method: 'POST', body: fd }).then(r => r.json()).then(d => {
+            if (d.success) { alert('Registro exitoso.'); document.getElementById('switch-signup').checked = false; toggleForm(document.getElementById('switch-signup')); }
+            else { setFeedback('feedback-otp', d.error || 'No se pudo registrar', 'error'); btn.disabled = false; }
+        }).catch(() => { setFeedback('feedback-otp', 'Error de red', 'error'); btn.disabled = false; });
+    });
+
+    // Forgot Password Modal
+    const forgotModal = document.getElementById('forgotModal');
+    document.getElementById('btn-forgot-pwd')?.addEventListener('click', function(e) {
+        e.preventDefault(); forgotModal.classList.add('show');
+    });
+    document.getElementById('btn-cancel-recover')?.addEventListener('click', function() {
+        forgotModal.classList.remove('show');
+    });
+});
+
+/* Campos vacios: login y registro */
+(function () {
+  var OBLIG = 'Campo obligatorio';
+  function fb(id, msg) { var e = document.getElementById(id); if (e) { e.textContent = msg || ''; e.className = 'campo-feedback'; } }
+  var lu = document.getElementById('login_user'), lp = document.getElementById('login_password');
+  if (lu && lp && lp.form) {
+    lp.form.addEventListener('submit', function (e) {
+      var u = lu.value.trim(), p = lp.value;
+      if (u && p) return;
+      e.preventDefault();
+      if (!u) fb('feedback-login-user', '⚠ Escribe tu usuario o cédula');
+      if (!p) fb('feedback-login-password', '⚠ Escribe tu contraseña');
+      (u ? lp : lu).focus();
+    });
+    lp.addEventListener('input', function () { fb('feedback-login-password'); });
+  }
+  [['cedula', 'signup_cedula'], ['nombre', 'signup_nombre'], ['telefono', 'signup_telefono'], ['otp', 'signup_otp'], ['email', 'signup_email'], ['password', 'signup_password'], ['password2', 'signup_password2']].forEach(function (c) {
+    var inp = document.getElementById(c[1]); if (!inp) return;
+    inp.addEventListener('blur', function (e) {
+      var g = inp.closest('.input-group');
+      if (inp.value.trim() || (g && e.relatedTarget && g.contains(e.relatedTarget))) return;
+      fb('feedback-' + c[0], OBLIG);
+    });
+    inp.addEventListener('input', function () {
+      var f = document.getElementById('feedback-' + c[0]);
+      if (f && f.textContent === OBLIG) fb('feedback-' + c[0]);
+    });
+  });
+})();
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var alerts = document.querySelectorAll('.alert-flask');
+    if (alerts.length > 0) {
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                alert.style.opacity = '0'; // Desvanecer
+                setTimeout(function() { 
+                    alert.remove(); // Eliminar del DOM
+                }, 500); // Esperar a que termine la transición
+            }, 3000); // 3 segundos antes de desaparecer
+        });
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // === LÓGICA DEL MODAL RECUPERAR CONTRASEÑA ===
+    var btnSend = document.getElementById('btn-send-recover');
+    var recoverInput = document.getElementById('recover_input');
+    var forgotModal = document.getElementById('forgotModal');
+
+    if (btnSend) {
+        btnSend.addEventListener('click', function() {
+            var val = recoverInput.value.trim();
+            if (!val) {
+                alert("Por favor ingresa tu correo o cédula.");
+                return;
+            }
+
+            var originalText = this.textContent;
+            this.textContent = 'Enviando...';
+            this.disabled = true;
+
+            var fd = new FormData();
+            fd.append('dato', val);
+
+            fetch('/api/recuperar_password', {
+                method: 'POST',
+                body: fd
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.success) {
+                    alert("✅ " + d.message + "\nRevisa tu bandeja de entrada o Spam.");
+                    forgotModal.classList.remove('show');
+                    recoverInput.value = '';
+                } else {
+                    alert("❌ Error: " + d.message);
+                }
+            })
+            .catch(function() {
+                alert("❌ Error de conexión con el servidor.");
+            })
+            .finally(function() {
+                btnSend.textContent = originalText;
+                btnSend.disabled = false;
+            });
+        });
+    }
+
+    // Cerrar modal al hacer clic fuera de él
+    if (forgotModal) {
+        forgotModal.addEventListener('click', function(e) {
+            if (e.target === forgotModal) {
+                forgotModal.classList.remove('show');
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>

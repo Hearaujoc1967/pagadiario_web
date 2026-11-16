@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagadiario - Registro Solución Perfecta</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: fixed;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      max-width: 480px;
+      background-image: url("{{ url_for('static', filename='2986998N.png') }}");
+      background-size: 100% auto;
+      background-position: center top;
+      background-repeat: no-repeat;
+      overflow: hidden;
+      transition: filter 0.4s ease;
+    }
+
+    /* Caja de mensajes interactivos */
+    .alert-message {
+      position: absolute;
+      top: 15%;
+      left: 10%;
+      right: 10%;
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 600;
+      display: none;
+      z-index: 25;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .alert-success { background: rgba(34, 197, 94, 0.9); color: #fff; }
+    .alert-error { background: rgba(239, 68, 68, 0.9); color: #fff; }
+
+    /* Título del proyecto */
+    .project-title {
+      position: absolute;
+      top: 16.5%;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      color: #1e293b;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8), 0 -1px 1px rgba(0,0,0,0.1);
+      z-index: 20;
+    }
+
+    /* Redes sociales */
+    .social-row {
+      position: absolute;
+      top: 21.5%;
+      left: 32%;
+      right: 32%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+    }
+
+    .glass-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease;
+      cursor: pointer;
+    }
+    .glass-btn:hover {
+      transform: scale(1.1);
+    }
+
+    /* Formulario con su posición exacta probada */
+    .login-form {
+      position: absolute;
+      top: 28%; 
+      left: 10%;
+      right: 10%;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .input-group {
+      position: relative;
+      width: 100%;
+      height: 31px;
+      display: flex;
+      align-items: center;
+      background: transparent;
+    }
+
+    .input-group > i {
+      position: absolute;
+      left: 14px;
+      color: #334155;
+      font-size: 0.68rem;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .input-field {
+      width: 100%;
+      height: 100%;
+      padding: 3px 35px 0 38px;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.62rem;
+      color: #1e293b;
+      font-weight: 600;
+    }
+    
+    .input-field::placeholder { 
+      color: transparent; 
+    }
+
+    /* Etiqueta flotante */
+    .input-label {
+      position: absolute;
+      pointer-events: none;
+      top: 50%;
+      left: 38px;
+      transform: translateY(-50%);
+      transition: all 0.2s ease;
+      color: #475569;
+      font-size: 0.62rem;
+      font-weight: 500;
+    }
+
+    .input-field:focus ~ .input-label,
+    .input-field:not(:placeholder-shown) ~ .input-label {
+      top: 3px;
+      left: 36px;
+      font-size: 0.46rem;
+      background-color: #2563eb;
+      color: #ffffff;
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-weight: 600;
+    }
+
+    /* Selector de país */
+    .country-dropdown-wrapper {
+      position: absolute;
+      left: 36px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+    }
+
+    .country-trigger {
+      background: transparent;
+      border: none;
+      font-size: 0.62rem;
+      color: #1e293b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px;
+      font-weight: 600;
+    }
+
+    .country-menu {
+      position: absolute;
+      top: 100%;
+      left: -10px;
+      width: 135px;
+      max-height: 110px;
+      overflow-y: auto;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      display: none;
+      flex-direction: column;
+      z-index: 99;
+      padding: 4px 0;
+    }
+    .country-menu.show { display: flex; }
+
+    .country-option {
+      padding: 4px 8px;
+      font-size: 0.62rem;
+      color: #334155;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .country-option:hover { background: #f1f5f9; }
+
+    .input-group input[type="tel"] {
+      padding-left: 84px !important;
+    }
+    .input-group input[type="tel"] ~ .input-label {
+      left: 84px;
+    }
+
+    .otp-input-simple {
+      padding-right: 95px !important;
+    }
+
+        /* Botón "Enviar código" desplazado hacia la izquierda */
+    .btn-mini {
+      position: absolute;
+      right: 26px; /* <--- Ajusta este valor si necesitas moverlo un pelo más o menos */
+      top: 45%;
+      transform: translateY(-50%);
+      background: transparent;
+      color: #ffffff;
+      border: none;
+      padding: 0 6px;
+      font-size: 0.52rem;
+      font-weight: 700;
+      cursor: pointer;
+      z-index: 15;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+      white-space: nowrap;
+    }
+
+
+    /* Ojitos de contraseña */
+    .toggle-password {
+      position: absolute !important;
+      right: 10px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      cursor: pointer;
+      color: #334155;
+      font-size: 0.68rem;
+      z-index: 10;
+    }
+
+    /* Pista de contraseña en Negrilla fuerte */
+    .password-hint {
+      font-size: 0.52rem;
+      color: #0f172a;
+      font-weight: 700;
+      margin-left: 10px;
+      margin-top: -1px;
+      margin-bottom: 1px;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+    }
+
+    /* Checkbox Términos */
+    .form-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.55rem;
+      color: #0f172a;
+      font-weight: 700;
+      margin-top: 1px;
+      margin-left: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .form-checkbox input { accent-color: #2563eb; width: 11px; height: 11px; cursor: pointer; }
+
+    /* Fila de botones inferiores bajada exactamente a la altura del círculo azul */
+    .bottom-buttons-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      margin-top: 12px; /* <--- Ajustado para bajarlos justo al nivel correcto */
+    }
+
+    .btn-register-left {
+      flex: 1;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: #ffffff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-left: 18px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .btn-signin-right {
+      flex: 1;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: #ffffff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      padding-left: 42px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    /* Switch de Tema */
+    .theme-toggle {
+      position: absolute;
+      top: 2.5%;
+      right: 8%;
+      width: 34px;
+      height: 34px;
+      background: rgba(230, 238, 248, 0.85);
+      border-radius: 50%;
+      box-shadow: 3px 3px 6px #cbd5e1, -3px -3px 6px #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #475569;
+      z-index: 10;
+    }
+    body.dark-mode { background-color: #0f172a !important; }
+body.dark-mode .login-container {
+  filter: invert(0.88) hue-rotate(180deg) brightness(0.95);
+}
+.login-container { transition: filter 0.4s ease; }
+  </style>
+</head>
+<body>
+
+  <div class="login-container" id="glassCard">
+    
+    <div class="theme-toggle" id="themeToggle" title="Cambiar tema">
+      <svg class="moon-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <svg class="sun-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+    </div>
+
+    <!-- Caja de mensajes interactivos -->
+    <div id="alertBox" class="alert-message"></div>
+
+    <!-- Nombre del Proyecto -->
+    <div class="project-title">PAGADIARIO WEB</div>
+
+    <!-- Botones Redes Sociales -->
+    <div class="social-row">
+      <a href="#" class="glass-btn google-hover" onclick="socialLogin('Google')">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path fill="#EA4335" d="M12 5.04c1.65 0 3.13.57 4.3 1.69l3.21-3.21C17.55 1.73 14.97 1 12 1 7.35 1 3.39 3.66 1.48 7.56l3.87 3c.91-2.73 3.47-4.52 6.65-4.52z"/>
+          <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.43h6.44c-.28 1.46-1.1 2.7-2.34 3.53l3.63 2.82c2.13-1.96 3.36-4.85 3.36-8.44z"/>
+          <path fill="#FBBC05" d="M5.35 14.56c-.23-.69-.36-1.43-.36-2.2s.13-1.51.36-2.2L1.48 7.16C.53 9.07 0 11.21 0 13.5s.53 4.43 1.48 6.34l3.87-3.28z"/>
+          <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.63-2.82c-1.1.74-2.52 1.18-4.33 1.18-3.18 0-5.74-1.79-6.65-4.52l-3.87 3C3.39 20.34 7.35 23 12 23z"/>
+        </svg>
+      </a>
+
+      <a href="#" class="glass-btn facebook-hover" onclick="socialLogin('Facebook')">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="#1877F2">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+      </a>
+
+      <a href="#" class="glass-btn github-hover" onclick="socialLogin('GitHub')">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="#24292F">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.05-.015-2.055-3.34.72-4.045-1.61-4.045-1.61-.546-1.393-1.333-1.764-1.333-1.764-1.09-.747.08-.732.08-.732 1.205.085 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.31 24 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+      </a>
+    </div>
+
+    <form class="login-form" id="form-signup" method="POST" action="">
+      
+      <!-- Cédula -->
+      <div class="input-group">
+        <i class="fas fa-id-card"></i>
+        <input type="text" class="input-field" id="signup_cedula" name="cedula" placeholder=" " required autocomplete="off">
+        <label class="input-label" for="signup_cedula">Cédula</label>
+      </div>
+
+      <!-- Nombre Completo -->
+      <div class="input-group">
+        <i class="fas fa-user"></i>
+        <input type="text" class="input-field" id="signup_nombre" name="nombre" placeholder=" " required autocomplete="off">
+        <label class="input-label" for="signup_nombre">Nombre completo</label>
+      </div>
+
+      <!-- Teléfono con Selector de País -->
+      <div class="input-group">
+        <i class="fas fa-phone"></i>
+        <input type="hidden" id="signup_pais" value="57">
+        <div class="country-dropdown-wrapper">
+          <button type="button" class="country-trigger" id="countryTrigger">
+            <span id="selectedFlag">🇨🇴</span> <span id="selectedCode">+57</span> <i class="fas fa-chevron-down" style="font-size:0.45rem;"></i>
+          </button>
+          <div class="country-menu" id="countryMenu">
+            <div class="country-option" data-val="57" data-flag="🇨🇴">🇨🇴 +57 Colombia</div>
+            <div class="country-option" data-val="58" data-flag="🇻🇪">🇻🇪 +58 Venezuela</div>
+            <div class="country-option" data-val="593" data-flag="🇪🇨">🇪🇨 +593 Ecuador</div>
+            <div class="country-option" data-val="51" data-flag="🇵🇪">🇵🇪 +51 Perú</div>
+            <div class="country-option" data-val="507" data-flag="🇵🇦">🇵🇦 +507 Panamá</div>
+            <div class="country-option" data-val="52" data-flag="🇲🇽">🇲🇽 +52 México</div>
+            <div class="country-option" data-val="54" data-flag="🇦🇷">🇦🇷 +54 Argentina</div>
+            <div class="country-option" data-val="56" data-flag="🇨🇱">🇨🇱 +56 Chile</div>
+            <div class="country-option" data-val="55" data-flag="🇧🇷">🇧🇷 +55 Brasil</div>
+            <div class="country-option" data-flag="34" data-flag="🇪🇸">🇪🇸 +34 España</div>
+            <div class="country-option" data-flag="1" data-flag="🇺🇸">🇺🇸 +1 EE.UU.</div>
+          </div>
+        </div>
+        <input type="tel" class="input-field" id="signup_telefono" name="telefono" placeholder=" " required autocomplete="off" inputmode="numeric">
+        <label class="input-label" for="signup_telefono">Teléfono (WhatsApp)</label>
+      </div>
+
+      <!-- Código WhatsApp -->
+      <div class="input-group">
+        <i class="fas fa-shield-alt"></i>
+        <input type="text" class="input-field otp-input-simple" id="signup_otp" name="codigo_otp" placeholder=" " inputmode="numeric" maxlength="12" required>
+        <label class="input-label" for="signup_otp">Código WhatsApp</label>
+        <button type="button" id="btn-enviar-otp" class="btn-mini" onclick="sendOTPAlert()">Enviar código</button>
+      </div>
+
+      <!-- Email -->
+      <div class="input-group">
+        <i class="fas fa-envelope"></i>
+        <input type="email" class="input-field" id="signup_email" name="email" placeholder=" " required autocomplete="off">
+        <label class="input-label" for="signup_email">Email</label>
+      </div>
+
+      <!-- Contraseña -->
+      <div class="input-group">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="signup_password" class="input-field" name="password" placeholder=" " required minlength="8" style="padding-right: 35px;">
+        <label class="input-label" for="signup_password">Contraseña</label>
+        <span class="toggle-password" onclick="toggleEye('signup_password', this)"><i class="fas fa-eye-slash"></i></span>
+      </div>
+      <div class="password-hint" id="password-hint">Usa 8+ caracteres con letras, números y símbolos.</div>
+
+      <!-- Confirmar Contraseña -->
+      <div class="input-group">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="signup_password2" class="input-field" name="password2" placeholder=" " required minlength="8" style="padding-right: 35px;">
+        <label class="input-label" for="signup_password2">Confirmar contraseña</label>
+        <span class="toggle-password" onclick="toggleEye('signup_password2', this)"><i class="fas fa-eye-slash"></i></span>
+      </div>
+
+      <!-- Términos y Condiciones -->
+      <div class="form-checkbox">
+        <input type="checkbox" id="confirm-terms" name="confirm" value="yes" required> Acepto los términos y condiciones
+      </div>
+
+      <!-- Botones Inferiores (Bajados exactamente a su sitio ideal) -->
+      <div class="bottom-buttons-row">
+        <button type="submit" id="btn-registrar" class="btn-register-left">Regístrarse</button>
+        <a href="{{ url_for('login') }}" class="btn-signin-right" id="sign-in-btn">Sign In</a>
+      </div>
+
+    </form>
+   
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var trigger = document.getElementById('countryTrigger');
+    var menu = document.getElementById('countryMenu');
+    var hiddenVal = document.getElementById('signup_pais');
+    var flag = document.getElementById('selectedFlag');
+    var code = document.getElementById('selectedCode');
+
+    if (trigger && menu) {
+      trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menu.classList.toggle('show');
+      });
+
+      document.querySelectorAll('.country-option').forEach(function(opt) {
+        opt.addEventListener('click', function(e) {
+          e.stopPropagation();
+          hiddenVal.value = this.getAttribute('data-val');
+          flag.textContent = this.getAttribute('data-flag');
+          code.textContent = '+' + hiddenVal.value;
+          menu.classList.remove('show');
+        });
+      });
+
+      document.addEventListener('click', function() {
+        menu.classList.remove('show');
+      });
+    }
+
+    window.toggleEye = function(id, el) {
+      var input = document.getElementById(id);
+      if (!input) return;
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      el.innerHTML = show ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    };
+
+    var body = document.body;
+    try { if (localStorage.getItem('pd_tema') === 'dark') body.classList.add('dark-mode'); } catch (e) {}
+    var toggleTheme = document.getElementById('themeToggle');
+    if (toggleTheme) {
+      toggleTheme.addEventListener('click', function () {
+        body.classList.toggle('dark-mode');
+        try { localStorage.setItem('pd_tema', body.classList.contains('dark-mode') ? 'dark' : 'light'); } catch (e) {}
+      });
+    }
+  });
+
+  function socialLogin(platform) {
+    const alertBox = document.getElementById('alertBox');
+    alertBox.style.display = 'block';
+    alertBox.className = "alert-message alert-success";
+    alertBox.innerText = `Autenticando con ${platform}...`;
+  }
+
+  function sendOTPAlert() {
+    const alertBox = document.getElementById('alertBox');
+    alertBox.style.display = 'block';
+    alertBox.className = "alert-message alert-success";
+    alertBox.innerText = "Código enviado a WhatsApp exitosamente.";
+  }
+  </script>
+</body>
+</html>

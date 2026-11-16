@@ -1,0 +1,88 @@
+{% extends "base_pw.html" %}
+{% set page_title = "Reportes" %}
+{% block title %}Reportes - Pagadiario{% endblock %}
+{% block content %}
+<div class="row g-3 mb-5">
+<div class="col-6"><div class="card h-100 border-0" style="background:#009ef7"><div class="card-body p-3"><div class="text-white fw-bold fs-6 text-nowrap">{{ cop(resumen_prestamos.total_monto or 0) }}</div><div class="text-white fs-8">Colocado · {{ resumen_prestamos.total_prestamos or 0 }} préstamos</div></div></div></div>
+<div class="col-6"><div class="card h-100 border-0" style="background:#00c2cb"><div class="card-body p-3"><div class="text-white fw-bold fs-6 text-nowrap">{{ cop(resumen_cobros.total_cobrado or 0) }}</div><div class="text-white fs-8">Cobrado · {{ resumen_cobros.total_pagos or 0 }} pagos</div></div></div></div>
+<div class="col-6"><div class="card h-100 border-0" style="background:#7239ea"><div class="card-body p-3"><div class="text-white fw-bold fs-6 text-nowrap">{{ cop(resumen_prestamos.total_por_cobrar or 0) }}</div><div class="text-white fs-8">Por cobrar</div></div></div></div>
+<div class="col-6"><div class="card h-100 border-0" style="background:#f1416c"><div class="card-body p-3"><div class="text-white fw-bold fs-6 text-nowrap">{{ cop(resumen_gastos.total_monto or 0) }}</div><div class="text-white fs-8">Gastos · {{ resumen_gastos.total_gastos or 0 }} registros</div></div></div></div>
+<div class="col-6"><div class="card h-100 border-0" style="background:#3e5bff"><div class="card-body p-3"><div id="v_cli" class="text-white fw-bold fs-6 text-nowrap">-</div><div class="text-white fs-8">Clientes registrados</div></div></div></div>
+<div class="col-6"><div class="card h-100 border-0" style="background:#181c32"><div class="card-body p-3"><div id="v_caja" class="text-white fw-bold fs-6 text-nowrap">-</div><div class="text-white fs-8">Disponible en caja</div></div></div></div>
+</div>
+<div class="card border-0 overflow-hidden mb-5" style="background:linear-gradient(160deg,#00c2cb,#00797f)">
+  <div class="card-body p-5">
+    <div class="d-flex justify-content-between align-items-center w-100 gap-2 mb-4"><div id="rep_tit" class="text-white fs-4 fw-bold">Colocado vs. cobrado</div><div id="rango_rep" class="btn btn-sm btn-light d-flex align-items-center px-3 flex-shrink-0"><span id="rep_lbl" class="fw-bold text-gray-700">Rango</span><i class="ki-duotone ki-calendar-8 fs-2 ms-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i></div></div>
+    <div class="d-flex gap-2 mb-3 overflow-auto flex-nowrap" style="scrollbar-width:none"><button type="button" id="tb_flujo" class="btn btn-sm btn-light text-gray-700 fw-bold text-nowrap">Colocado vs. cobrado</button><button type="button" id="tb_cob" class="btn btn-sm btn-transparent text-white text-nowrap">Cobros</button><button type="button" id="tb_cobrador" class="btn btn-sm btn-transparent text-white text-nowrap">Por cobrador</button><button type="button" id="tb_gastos" class="btn btn-sm btn-transparent text-white text-nowrap">Gastos</button><button type="button" id="tb_deu" class="btn btn-sm btn-transparent text-white text-nowrap">Deudores</button></div>
+    <div id="grafico_rep" style="height:280px"></div>
+  </div>
+</div>
+<div class="card mb-10"><div class="card-header border-0 pt-5"><h3 class="card-title flex-column align-items-start"><span id="rep_t" class="fw-bold fs-4 text-gray-900"></span><span id="rep_n" class="text-muted fs-7 mt-1"></span></h3></div>
+<div class="card-body py-3">
+<div class="position-relative mb-4"><i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4" style="top:50%;transform:translateY(-50%)"><span class="path1"></span><span class="path2"></span></i><input id="buscar_rep" class="form-control form-control-solid ps-12" placeholder="Buscar"></div>
+<div class="table-responsive"><table id="t_rep" class="table fs-7 table-row-dashed table-row-gray-300 align-middle gs-0 gy-3"></table></div>
+</div></div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='metronic/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+<script src="{{ url_for('static', filename='js/highcharts/highcharts.js') }}"></script>
+<script>
+$(function(){
+var m=moment,D=[],tab='flujo',S=m('{{ fecha_i }}'),E=m('{{ fecha_f }}'),bl={color:'#fff'};
+var TT={flujo:'Colocado vs. cobrado',cob:'Cobros',cobrador:'Por cobrador',gastos:'Gastos',deu:'Deudores'},KS=['flujo','cob','cobrador','gastos','deu'];
+function cop(v){return '$'+Math.round(v).toLocaleString('es-CO')}
+function fm(){var x=this.value;return Math.abs(x)>=1e6?'$'+(x/1e6).toLocaleString('es-CO',{maximumFractionDigits:1})+' M':'$'+Math.round(x/1e3).toLocaleString('es-CO')+' mil'}
+function pq(){return {start:S.format('YYYY-MM-DD'),end:E.format('YYYY-MM-DD')}}
+function load(){
+ $('#rep_lbl').text(S.format('DD/MM/YY')+' – '+E.format('DD/MM/YY'));
+ var v=tab==='cob'?'flujo':(tab==='deu'?'deudores':tab);
+ $.getJSON('/api/reportes_graficos',$.extend({v:v},pq()),function(r){D=r;pinta()});
+ if(tab!=='deu')tabla(tab);
+}
+function pinta(){ if(tab==='deu')setTimeout(function(){tabla('deu')},0);
+ var el=document.getElementById('grafico_rep');
+ if(!D.length){el.innerHTML='<div class="text-white text-center pt-15">Sin datos en este período</div>';return}
+ var deu=tab==='deu',cats,ser,tipo='column';
+ if(deu){var T10=D.slice(0,10);cats=T10.map(function(x){return x.cliente});ser=[{name:'Deuda',data:T10.map(function(x){return x.deuda}),color:'#fff'}];tipo='bar'}
+ else{cats=D.map(function(x){return x[0]});
+  if(tab==='gastos')ser=[{name:'Gastos',data:D.map(function(x){return x[1]}),color:'#fff'}];
+  else if(tab==='cob')ser=[{name:'Cobrado',data:D.map(function(x){return x[2]}),color:'#ffe08a'}];
+  else ser=[{name:'Colocado',data:D.map(function(x){return x[1]}),color:'#fff'},{name:'Cobrado',data:D.map(function(x){return x[2]}),color:'#ffe08a'}]}
+ var xa={categories:cats,labels:{style:bl},tickInterval:(tab==='cobrador'||deu)?1:Math.ceil(cats.length/6)};
+ Highcharts.chart('grafico_rep',{chart:{type:tipo,backgroundColor:'transparent',height:280,marginRight:30},title:{text:null},credits:{enabled:false},legend:{enabled:ser.length>1,itemStyle:bl},tooltip:{shared:true,valuePrefix:'$',valueDecimals:0},xAxis:xa,yAxis:{title:{text:null},labels:{style:bl,formatter:fm},gridLineColor:'rgba(255,255,255,.15)'},plotOptions:{column:{borderRadius:3},bar:{borderRadius:3}},series:ser});
+}
+KS.forEach(function(k){$('#tb_'+k).on('click',function(){tab=k;$('#rep_tit').text(TT[k]);KS.forEach(function(j){$('#tb_'+j).attr('class',j===k?'btn btn-sm btn-light text-gray-700 fw-bold text-nowrap':'btn btn-sm btn-transparent text-white text-nowrap')});load()})});
+$.getJSON('/api/reportes_graficos',{v:'kpi'},function(r){$('#v_cli').text(r.clientes);$('#v_caja').text(cop(r.caja))});
+var ms=m().subtract(1,'month');
+$('#rango_rep').daterangepicker({startDate:S,endDate:E,opens:'left',locale:{format:'DD/MM/YYYY',applyLabel:'Aplicar',cancelLabel:'Cancelar',customRangeLabel:'Rango personalizado'},ranges:{'Hoy':[m(),m()],'Últimos 7 días':[m().subtract(6,'days'),m()],'Últimos 30 días':[m().subtract(29,'days'),m()],'Este mes':[m().startOf('month'),m().endOf('month')],'El mes pasado':[ms.clone().startOf('month'),ms.clone().endOf('month')],'Este año':[m().startOf('year'),m()],'Todo el período':[m('2024-01-01'),m()]}},function(s,e){window.location='/reportes?fecha_i='+s.format('YYYY-MM-DD')+'&fecha_f='+e.format('YYYY-MM-DD')});
+var dp=$('#rango_rep').data('daterangepicker');
+$('#rango_rep').off('click.daterangepicker focus.daterangepicker').on('click',function(){if(dp.isShowing){dp.hide()}else{dp.show()}});
+var X=987654321,U={pre:"{{ url_for('prestamo_ver', id_prestamo=987654321) }}",gas:"{{ url_for('gasto_ver', id_gasto=987654321) }}",cli:"{{ url_for('cliente_ver', id_cliente=987654321) }}",cob:"{{ url_for('cobrador_editar', id_cobrador=987654321) }}"};
+function ojo(u){return function(d,t,r){var id=u.k(r);return id?'<a href="'+u.u.replace(X,id)+'" class="btn btn-icon btn-sm btn-light-primary" title="Ver detalle"><i class="ki-duotone ki-eye fs-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></a>':'-'}}
+var mo=function(d,t){d=+d||0;return t==='display'?cop(d):d},tx=function(d){return d==null||d===''?'-':d};
+var CF={
+ pre:{t:'Préstamos otorgados',u:{u:U.pre,k:function(r){return r.id}},c:[['ID','id'],['Fecha','fecha_prestamo'],['Cliente','cliente'],['Cobrador','cobrador'],['Monto','monto_prestado',1],['Total','total_prestado',1],['Por cobrar','total_debe',1],['Estado','estado']]},
+ cob:{t:'Cobros recibidos',u:{u:U.pre,k:function(r){return r.id_prestamo}},c:[['ID','id'],['Fecha','fecha_cobro'],['Cliente','cliente'],['Cobrador','cobrador'],['Tipo','tipo_pago'],['Monto','monto',1]]},
+ gastos:{t:'Gastos registrados',u:{u:U.gas,k:function(r){return r.id}},c:[['ID','id'],['Fecha','fecha'],['Cobrador','cobrador'],['Ítems','num_items'],['Total','total',1]]},
+ cobrador:{t:'Resumen por cobrador',u:{u:U.cob,k:function(r){return r.id_cobrador}},c:[['Cobrador','cobrador'],['Préstamos','prestamos'],['Colocado','colocado',1],['Por cobrar','por_cobrar',1],['Pagos','pagos'],['Cobrado','cobrado',1]]},
+ deu:{t:'Clientes con deuda',u:{u:U.cli,k:function(r){return r.id_cliente}},c:[['Cliente','cliente'],['DNI','dni'],['Préstamos','prestamos'],['Deuda','deuda',1]]}
+};
+var TB=null;
+function tabla(k){
+ var o=CF[k],tt=(k==='flujo')?'pre':(k==='gastos'?'gas':(k==='deu'?'deu':k));
+ var cols=o.c.map(function(x){return {title:x[0],data:x[1],defaultContent:'-',render:x[2]?mo:tx}});
+ if(o.u)cols.push({title:'Acciones',data:null,orderable:false,className:'text-end',render:ojo(o.u)});
+ var go=function(rows){
+  if(TB){TB.destroy();$('#t_rep').empty()}
+  $('#rep_t').text(o.t);$('#rep_n').text(rows.length+' registros');
+  TB=$('#t_rep').DataTable({data:rows,dom:'rtip',pageLength:10,order:[],language:{emptyTable:'Sin datos en este rango',zeroRecords:'Sin resultados',info:'_START_–_END_ de _TOTAL_',infoEmpty:'',infoFiltered:'',paginate:{previous:'‹',next:'›'}},columns:cols});
+  TB.search($('#buscar_rep').val()).draw();
+ };
+ if(k==='deu')go(D.length&&D[0].cliente!==undefined?D:[]);
+ else $.getJSON('/api/reportes_graficos',$.extend({v:'tabla',t:(k==='flujo'?'pre':(k==='gastos'?'gas':k))},pq()),go);
+}
+$('#buscar_rep').on('keyup',function(){if(TB)TB.search(this.value).draw()});
+load();
+});
+</script>
+{% endblock %}

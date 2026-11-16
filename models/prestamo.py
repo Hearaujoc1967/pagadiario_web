@@ -225,6 +225,19 @@ class PrestamoModel:
         """, (id_prestamo,), fetchall=True)
     
     @staticmethod
+    def listar_por_cliente(id_cliente):
+        """Lista los préstamos de un cliente."""
+        return query("""
+            SELECT p.*, cb.nombre AS cobrador, e.descripcion AS estado_prestamo, tp.descripcion AS tipo_prestamo
+            FROM t_prestamo p
+            LEFT JOIN t_cobrador cb ON p.id_cobrador = cb.id
+            LEFT JOIN t_estado_prestamo e ON p.id_estado_prestamo = e.id
+            LEFT JOIN t_tipo_prestamo tp ON p.id_tipo_prestamo = tp.id
+            WHERE p.id_cliente = %s
+            ORDER BY p.id DESC
+        """, (id_cliente,), fetchall=True)
+
+    @staticmethod
     def listar_estados():
         """Lista los estados de préstamo."""
         return query("SELECT * FROM t_estado_prestamo", fetchall=True)

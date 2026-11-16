@@ -1,113 +1,60 @@
-{% extends "base.html" %}
-
+{% extends "base_pw.html" %}
+{% set page_title = "Usuarios" %}
 {% block title %}Usuarios - Pagadiario{% endblock %}
-
-{% block body %}
-
-{% include '_sidebar.html' %}<div class="main-content">
-    <div class="topbar">
-        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-user-cog"></i> Usuarios</h4>
-        <span><i class="fas fa-user-circle"></i> <strong>{{ session.nombre }}</strong></span>
-    </div>
-
-    <div class="p-4">
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        <div class="card-panel">
-            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h5 class="mb-0"><i class="fas fa-list"></i> Lista de Usuarios</h5>
-    <div>
-        <a href="{{ url_for('importar_contactos', tipo='usuarios') }}" class="btn btn-info">
-            <i class="fas fa-address-book"></i> Importar Contactos
-        </a>
-        <a href="{{ url_for('usuario_nuevo') }}" class="btn btn-success">
-            <i class="fas fa-plus"></i> Añadir Usuario
-        </a>
-    </div>
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="alert alert-{{ category }} p-4 mb-5">{{ message }}</div>{% endfor %}{% endwith %}
+<div class="card border-0 overflow-hidden mb-5" style="background:linear-gradient(160deg,#84cc16,#4d7c0f)">
+  <div class="card-body p-5">
+    <div class="text-white fs-4 fw-bold mb-4">Usuarios del sistema</div>
+    <div class="d-flex gap-2 mb-3"><button type="button" id="tb_niv" class="btn btn-sm btn-light text-gray-700 fw-bold">Por nivel</button><button type="button" id="tb_est" class="btn btn-sm btn-transparent text-white">Por estado</button></div>
+    <div id="grafico_usuarios" style="height:240px"></div>
+  </div>
 </div>
-            
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Login</th>
-                            <th>Nivel</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if usuarios %}
-                            {% for u in usuarios %}
-                                <tr>
-                                    <td>{{ u.id }}</td>
-                                    <td><strong>{{ u.nombre }}</strong></td>
-                                    <td>{{ u.login }}</td>
-                                    <td>
-                                        {% if u.id_nivel == 1 %}
-                                            <span class="badge bg-danger">Administrador</span>
-                                        {% elif u.id_nivel == 2 %}
-                                            <span class="badge bg-info">Cobrador</span>
-                                        {% else %}
-                                            <span class="badge bg-warning text-dark">Socio</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if u.id_estado_usuario == 1 %}
-                                            <span class="badge bg-success">Activo</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">Inactivo</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('usuario_editar', id_usuario=u.id) }}" class="btn btn-sm btn-warning" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        {% if u.id != session.id %}
-                                            <a href="{{ url_for('usuario_eliminar', id_usuario=u.id) }}" 
-                                               class="btn btn-sm btn-danger" 
-                                               onclick="return confirm('¿Eliminar este usuario?');" 
-                                               title="Eliminar">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                        {% else %}
-                                            <button class="btn btn-sm btn-secondary" disabled title="No puedes eliminarte a ti mismo">
-                                                <i class="fas fa-ban"></i>
-                                            </button>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
-                                    <i class="fas fa-inbox" style="font-size: 2rem;"></i>
-                                    <p class="mt-2">No hay usuarios registrados</p>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-            
-            <p class="text-muted mt-2 mb-0">
-                <i class="fas fa-info-circle"></i> Total: <strong>{{ usuarios|length }}</strong> usuario(s)
-            </p>
-        </div>
-    </div>
+<div class="row g-3 mb-5">
+<div class="col-6"><div class="card h-100 border-0" style="background:#00c2cb"><div class="card-body p-3"><div class="text-white fw-bold fs-6">{{ usuarios|length }}</div><div class="text-white fs-8">Usuarios</div></div></div></div>
+<div class="col-6"><div class="card h-100 border-0" style="background:#7239ea"><div class="card-body p-3"><div class="text-white fw-bold fs-6">{{ usuarios|selectattr('id_estado_usuario','equalto',1)|list|length }}</div><div class="text-white fs-8">Activos</div></div></div></div>
 </div>
-
+<div class="d-flex justify-content-between align-items-center mb-4"><h3 class="fw-bold fs-4 text-gray-900 mb-0">Lista de usuarios</h3><div class="d-flex gap-2"><a href="{{ url_for('importar_contactos', tipo='usuarios') }}" class="btn btn-sm btn-light-primary">Importar</a><a href="{{ url_for('usuario_nuevo') }}" class="btn btn-sm btn-primary">Nuevo</a></div></div>
+<div class="position-relative mb-4"><i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4" style="top:50%;transform:translateY(-50%)"><span class="path1"></span><span class="path2"></span></i><input id="buscar_usuarios" class="form-control form-control-solid ps-12" placeholder="Buscar usuario"></div>
+<div class="row g-3 mb-10" id="lista_usuarios">
+{% for u in usuarios %}
+<div class="col-12 usr" data-q="{{ (u.nombre ~ ' ' ~ u.login ~ ' ' ~ (u.nivel or '') ~ ' ' ~ (u.estado or ''))|lower }}">
+<div class="card"><div class="card-body p-4 d-flex align-items-center gap-3">
+  <div class="symbol symbol-50px flex-shrink-0"><span class="symbol-label bg-light-primary text-primary fs-3 fw-bold">{{ (u.nombre or '?')[0]|upper }}</span></div>
+  <div class="flex-grow-1" style="min-width:0">
+    <div class="fw-bold text-gray-900 text-truncate">{{ u.nombre }}</div>
+    <div class="text-muted fs-8 text-truncate">@{{ u.login }} · #{{ u.id }}</div>
+    <div class="mt-1"><span class="badge badge-light-{{ 'danger' if u.id_nivel == 1 else ('info' if u.id_nivel == 2 else 'warning') }} me-1">{{ u.nivel or 'Sin nivel' }}</span><span class="badge badge-light-{{ 'success' if u.id_estado_usuario == 1 else 'secondary' }}">{{ u.estado or 'Sin estado' }}</span></div>
+  </div>
+  <div class="d-flex flex-shrink-0 gap-1">
+    <a href="{{ url_for('usuario_editar', id_usuario=u.id) }}" class="btn btn-icon btn-sm btn-light-warning" title="Editar"><i class="ki-duotone ki-pencil fs-3"><span class="path1"></span><span class="path2"></span></i></a>
+    {% if u.id != session.id %}
+    <a href="{{ url_for('usuario_eliminar', id_usuario=u.id) }}" class="btn btn-icon btn-sm btn-light-danger" title="Eliminar" onclick="return confirm('¿Eliminar este usuario?');"><i class="ki-duotone ki-trash fs-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></a>
+    {% else %}
+    <button type="button" class="btn btn-icon btn-sm btn-light" disabled title="No puedes eliminarte a ti mismo"><i class="ki-duotone ki-trash fs-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></button>
+    {% endif %}
+  </div>
+</div></div></div>
+{% else %}
+<div class="col-12"><div class="card"><div class="card-body text-center text-muted py-8">No hay usuarios registrados</div></div></div>
+{% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/highcharts/highcharts.js') }}"></script>
+<script>
+$(function(){
+var NI={{ usuarios|map(attribute='nivel')|list|tojson }},ES={{ usuarios|map(attribute='estado')|list|tojson }},v='niv';
+var CO=['#fff','#ffe08a','#b8f5ee','#ff9fb2','#a5d8ff','#d0bfff'];
+function cuenta(a){var o={};a.forEach(function(x){x=x||'Sin dato';o[x]=(o[x]||0)+1});return Object.keys(o).map(function(k){return [k,o[k]]})}
+function pinta(){
+ var d=cuenta(v==='niv'?NI:ES),el=document.getElementById('grafico_usuarios');
+ if(!d.length){el.innerHTML='<div class="text-white text-center pt-15">Sin usuarios</div>';return}
+ Highcharts.chart('grafico_usuarios',{chart:{type:'pie',backgroundColor:'transparent',height:240},title:{text:null},credits:{enabled:false},colors:CO,legend:{itemStyle:{color:'#fff'}},tooltip:{pointFormat:'<b>{point.y}</b> usuario(s)'},plotOptions:{pie:{innerSize:'55%',borderColor:'#fff',dataLabels:{enabled:false},showInLegend:true}},series:[{name:'Usuarios',data:d}]});
+}
+$('#tb_niv,#tb_est').on('click',function(){v=this.id==='tb_niv'?'niv':'est';$('#tb_niv').attr('class','btn btn-sm '+(v==='niv'?'btn-light text-gray-700 fw-bold':'btn-transparent text-white'));$('#tb_est').attr('class','btn btn-sm '+(v==='est'?'btn-light text-gray-700 fw-bold':'btn-transparent text-white'));pinta()});
+$('#buscar_usuarios').on('input',function(){var q=this.value.toLowerCase();$('.usr').each(function(){$(this).toggle(this.getAttribute('data-q').indexOf(q)>-1)})});
+pinta();
+});
+</script>
 {% endblock %}

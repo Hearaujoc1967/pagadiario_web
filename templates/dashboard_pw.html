@@ -1,0 +1,109 @@
+{% extends "base_pw.html" %}
+{% block title %}Dashboard | PagaDiario{% endblock %}
+
+{% block content %}
+<style>
+.h-main-visual-block{background:linear-gradient(135deg,#00c2cb 0%,#008a91 100%)!important;border-radius:2.5rem;border:0;box-shadow:0 20px 50px rgba(0,194,203,.3);position:relative;overflow:hidden;padding-bottom:3rem}
+.chart-viewport{width:100%;height:380px;padding-top:52px;overflow:hidden}
+#chart3d{width:100%;height:100%}
+.h-stats-overlap{margin-top:-60px;position:relative;z-index:50;padding:0 1rem;margin-bottom:2rem}
+.h-kpi{border-radius:1.25rem;padding:.4rem .5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 15px 35px rgba(0,0,0,.2);height:76px;transition:transform .3s}
+.h-kpi:hover{transform:translateY(-8px)}
+.h-kpi-l{color:rgba(255,255,255,.85);font-size:.65rem;font-weight:800;text-transform:uppercase}
+.h-kpi-v{color:#fff;font-size:clamp(.85rem,3.8vw,1.4rem);font-weight:900;white-space:nowrap}
+</style>
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-5">
+  <div><h1 class="fw-bolder text-dark fs-1 m-0">Radar de Clientes</h1><span class="text-muted fw-bold fs-6">PagaDiario · Control Dimensional</span></div>
+</div>
+<div class="card h-main-visual-block"><div class="card-body p-0 position-relative">  <div id="kt_dashboard_daterangepicker" style="top:12px;right:12px;z-index:5" class="position-absolute btn btn-sm btn-light d-flex align-items-center px-5 py-3 rounded-3 fw-bold border border-gray-300">
+    <span class="text-gray-600 me-2">Período:</span><span class="text-primary fw-bolder fs-7">{{ periodo.label }}</span><i class="fa fa-calendar text-primary ms-3"></i>
+  </div>
+<div class="chart-viewport"><div id="chart3d"></div></div></div></div>
+<div class="h-stats-overlap"><div class="row g-4">
+  <div class="col-4"><div class="h-kpi" style="background:#00c2cb"><span class="h-kpi-l">Activos</span><span class="h-kpi-v">{{ periodo.activos }}</span></div></div>
+  <div class="col-4"><div class="h-kpi" style="background:#7239ea"><span class="h-kpi-l">Inactivos</span><span class="h-kpi-v">{{ periodo.inactivos }}</span></div></div>
+  <div class="col-4"><div class="h-kpi" style="background:#009ef7"><span class="h-kpi-l">Por cobrar</span><span class="h-kpi-v">$ {{ ("{:,.0f}".format(panel.total_por_cobrar))|replace(",", ".") }}</span></div></div>
+</div></div>
+
+<div class="row g-5 g-xl-8 mb-7">
+  <div class="col-6 col-md-4"><a href="{{ url_for('clientes') }}" class="card card-flush h-100 bg-primary text-decoration-none"><div class="card-body p-5"><div class="text-white fs-7 opacity-75">Clientes</div><span class="text-white fs-2x fw-bold text-nowrap">{{ panel.cliente_registrados }}</span></div></a></div>
+  <div class="col-6 col-md-4"><a href="{{ url_for('caja') }}" class="card card-flush h-100 bg-success text-decoration-none"><div class="card-body p-5"><div class="text-white fs-7 opacity-75">Capital en caja</div><span class="text-white fs-2x fw-bold text-nowrap">$ {{ ("{:,.0f}".format(panel.dinero_capital))|replace(",", ".") }}</span></div></a></div>
+  <div class="col-12 col-md-4"><a href="{{ url_for('reportes') }}" class="card card-flush h-100 bg-info text-decoration-none"><div class="card-body p-5"><div class="text-white fs-7 opacity-75">Recogido</div><span class="text-white fs-2x fw-bold text-nowrap">$ {{ ("{:,.0f}".format(panel.dinero_recogido))|replace(",", ".") }}</span></div></a></div>
+</div>
+
+<div class="row g-5 g-xl-8 mb-7">
+  <div class="col-xl-6"><div class="card card-flush h-100"><div class="card-header pt-5 pb-0" style="min-height:auto"><h3 class="card-title fw-bold m-0">Cobros</h3></div><div class="card-body pt-2"><div style="height:260px"><canvas id="chart-cobros"></canvas></div></div></div></div>
+  <div class="col-xl-6"><div class="card card-flush h-100"><div class="card-header pt-5 pb-0" style="min-height:auto"><h3 class="card-title fw-bold m-0">Préstamos</h3></div><div class="card-body pt-2"><div style="height:260px"><canvas id="chart-prestamos"></canvas></div></div></div></div>
+</div>
+
+<div class="row g-5 g-xl-8">
+  <div class="col-xl-6"><div class="card card-flush h-100">
+    <div class="card-header"><h3 class="card-title fw-bold">Ranking de cobradores</h3><div class="card-toolbar"><span class="badge badge-light-primary">{{ panel.ranking_cobradores|length }}</span></div></div>
+    <div class="card-body pt-0"><table class="table table-row-dashed align-middle gs-0 gy-3 mb-0"><tbody>
+      {% if panel.ranking_cobradores %}{% for c in panel.ranking_cobradores %}
+      <tr><td class="w-40px fw-bold text-gray-500">{{ loop.index }}</td><td class="fw-bold text-gray-800">{{ c.cobrador }}</td><td class="text-end fw-bold text-success text-nowrap">$ {{ ("{:,.0f}".format(c.total_cobrado))|replace(",", ".") }}</td></tr>
+      {% endfor %}{% else %}<tr><td class="text-muted text-center">Sin datos</td></tr>{% endif %}
+    </tbody></table></div>
+  </div></div>
+  <div class="col-xl-6"><div class="card card-flush h-100">
+    <div class="card-header"><h3 class="card-title fw-bold">Mayores deudores</h3><div class="card-toolbar"><span class="badge badge-light-danger">{{ panel.top_deudores|length }}</span></div></div>
+    <div class="card-body pt-0"><table class="table table-row-dashed align-middle gs-0 gy-3 mb-0"><tbody>
+      {% if panel.top_deudores %}{% for d in panel.top_deudores %}
+      <tr><td class="w-40px fw-bold text-gray-500">{{ loop.index }}</td><td class="fw-bold text-gray-800">{{ d.cliente }}<div class="progress h-4px mt-1"><div class="progress-bar bg-danger" style="width: {{ d.porcentaje }}%"></div></div></td><td class="text-end fw-bold text-danger text-nowrap">$ {{ ("{:,.0f}".format(d.deuda))|replace(",", ".") }}</td></tr>
+      {% endfor %}{% else %}<tr><td class="text-muted text-center">Sin datos</td></tr>{% endif %}
+    </tbody></table></div>
+  </div></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/highcharts/highcharts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/highcharts/highcharts-3d.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chartjs/chart4.umd.min.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const P = {{ periodo|tojson }};
+  const pal = ['#F1416C','#7239EA','#50CD89','#009EF7','#FF9F43','#00C3D7','#74D5FF','#8A4AF3','#E4E6EF','#FF6B9D'];
+  const fmt = v => v >= 1e6 ? (v/1e6).toFixed(1)+'M' : v >= 1e3 ? (v/1e3).toFixed(0)+'k' : v;
+  const pts = P.top_clientes.map((c,i) => ({name:c.nombre, y:Math.max(c.total,1), color:pal[i%pal.length], custom:{money:true}}));
+  pts.push({name:'ACTIVOS', y:Math.max(P.activos,1), color:'#50CD89', custom:{money:false}});
+  pts.push({name:'INACTIVOS', y:Math.max(P.inactivos,1), color:'#FFC700', custom:{money:false}});
+  Highcharts.chart('chart3d', {
+    chart:{height:328, type:'column', backgroundColor:'transparent', options3d:{enabled:true, alpha:12, beta:10, depth:50, viewDistance:25}},
+    title:{text:null}, legend:{enabled:false}, credits:{enabled:false},
+    xAxis:{categories:pts.map(x=>x.name), labels:{skew3d:true, rotation:-60, style:{color:'#fff', fontWeight:'bold', fontSize:'9px'}}},
+    yAxis:{type:'linear', min:0, title:{text:null}, gridLineColor:'rgba(255,255,255,0.1)', labels:{style:{color:'#fff', fontWeight:'bold'}}},
+    plotOptions:{column:{depth:30, colorByPoint:true, dataLabels:{enabled:true, color:'#fff', style:{textOutline:'none', fontSize:'9px', fontWeight:'900'},
+      formatter:function(){ const c=this.point.options.custom; return (c&&c.money)?'$ '+fmt(this.y):this.y; }}}},
+    tooltip:{formatter:function(){ const c=this.point.options.custom; return '<b>'+this.point.name+'</b><br>'+((c&&c.money)?'$ '+Math.round(this.y).toLocaleString('es-CO'):this.y); }},
+    series:[{name:'Clientes', data:pts}]
+  });
+  const f = d => moment(d).format('YYYY-MM-DD');
+  $('#kt_dashboard_daterangepicker').daterangepicker({
+    startDate: moment(P.inicio), endDate: moment(P.fin), opens:'left',
+    locale:{customRangeLabel:'Rango personalizado', applyLabel:'Aplicar', cancelLabel:'Cancelar'},
+    ranges:{'Hoy':[moment(),moment()], 'Ayer':[moment().subtract(1,'days'),moment().subtract(1,'days')], 'Últimos 7 días':[moment().subtract(6,'days'),moment()], 'Últimos 30 días':[moment().subtract(29,'days'),moment()], 'Este mes':[moment().startOf('month'),moment().endOf('month')], 'Todo (Reset)':[moment('2000-01-01'),moment()]}
+  }, function(a, b, label){ window.location.href = window.location.pathname + '?start='+f(a)+'&end='+f(b)+'&label='+encodeURIComponent(label); });
+});
+</script>
+<script>
+Chart.defaults.font.family = 'Inter, Segoe UI, sans-serif';
+const datosCobros = {{ panel.grafico_cobros|tojson }};
+const datosPrestamos = {{ panel.grafico_prestamos|tojson }};
+function baseOptions() {
+  return { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { labels: { boxWidth: 12 } } },
+    scales: { x: { ticks: { maxRotation: 45 } }, y: { ticks: { callback: v => '$ ' + Number(v).toLocaleString('es-CO') } } } };
+}
+new Chart(document.getElementById('chart-cobros'), { type: 'bar',
+  data: { labels: datosCobros.map(d => d.etiqueta), datasets: [{ label: 'Cobros $', data: datosCobros.map(d => d.valor), backgroundColor: '#50cd89', borderRadius: 6 }] },
+  options: baseOptions() });
+new Chart(document.getElementById('chart-prestamos'), { type: 'line',
+  data: { labels: datosPrestamos.map(d => d.etiqueta), datasets: [{ label: 'Monto Prestado $', data: datosPrestamos.map(d => d.valor), borderColor: '#009ef7', backgroundColor: 'rgba(0,158,247,.12)', fill: true, tension: .4, pointRadius: 4 }] },
+  options: baseOptions() });
+function aplicarFiltros() {
+  const g = id => document.getElementById(id).value;
+  window.location.href = `?mes_ini=${g('f-ini-mes')}&anio_ini=${g('f-ini-anio')}&mes_fin=${g('f-fin-mes')}&anio_fin=${g('f-fin-anio')}`;
+}
+</script>
+{% endblock %}

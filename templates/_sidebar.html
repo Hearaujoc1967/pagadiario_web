@@ -1,61 +1,83 @@
-<!-- ============================================================
-     SIDEBAR UNIVERSAL - Pagadiario
-     ============================================================ -->
-<div class="sidebar" id="sidebar">
-    <div class="brand"><i class="fas fa-hand-holding-usd"></i> Pagadiario</div>
-    
-    <div class="menu-header">Principal</div>
-    <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">
-        <i class="fas fa-tachometer-alt"></i> Dashboard
-    </a>
-    
-    <div class="menu-header">Gestión</div>
-    <a href="{{ url_for('clientes') }}" class="{% if request.endpoint == 'clientes' %}active{% endif %}">
-        <i class="fas fa-users"></i> Clientes
-    </a>
-    <a href="{{ url_for('codeudores') }}" class="{% if request.endpoint == 'codeudores' %}active{% endif %}">
-        <i class="fas fa-file-signature"></i> Codeudores
-    </a>
-    <a href="{{ url_for('prestamos') }}" class="{% if request.endpoint == 'prestamos' %}active{% endif %}">
-        <i class="fas fa-hand-holding-usd"></i> Préstamos
-    </a>
-    <a href="{{ url_for('cobradores') }}" class="{% if request.endpoint == 'cobradores' %}active{% endif %}">
-        <i class="fas fa-user-tie"></i> Cobradores
-    </a>
-    <a href="{{ url_for('socios') }}" class="{% if request.endpoint == 'socios' %}active{% endif %}">
-        <i class="fas fa-user-friends"></i> Socios
-    </a>
-    <a href="{{ url_for('zonas') }}" class="{% if request.endpoint == 'zonas' %}active{% endif %}">
-        <i class="fas fa-map-marker-alt"></i> Zonas
-    </a>
-    
-    <div class="menu-header">Finanzas</div>
-    <a href="{{ url_for('caja') }}" class="{% if request.endpoint == 'caja' %}active{% endif %}">
-        <i class="fas fa-cash-register"></i> Caja
-    </a>
-    <a href="{{ url_for('capital') }}" class="{% if request.endpoint == 'capital' %}active{% endif %}">
-        <i class="fas fa-coins"></i> Capital
-    </a>
-    <a href="{{ url_for('gastos') }}" class="{% if request.endpoint == 'gastos' %}active{% endif %}">
-        <i class="fas fa-receipt"></i> Gastos
-    </a>
-    <a href="{{ url_for('cierre') }}" class="{% if request.endpoint == 'cierre' %}active{% endif %}">
-        <i class="fas fa-lock"></i> Cierre por día
-    </a>
-    
-    <div class="menu-header">Configuración</div>
-    <a href="{{ url_for('empresa') }}" class="{% if request.endpoint == 'empresa' %}active{% endif %}">
-        <i class="fas fa-building"></i> Empresa
-    </a>
-    <a href="{{ url_for('usuarios') }}" class="{% if request.endpoint == 'usuarios' %}active{% endif %}">
-        <i class="fas fa-user-cog"></i> Usuarios
-    </a>
-    <a href="{{ url_for('reportes') }}" class="{% if request.endpoint == 'reportes' %}active{% endif %}">
-        <i class="fas fa-file-alt"></i> Reportes
-    </a>
-    
-    <div class="menu-header">Sesión</div>
-    <a href="{{ url_for('logout') }}">
-        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-    </a>
+<div id="kt_aside" class="aside aside-extended" data-kt-drawer="true" data-kt-drawer-name="aside" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="auto" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_aside_mobile_toggle">
+    <div class="aside-primary d-flex flex-column align-items-lg-center flex-row-auto">
+        <div class="aside-logo d-none d-lg-flex flex-column align-items-center flex-column-auto py-10" id="kt_aside_logo">
+            <a href="{{ url_for('portal') if session.id_nivel == 4 else url_for('dashboard') }}"><span class="fs-2hx">💰</span></a>
+        </div>
+        <div class="aside-nav d-flex flex-column align-items-center flex-column-fluid w-100 pt-5 pt-lg-0" id="kt_aside_nav">
+            <div class="hover-scroll-overlay-y mb-5 scroll-ms px-5" data-kt-scroll="true" data-kt-scroll-height="auto" data-kt-scroll-wrappers="#kt_aside_nav" data-kt-scroll-offset="0px">
+                <ul class="nav flex-column w-100" id="kt_aside_nav_tabs">
+                    <li class="nav-item mb-2" data-bs-toggle="tooltip" data-bs-placement="right" title="Principal">
+                        <a class="nav-link btn btn-icon btn-active-color-primary btn-color-gray-400 btn-active-light active" data-bs-toggle="tab" href="#kt_aside_nav_tab_principal">
+                            <i class="ki-duotone ki-element-11 fs-2x"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2" data-bs-toggle="tooltip" data-bs-placement="right" title="Gestión">
+                        <a class="nav-link btn btn-icon btn-active-color-primary btn-color-gray-400 btn-active-light" data-bs-toggle="tab" href="#kt_aside_nav_tab_gestion">
+                            <i class="ki-duotone ki-briefcase fs-2x"><span class="path1"></span><span class="path2"></span></i>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2" data-bs-toggle="tooltip" data-bs-placement="right" title="Finanzas">
+                        <a class="nav-link btn btn-icon btn-active-color-primary btn-color-gray-400 btn-active-light" data-bs-toggle="tab" href="#kt_aside_nav_tab_finanzas">
+                            <i class="ki-duotone ki-chart-simple fs-2x"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2" data-bs-toggle="tooltip" data-bs-placement="right" title="Configuración">
+                        <a class="nav-link btn btn-icon btn-active-color-primary btn-color-gray-400 btn-active-light" data-bs-toggle="tab" href="#kt_aside_nav_tab_config">
+                            <i class="ki-duotone ki-setting-2 fs-2x"><span class="path1"></span><span class="path2"></span></i>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2" data-bs-toggle="tooltip" data-bs-placement="right" title="Sesión">
+                        <a class="nav-link btn btn-icon btn-active-color-danger btn-color-gray-400 btn-active-light" data-bs-toggle="tab" href="#kt_aside_nav_tab_sesion">
+                            <i class="ki-duotone ki-exit-right fs-2x"><span class="path1"></span><span class="path2"></span></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="aside-secondary d-flex flex-row-fluid">
+        <div class="aside-workspace my-5 p-5" id="kt_aside_wordspace">
+            <div class="d-flex h-100 flex-column">
+                <div class="flex-column-fluid hover-scroll-y" data-kt-scroll="true" data-kt-scroll-height="auto" data-kt-scroll-wrappers="#kt_aside_wordspace" data-kt-scroll-offset="0px">
+                    <div class="tab-content">
+                        <div class="tab-pane fade active show" id="kt_aside_nav_tab_principal" role="tabpanel">
+                            <div class="menu menu-column menu-fit menu-rounded menu-title-gray-600 menu-icon-gray-400 menu-state-primary fw-semibold fs-5 px-6 my-5 my-lg-0">
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('portal') if session.id_nivel == 4 else url_for('dashboard') }}"><span class="menu-icon"><i class="ki-duotone ki-element-11 fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i></span><span class="menu-title">Dashboard</span></a></div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="kt_aside_nav_tab_gestion" role="tabpanel">
+                            <div class="menu menu-column menu-fit menu-rounded menu-title-gray-600 menu-icon-gray-400 menu-state-primary fw-semibold fs-5 px-6 my-5 my-lg-0">
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'clientes' %}active{% endif %}" href="{{ url_for('clientes') }}"><span class="menu-icon"><i class="ki-duotone ki-people fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span><span class="menu-title">Clientes</span></a></div>
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'prestamos' %}active{% endif %}" href="{{ url_for('prestamos') }}"><span class="menu-icon"><i class="ki-duotone ki-dollar fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span><span class="menu-title">Préstamos</span></a></div>
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'cobradores' %}active{% endif %}" href="{{ url_for('cobradores') }}"><span class="menu-icon"><i class="ki-duotone ki-user-tie fs-2"><span class="path1"></span><span class="path2"></span></i></span><span class="menu-title">Cobradores</span></a></div>
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'socios' %}active{% endif %}" href="{{ url_for('socios') }}"><span class="menu-icon"><i class="ki-duotone ki-user fs-2"><span class="path1"></span><span class="path2"></span></i></span><span class="menu-title">Socios</span></a></div>
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'zonas' %}active{% endif %}" href="{{ url_for('zonas') }}"><span class="menu-icon"><i class="ki-duotone ki-geolocation fs-2"><span class="path1"></span><span class="path2"></span></i></span><span class="menu-title">Zonas</span></a></div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="kt_aside_nav_tab_finanzas" role="tabpanel">
+                            <div class="menu menu-column menu-fit menu-rounded menu-title-gray-600 menu-icon-gray-400 menu-state-primary fw-semibold fs-5 px-6 my-5 my-lg-0">
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'caja' %}active{% endif %}" href="{{ url_for('caja') }}"><span class="menu-icon"><i class="ki-duotone ki-wallet fs-2"><span class="path1"></span><span class="path2"></span></i></span><span class="menu-title">Caja</span></a></div>
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'capital' %}active{% endif %}" href="{{ url_for('capital') }}"><span class="menu-icon"><i class="ki-duotone ki-bank fs-2"><span class="path1"></span><span class="path2"></span></i></span><span class="menu-title">Capital</span></a></div>
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'gastos' %}active{% endif %}" href="{{ url_for('gastos') }}"><span class="menu-icon"><i class="ki-duotone ki-receipt-square fs-2"><span class="path1"></span><span class="path2"></span></i></span><span class="menu-title">Gastos</span></a></div>
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'cierre' %}active{% endif %}" href="{{ url_for('cierre') }}"><span class="menu-icon"><i class="ki-duotone ki-calendar-8 fs-2"><span class="path1"></span><span class="path2"></span></i></span><span class="menu-title">Cierre por día</span></a></div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="kt_aside_nav_tab_config" role="tabpanel">
+                            <div class="menu menu-column menu-fit menu-rounded menu-title-gray-600 menu-icon-gray-400 menu-state-primary fw-semibold fs-5 px-6 my-5 my-lg-0">
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'empresa' %}active{% endif %}" href="{{ url_for('empresa') }}"><span class="menu-icon"><i class="ki-duotone ki-shop fs-2"><span class="path1"></span><span class="path2"></span></i></span><span class="menu-title">Empresa</span></a></div>
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'usuarios' %}active{% endif %}" href="{{ url_for('usuarios') }}"><span class="menu-icon"><i class="ki-duotone ki-profile-circle fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span><span class="menu-title">Usuarios</span></a></div>
+                                <div class="menu-item"><a class="menu-link {% if request.endpoint == 'reportes' %}active{% endif %}" href="{{ url_for('reportes') }}"><span class="menu-icon"><i class="ki-duotone ki-chart fs-2"><span class="path1"></span><span class="path2"></span></i></span><span class="menu-title">Reportes</span></a></div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="kt_aside_nav_tab_sesion" role="tabpanel">
+                            <div class="menu menu-column menu-fit menu-rounded menu-title-gray-600 menu-icon-gray-400 menu-state-primary fw-semibold fs-5 px-6 my-5 my-lg-0">
+                                <div class="menu-item"><a class="menu-link text-danger" href="{{ url_for('logout') }}"><span class="menu-icon"><i class="ki-duotone ki-exit-right fs-2 text-danger"><span class="path1"></span><span class="path2"></span></i></span><span class="menu-title">Cerrar Sesión</span></a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

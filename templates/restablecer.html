@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es" data-layout="c" data-bg="0" data-theme="light" data-view="login">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <title>Pagadiario Web · Nueva contraseña</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v={{ ver('css/auth.css') }}">
+  <script src="{{ url_for('static', filename='js/restablecer.js') }}" defer></script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></symbol>
+  </defs>
+</svg>
+<div class="bgfx" aria-hidden="true"></div>
+<div class="auth">
+  <header class="brand">
+    <span class="brand__mark"><img class="brand__logo" src="{{ url_for('static', filename='img/icono.png') }}" alt="Logo Pagadiario"></span>
+  </header>
+
+  <main class="panel glass m">
+    <section class="view">
+      {% if invalido %}
+        <h1 class="panel__title">Enlace no válido</h1>
+        <div class="alert" role="alert" data-type="danger">Este enlace venció o ya fue usado. Pide uno nuevo desde “¿Olvidaste tu contraseña?”.</div>
+      {% else %}
+        <h1 class="panel__title">Crea tu nueva contraseña</h1>
+        {% if error %}<div class="alert" role="alert" data-type="danger">{{ error }}</div>{% endif %}
+        <form class="form" method="POST" novalidate>
+          <div class="field">
+            <div class="fld m">
+              <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+              <input type="password" id="password" name="password" placeholder=" " autocomplete="new-password" minlength="10" required>
+              <label for="password">Nueva contraseña</label>
+              <button type="button" class="fld__act" data-toggle="password" aria-label="Mostrar contraseña" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-eyeoff"/></svg></button>
+            </div>
+            <small class="fb" id="feedback-password" aria-live="polite"></small>
+          </div>
+          <div class="meter" id="meter-password" data-s="0" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <p class="hint" id="password-hint">Usa 10 o más caracteres con letras, números y símbolos.</p>
+          <div class="field">
+            <div class="fld m">
+              <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+              <input type="password" id="password2" name="password2" placeholder=" " autocomplete="new-password" minlength="10" required>
+              <label for="password2">Confirmar contraseña</label>
+              <button type="button" class="fld__act" data-toggle="password2" aria-label="Mostrar contraseña" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-eyeoff"/></svg></button>
+            </div>
+            <small class="fb" id="feedback-password2" aria-live="polite"></small>
+          </div>
+          <button type="submit" class="btn btn--blue btn--block m" id="btn-guardar">Guardar contraseña</button>
+        </form>
+      {% endif %}
+      <a class="btn btn--ghost btn--block m" href="{{ url_for('login') }}">Volver al inicio de sesión</a>
+    </section>
+  </main>
+</div>
+</body>
+</html>

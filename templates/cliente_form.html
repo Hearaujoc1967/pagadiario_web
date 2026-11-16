@@ -1,68 +1,62 @@
-{% extends "base.html" %}
-
+{% extends "base_pw.html" %}
+{% set page_title = titulo %}
 {% block title %}{{ titulo }} - Pagadiario{% endblock %}
-
-{% block body %}
-
-{% include '_sidebar.html' %}<div class="main-content">
-    <div class="topbar">
-        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-user-plus"></i> {{ titulo }}</h4>
-    </div>
-
-    <div class="p-4">
-        <div class="card-panel">
-            <form method="POST">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">DNI *</label>
-                        <input type="text" class="form-control" name="dni" value="{{ cliente.dni if cliente else '' }}" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Nombre *</label>
-                        <input type="text" class="form-control" name="nombre" value="{{ cliente.nombre if cliente else '' }}" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Nombre del Negocio</label>
-                        <input type="text" class="form-control" name="nombre_negocio" value="{{ cliente.nombre_negocio if cliente else '' }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Teléfono</label>
-                        <input type="text" class="form-control" name="telf" value="{{ cliente.telf if cliente else '' }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" name="email" value="{{ cliente.email if cliente else '' }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Dirección</label>
-                        <input type="text" class="form-control" name="direccion" value="{{ cliente.direccion if cliente else '' }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Dirección de Cobro</label>
-                        <input type="text" class="form-control" name="direccion_cobro" value="{{ cliente.direccion_cobro if cliente else '' }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Referencia 1</label>
-                        <input type="text" class="form-control" name="referencia_1" value="{{ cliente.referencia_1 if cliente else '' }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Referencia 2</label>
-                        <input type="text" class="form-control" name="referencia_2" value="{{ cliente.referencia_2 if cliente else '' }}">
-                    </div>
-                </div>
-                
-                <div class="d-flex justify-content-between mt-3">
-                    <a href="{{ url_for('clientes') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Cancelar
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Guardar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+{% block content %}
+<form method="POST" id="form-cliente">
+<div class="card mb-5">
+  <div class="card-header border-0 pt-5"><h3 class="card-title flex-column align-items-start"><span class="fw-bold fs-3">Datos personales</span><span class="text-muted fs-7 mt-1">Los campos con * son obligatorios</span></h3></div>
+  <div class="card-body pt-2"><div class="row g-5">
+    <div class="col-md-6"><label class="form-label fw-semibold required">DNI</label><input type="text" class="form-control form-control-solid" name="dni" value="{{ cliente.dni if cliente else '' }}" required placeholder="Ej: 12345678"></div>
+    <div class="col-md-6"><label class="form-label fw-semibold required">Nombre completo</label><input type="text" class="form-control form-control-solid" name="nombre" value="{{ cliente.nombre if cliente else '' }}" required placeholder="Ej: Juan Pérez"></div>
+    <div class="col-md-6"><label class="form-label fw-semibold">Nombre del negocio</label><input type="text" class="form-control form-control-solid" name="nombre_negocio" value="{{ cliente.nombre_negocio if cliente else '' }}" placeholder="Ej: Tienda La Esperanza"></div>
+  </div></div>
 </div>
-
+<div class="card mb-5">
+  <div class="card-header border-0 pt-5"><h3 class="card-title fw-bold fs-3">Información de contacto</h3></div>
+  <div class="card-body pt-2"><div class="row g-5">
+    <div class="col-md-6"><label class="form-label fw-semibold">Teléfono / WhatsApp</label>
+      <div class="d-flex gap-2">
+        <div style="width:130px;flex-shrink:0"><select id="codigo-pais" class="form-select form-select-solid">
+          {% for c,n in [('+57','🇨🇴'),('+54','🇦🇷'),('+52','🇲🇽'),('+51','🇵🇪'),('+56','🇨🇱'),('+58','🇻🇪'),('+593','🇪🇨'),('+591','🇧🇴'),('+595','🇵🇾'),('+598','🇺🇾'),('+507','🇵🇦'),('+506','🇨🇷'),('+1','🇺🇸'),('+34','🇪🇸')] %}<option value="{{ c }}" {% if c == '+57' %}selected{% endif %}>{{ n }} {{ c }}</option>{% endfor %}
+        </select></div>
+        <input type="tel" class="form-control form-control-solid" name="telf" id="telf-input" value="{{ cliente.telf if cliente else '' }}" placeholder="300 123 4567">
+      </div>
+      <div class="text-muted fs-8 mt-2">Selecciona el código de país; se aplicará automáticamente.</div></div>
+    <div class="col-md-6"><label class="form-label fw-semibold">Email</label><input type="email" class="form-control form-control-solid" name="email" value="{{ cliente.email if cliente else '' }}" placeholder="correo@ejemplo.com"></div>
+    <div class="col-md-6"><label class="form-label fw-semibold">Dirección</label><input type="text" class="form-control form-control-solid" name="direccion" value="{{ cliente.direccion if cliente else '' }}" placeholder="Calle, número, barrio"></div>
+    <div class="col-md-6"><label class="form-label fw-semibold">Dirección de cobro</label><input type="text" class="form-control form-control-solid" name="direccion_cobro" value="{{ cliente.direccion_cobro if cliente else '' }}" placeholder="Si es diferente a la dirección"></div>
+  </div></div>
+</div>
+<div class="card mb-5">
+  <div class="card-header border-0 pt-5"><h3 class="card-title fw-bold fs-3">Referencias personales</h3></div>
+  <div class="card-body pt-2"><div class="row g-5">
+    <div class="col-md-6"><label class="form-label fw-semibold">Referencia 1</label><input type="text" class="form-control form-control-solid" name="referencia_1" value="{{ cliente.referencia_1 if cliente else '' }}" placeholder="Nombre y teléfono"></div>
+    <div class="col-md-6"><label class="form-label fw-semibold">Referencia 2</label><input type="text" class="form-control form-control-solid" name="referencia_2" value="{{ cliente.referencia_2 if cliente else '' }}" placeholder="Nombre y teléfono"></div>
+  </div></div>
+</div>
+<div class="d-flex justify-content-end gap-3 mb-10">
+  <a href="{{ url_for('clientes') }}" class="btn btn-light">Cancelar</a>
+  <button type="submit" class="btn btn-primary">Guardar cliente</button>
+</div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+(function(){
+const select=document.getElementById('codigo-pais'),input=document.getElementById('telf-input'),form=document.getElementById('form-cliente');
+const raw=input.value.trim();
+if(raw){
+  const d=raw.replace(/^\+/,'');
+  const m=Array.from(select.options).map(o=>o.value).sort((a,b)=>b.length-a.length).find(c=>(raw.startsWith('+')||d.length>10)&&d.startsWith(c.slice(1)));
+  if(m){select.value=m;input.value=d.substring(m.length-1).trim();}
+}
+$('#codigo-pais').select2({width:'100%',minimumResultsForSearch:Infinity});
+form.addEventListener('submit',function(){
+  let num=input.value.trim().replace(/\s+/g,'');
+  if(num.startsWith('+'))num=num.replace(/^\+\d+/,'');
+  if(!num)return;
+  input.value=select.value+num;
+});
+})();
+</script>
 {% endblock %}

@@ -73,7 +73,8 @@ class UsuarioModel:
                 id_nivel = %s,
                 nombre = %s,
                 login = %s,
-                clave = %s
+                clave = %s,
+                clave_v2 = NULL
             WHERE id = %s
         """, (
             datos.get('id_estado_usuario', 1),

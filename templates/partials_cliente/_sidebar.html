@@ -1,0 +1,29 @@
+<!-- Sidebar del cliente: solo Mi Portal -->
+<div id="kt_app_sidebar" class="app-sidebar flex-column" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
+    <div class="app-sidebar-logo px-6" id="kt_app_sidebar_logo">
+        <a href="{{ url_for('portal') }}">
+            <span class="text-white fw-bold fs-4">💰 Pagadiario</span>
+        </a>
+    </div>
+
+    <div class="app-sidebar-menu overflow-hidden flex-column-fluid">
+        <div id="kt_app_sidebar_menu_wrapper" class="app-sidebar-wrapper">
+            <div id="kt_app_sidebar_menu_scroll" class="scroll-y my-5 mx-3">
+                <ul class="menu menu-column menu-rounded menu-sub-indention fw-semibold fs-6">
+                    <li class="menu-item">
+                        <a class="menu-link active" href="{{ url_for('portal') }}">
+                            <span class="menu-icon"><i class="ki-duotone ki-home fs-2"><span class="path1"></span><span class="path2"></span></i></span>
+                            <span class="menu-title">Mi Portal</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="{{ url_for('notificaciones_cliente') }}">
+                            <span class="menu-icon"><i class="ki-duotone ki-notification-on fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span>
+                            <span class="menu-title">Notificaciones</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

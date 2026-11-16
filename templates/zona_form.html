@@ -1,42 +1,18 @@
-{% extends "base.html" %}
-
+{% extends "base_pw.html" %}
+{% set page_title = titulo %}
 {% block title %}{{ titulo }} - Pagadiario{% endblock %}
-
-{% block body %}
-
-{% include '_sidebar.html' %}<div class="main-content">
-    <div class="topbar">
-        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-map-marker-alt"></i> {{ titulo }}</h4>
-    </div>
-
-    <div class="p-4">
-        <div class="card-panel">
-            <form method="POST">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Nombre de la Zona *</label>
-                        <input type="text" class="form-control" name="zona" 
-                               value="{{ zona.zona if zona else '' }}" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Dirección</label>
-                        <input type="text" class="form-control" name="direccion" 
-                               value="{{ zona.direccion if zona else '' }}">
-                    </div>
-                </div>
-                
-                <div class="d-flex justify-content-between mt-3">
-                    <a href="{{ url_for('zonas') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Cancelar
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Guardar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+{% block content %}
+<form method="POST">
+<div class="card mb-5">
+  <div class="card-header border-0 pt-5"><h3 class="card-title flex-column align-items-start"><span class="fw-bold fs-3">Datos de la zona</span><span class="text-muted fs-7 mt-1">Los campos con * son obligatorios</span></h3></div>
+  <div class="card-body pt-2"><div class="row g-5">
+    <div class="col-md-6"><label class="form-label fw-semibold required">Nombre de la zona</label><input type="text" class="form-control form-control-solid" name="zona" value="{{ zona.zona if zona else '' }}" required placeholder="Ej: Zona Centro"></div>
+    <div class="col-md-6"><label class="form-label fw-semibold">Dirección</label><input type="text" class="form-control form-control-solid" name="direccion" value="{{ zona.direccion if zona else '' }}" placeholder="Ej: Centro de la ciudad"></div>
+  </div></div>
 </div>
-
+<div class="d-flex justify-content-end gap-3 mb-10">
+  <a href="{{ url_for('zonas') }}" class="btn btn-light">Cancelar</a>
+  <button type="submit" class="btn btn-primary">Guardar zona</button>
+</div>
+</form>
 {% endblock %}

@@ -1,0 +1,399 @@
+// ===================================================================
+//  Tanishi Finance — Script principal (conectado al API)
+// ===================================================================
+
+// -------------------------------------------------------------------
+//  Configuración general
+// -------------------------------------------------------------------
+const CONFIG = {
+  API_URL:       '',                    // vacío = mismo origen
+  pais:          'Colombia',
+  codigoPais:    '+57',
+  moneda:        'COP',
+  simboloMoneda: '$',
+  locale:        'es-CO',
+  whatsapp:      '573001234567',
+  telefono:      '+573001234567',
+  longitudTel:   10,
+  prefijoValido: /^[3]\d{9}$/
+};
+
+// -------------------------------------------------------------------
+//  Estado de sesión
+// -------------------------------------------------------------------
+let tokenSesion = null;
+let rolActual = '';
+let usuarioActual = '';
+let cacheSolicitudes = [];
+
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// -------------------------------------------------------------------
+//  Helper de fetch al API
+// -------------------------------------------------------------------
+async function api(ruta, opciones = {}) {
+  const headers = Object.assign(
+    { 'Content-Type': 'application/json' },
+    opciones.headers || {}
+  );
+  if (tokenSesion) headers['Authorization'] = 'Bearer ' + tokenSesion;
+
+  const resp = await fetch(CONFIG.API_URL + ruta, Object.assign({}, opciones, { headers }));
+  let datos = null;
+  try { datos = await resp.json(); } catch(e) {}
+  if (!resp.ok) {
+    throw new Error((datos && datos.error) || ('Error HTTP ' + resp.status));
+  }
+  return datos;
+}
+
+// -------------------------------------------------------------------
+//  Cargar configuración del servidor
+// -------------------------------------------------------------------
+async function cargarConfiguracion() {
+  try {
+    const cfg = await api('/api/configuracion');
+    Object.assign(CONFIG, {
+      pais:          cfg.pais          || CONFIG.pais,
+      codigoPais:    cfg.codigo_pais   || CONFIG.codigoPais,
+      moneda:        cfg.moneda        || CONFIG.moneda,
+      simboloMoneda: cfg.simbolo_moneda|| CONFIG.simboloMoneda,
+      whatsapp:      cfg.whatsapp      || CONFIG.whatsapp,
+      telefono:      cfg.telefono_contacto || CONFIG.telefono
+    });
+    // Actualizar enlaces de contacto del HTML
+    document.querySelectorAll('a[href^="tel:"]').forEach(a => {
+      a.href = 'tel:' + CONFIG.telefono;
+    });
+    document.querySelectorAll('a[href*="wa.me/"]').forEach(a => {
+      const url = a.href.replace(/wa\.me\/[0-9]+/, 'wa.me/' + CONFIG.whatsapp);
+      a.href = url;
+    });
+  } catch(e) {
+    console.warn('No se pudo cargar configuración:', e.message);
+  }
+}
+
+// -------------------------------------------------------------------
+//  Generar ID de solicitud
+// -------------------------------------------------------------------
+function generarId() {
+  const d = new Date();
+  const parte = d.getFullYear().toString().slice(-2)
+              + String(d.getMonth()+1).padStart(2,'0')
+              + String(d.getDate()).padStart(2,'0');
+  return 'TF-' + parte + '-' + Math.random().toString(36).slice(2,7).toUpperCase();
+}
+
+// -------------------------------------------------------------------
+//  Modal de solicitud
+// -------------------------------------------------------------------
+function abrirSolicitud(tipo) {
+  document.getElementById('applyOverlay').style.display = 'flex';
+  document.getElementById('applyForm').style.display = 'block';
+  document.getElementById('successBox').style.display = 'none';
+  document.getElementById('loanType').value = tipo || '';
+  document.body.style.overflow = 'hidden';
+}
+function cerrarSolicitud() {
+  document.getElementById('applyOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+  document.getElementById('applyForm').reset();
+}
+
+document.getElementById('applyForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = this.querySelector('button[type=submit]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
+
+  const telefono = document.getElementById('mobile').value.replace(/\D/g,'');
+  if (!CONFIG.prefijoValido.test(telefono)) {
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Enviar Solicitud'; }
+    alert('Por favor ingrese un número válido de ' + CONFIG.longitudTel + ' dígitos para ' + CONFIG.pais + '.');
+    return;
+  }
+
+  const solicitud = {
+    id:           generarId(),
+    nombre:       document.getElementById('name').value.trim(),
+    telefono:     telefono,
+    codigo_pais:  CONFIG.codigoPais,
+    servicio:     document.getElementById('loanType').value,
+    monto:        document.getElementById('amount').value.trim() || null,
+    ciudad:       document.getElementById('city').value.trim(),
+    empleo:       document.getElementById('employment').value,
+    mensaje:      document.getElementById('message').value.trim()
+  };
+
+  try {
+    await api('/api/solicitudes', {
+      method: 'POST',
+      body: JSON.stringify(solicitud)
+    });
+
+    document.getElementById('applyForm').style.display = 'none';
+    document.getElementById('successBox').style.display = 'block';
+    document.getElementById('leadId').textContent = 'ID de Referencia: ' + solicitud.id;
+
+    const mensajeWA = encodeURIComponent(
+      'Hola Tanishi Finance, he enviado una solicitud. Mi ID de referencia es ' + solicitud.id +
+      '. Nombre: ' + solicitud.nombre + '. Servicio: ' + solicitud.servicio +
+      '. Por favor ayúdenme con el siguiente paso.'
+    );
+    document.getElementById('successWhatsApp').href =
+      'https://wa.me/' + CONFIG.whatsapp + '?text=' + mensajeWA;
+  } catch(err) {
+    alert('Error al enviar: ' + err.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Enviar Solicitud'; }
+  }
+});
+
+// -------------------------------------------------------------------
+//  Acordeón FAQs
+// -------------------------------------------------------------------
+document.querySelectorAll('.faq-q').forEach(q => q.addEventListener('click', () => {
+  const item = q.parentElement;
+  item.classList.toggle('open');
+  q.querySelector('i').className = item.classList.contains('open') ? 'fas fa-minus' : 'fas fa-plus';
+}));
+
+// -------------------------------------------------------------------
+//  Login / Logout
+// -------------------------------------------------------------------
+function abrirLogin(rol) {
+  rolActual = rol;
+  document.getElementById('loginTitle').textContent = (rol === 'Admin' ? 'Administrador' : 'Personal') + ' - Ingreso';
+  document.getElementById('loginArea').style.display = 'block';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('loginOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function cerrarLogin() {
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') hacerLogin(); });
+
+async function hacerLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if (!u || !p) {
+    document.getElementById('loginError').textContent = 'Ingrese usuario y contraseña.';
+    return;
+  }
+  try {
+    const r = await api('/api/login', {
+      method: 'POST',
+      body: JSON.stringify({ usuario: u, clave: p })
+    });
+    tokenSesion = r.token;
+    usuarioActual = r.usuario;
+    rolActual = r.rol;
+    document.getElementById('loginArea').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('dashRole').textContent =
+      (r.rol === 'admin' ? 'Panel Administrador' : 'Panel Personal') + ' — ' + r.nombre_completo;
+    renderDashboard();
+  } catch(err) {
+    document.getElementById('loginError').textContent = err.message;
+  }
+}
+async function cerrarSesion() {
+  try { await api('/api/logout', { method: 'POST' }); } catch(e) {}
+  tokenSesion = null;
+  usuarioActual = '';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginArea').style.display = 'block';
+}
+
+// -------------------------------------------------------------------
+//  Dashboard
+// -------------------------------------------------------------------
+const ESTADOS = ['Nuevo','Contactado','Documentos','Ingreso','PD','Aprobado','Desembolsado','Rechazado','Cerrado'];
+
+async function renderDashboard() {
+  let lista = [];
+  try {
+    lista = await api('/api/solicitudes');
+  } catch(err) {
+    document.getElementById('emptyDash').style.display = 'block';
+    document.getElementById('emptyDash').textContent = 'Error al cargar: ' + err.message;
+    return;
+  }
+  cacheSolicitudes = lista;
+
+  const hoy = new Date().toISOString().slice(0,10);
+  const buscar = (document.getElementById('leadSearch')?.value || '').trim().toLowerCase();
+  const filtro = document.getElementById('leadFilter')?.value || '';
+
+  document.getElementById('kTotal').textContent   = lista.length;
+  document.getElementById('kToday').textContent   = lista.filter(x => (x.fecha_creacion||'').slice(0,10) === hoy).length;
+  document.getElementById('kPending').textContent = lista.filter(x => !['Desembolsado','Rechazado','Cerrado'].includes(x.estado)).length;
+  document.getElementById('kDone').textContent    = lista.filter(x => ['Desembolsado','Cerrado'].includes(x.estado)).length;
+
+  const visibles = lista.filter(l => {
+    const coincide = !buscar || [l.id, l.nombre, l.telefono, l.servicio]
+      .some(v => String(v || '').toLowerCase().includes(buscar));
+    return coincide && (!filtro || l.estado === filtro);
+  });
+
+  const tb = document.getElementById('leadTable');
+  tb.innerHTML = '';
+  visibles.forEach(l => {
+    const tr = document.createElement('tr');
+    [l.id, l.nombre, l.telefono, l.servicio,
+     new Date(l.fecha_creacion).toLocaleString(CONFIG.locale)].forEach(v => {
+      const td = document.createElement('td');
+      td.textContent = v;
+      tr.appendChild(td);
+    });
+
+    const td = document.createElement('td');
+    const wrap = document.createElement('div');
+    wrap.className = 'lead-actions';
+
+    const sel = document.createElement('select');
+    sel.className = 'status';
+    ESTADOS.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s; o.textContent = s;
+      if (s === l.estado) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.onchange = async () => {
+      try {
+        await api('/api/solicitudes/' + l.id, {
+          method: 'PATCH',
+          body: JSON.stringify({ estado: sel.value })
+        });
+        renderDashboard();
+      } catch(err) { alert('Error: ' + err.message); }
+    };
+
+    const ver = document.createElement('button');
+    ver.className = 'small-btn btn-dark';
+    ver.textContent = 'Ver';
+    ver.onclick = () => mostrarDetalle(l.id);
+
+    const llamar = document.createElement('a');
+    llamar.className = 'small-btn btn-green';
+    llamar.textContent = 'Llamar';
+    llamar.href = 'tel:' + (l.codigo_pais || CONFIG.codigoPais) + l.telefono;
+
+    wrap.appendChild(sel); wrap.appendChild(ver); wrap.appendChild(llamar);
+    td.appendChild(wrap); tr.appendChild(td); tb.appendChild(tr);
+  });
+
+  const vacio = document.getElementById('emptyDash');
+  vacio.style.display = visibles.length ? 'none' : 'block';
+  vacio.textContent = lista.length ? 'Ninguna solicitud coincide.' : 'Aún no hay solicitudes registradas.';
+}
+
+function mostrarDetalle(id) {
+  const l = cacheSolicitudes.find(x => x.id === id);
+  if (!l) return;
+  const box = document.getElementById('leadDetails');
+  box.innerHTML = '';
+  const datos = [
+    ['ID Solicitud', l.id],
+    ['Nombre',       l.nombre],
+    ['Teléfono',     l.telefono],
+    ['Servicio',     l.servicio],
+    ['Monto',        l.monto || '—'],
+    ['Ciudad',       l.ciudad || '—'],
+    ['Empleo',       l.empleo || '—'],
+    ['Estado',       l.estado],
+    ['Creado',       new Date(l.fecha_creacion).toLocaleString(CONFIG.locale)],
+    ['Mensaje',      l.mensaje || '—']
+  ];
+  datos.forEach(([k, v]) => {
+    const d = document.createElement('div');
+    const b = document.createElement('b'); b.textContent = k;
+    const s = document.createElement('span'); s.textContent = v;
+    d.appendChild(b); d.appendChild(s);
+    box.appendChild(d);
+  });
+  document.getElementById('detailsOverlay').style.display = 'flex';
+}
+function cerrarDetalle() {
+  document.getElementById('detailsOverlay').style.display = 'none';
+}
+
+function exportarCSV() {
+  if (!cacheSolicitudes.length) { alert('No hay solicitudes.'); return; }
+  const headers = ['ID','Nombre','Teléfono','Servicio','Monto','Ciudad','Empleo','Mensaje','Estado','Fecha'];
+  const esc = v => '"' + String(v ?? '').replace(/"/g,'""') + '"';
+  const filas = cacheSolicitudes.map(l => [
+    l.id, l.nombre, l.telefono, l.servicio, l.monto, l.ciudad, l.empleo,
+    l.mensaje, l.estado,
+    new Date(l.fecha_creacion).toLocaleString(CONFIG.locale)
+  ].map(esc).join(','));
+  const blob = new Blob([[headers.map(esc).join(','), ...filas].join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'tanishi-solicitudes.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// -------------------------------------------------------------------
+//  Navegación móvil
+// -------------------------------------------------------------------
+function alternarNavMovil() {
+  const x = document.getElementById('mobileNav');
+  x.style.display = x.style.display === 'none' ? 'block' : 'none';
+}
+function cerrarNavMovil() {
+  document.getElementById('mobileNav').style.display = 'none';
+}
+
+// -------------------------------------------------------------------
+//  Overlays con click o Escape
+// -------------------------------------------------------------------
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => {
+  if (e.target === o) {
+    if (o.id === 'applyOverlay') cerrarSolicitud();
+    else if (o.id === 'detailsOverlay') cerrarDetalle();
+    else cerrarLogin();
+  }
+}));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { cerrarSolicitud(); cerrarLogin(); cerrarDetalle(); }
+});
+
+// -------------------------------------------------------------------
+//  Calificación del cliente
+// -------------------------------------------------------------------
+(function() {
+  const estrellas = document.querySelectorAll('.rating-stars button');
+  const nota = document.getElementById('ratingNote');
+  if (!estrellas.length || !nota) return;
+
+  estrellas.forEach(star => {
+    star.addEventListener('click', function() {
+      const valor = Number(this.dataset.rating);
+      estrellas.forEach(s => s.classList.toggle('active', Number(s.dataset.rating) <= valor));
+      nota.textContent = valor === 1
+        ? '¡Gracias por su calificación de 1 estrella!'
+        : 'Calificación de ' + valor + ' estrellas seleccionada. ¡Gracias por su opinión!';
+      try { localStorage.setItem('tanishi_calificacion_cliente', String(valor)); } catch(e) {}
+    });
+  });
+
+  try {
+    const guardada = Number(localStorage.getItem('tanishi_calificacion_cliente'));
+    if (guardada >= 1 && guardada <= 5) {
+      estrellas.forEach(s => s.classList.toggle('active', Number(s.dataset.rating) <= guardada));
+      nota.textContent = 'Calificación de ' + guardada + ' estrellas seleccionada. ¡Gracias por su opinión!';
+    }
+  } catch(e) {}
+})();
+
+// -------------------------------------------------------------------
+//  Init
+// -------------------------------------------------------------------
+cargarConfiguracion();

@@ -1,0 +1,70 @@
+{% from 'includes/_ki.html' import ki %}
+{% set T = (page_title or request.path.strip('/').replace('_',' ').title() or 'Dashboard') %}
+<div id="kt_header" class="header" data-kt-sticky="true" data-kt-sticky-name="header" data-kt-sticky-offset="{default: '200px', lg: '300px'}">
+<div class="container-fluid d-flex align-items-center justify-content-between" id="kt_header_container">
+<div class="page-title d-flex flex-column align-items-start justify-content-center flex-wrap mt-n5 mt-lg-0 me-lg-2 pb-2 pb-lg-0" data-kt-swapper="true" data-kt-swapper-mode="prepend" data-kt-swapper-parent="{default: '#kt_content_container', lg: '#kt_header_container'}">
+<h1 class="text-dark fw-bold my-0 fs-2">{{ T }}</h1>
+<ul class="breadcrumb fw-semibold fs-base my-1"><li class="breadcrumb-item text-muted"><a href="/dashboard" class="text-muted text-hover-primary">Inicio</a></li><li class="breadcrumb-item text-dark">{{ T }}</li></ul>
+</div>
+<div class="d-flex d-lg-none align-items-center ms-n4 me-2">
+<div class="btn btn-icon btn-active-icon-primary" id="kt_aside_mobile_toggle">{{ ki('abstract-14','fs-1') }}</div>
+<a href="/dashboard" class="d-flex align-items-center"><img alt="Logo" src="{{ url_for('static', filename='metronic/media/logos/demo7.svg') }}" class="h-30px" /></a>
+</div>
+<div class="d-flex flex-shrink-0">
+            <div class="d-flex align-items-center ms-3">
+                <div class="dropdown me-3">
+<button type="button" class="btn btn-icon bg-body btn-color-gray-600 btn-active-color-primary w-40px h-40px position-relative" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-label="Notificaciones">{{ ki('notification-bing','fs-3 text-gray-700') }}{% if sol_total %}<span class="badge badge-circle badge-danger position-absolute top-0 start-100 translate-middle fs-9">{{ sol_total }}</span>{% endif %}</button>
+<div class="dropdown-menu dropdown-menu-end p-0 overflow-hidden" style="width:min(375px,92vw)">
+<div class="bg-primary rounded-top">
+<h3 class="text-white fw-semibold px-9 mt-8 mb-5">Notificaciones<span class="fs-8 opacity-75 ps-3">{{ sol_total or 0 }} sin resolver</span></h3>
+<ul class="nav nav-line-tabs nav-line-tabs-2x nav-stretch fw-semibold px-9">
+<li class="nav-item"><a class="nav-link text-white opacity-75 opacity-state-100 pb-4 active" data-bs-toggle="tab" href="#adm_n1">Alertas</a></li>
+<li class="nav-item"><a class="nav-link text-white opacity-75 opacity-state-100 pb-4" data-bs-toggle="tab" href="#adm_n2">Actualizaciones</a></li>
+<li class="nav-item"><a class="nav-link text-white opacity-75 opacity-state-100 pb-4" data-bs-toggle="tab" href="#adm_n3">Logs</a></li>
+</ul></div>
+<div class="tab-content">
+<div class="tab-pane fade show active" id="adm_n1" role="tabpanel"><div class="scroll-y mh-325px my-5 px-8">{% if avisos_on %}{% if av_venc %}<div class="text-gray-500 fs-8 fw-bold text-uppercase pt-2">Cuotas vencidas ({{ av_venc_total }})</div>{% for v in av_venc %}<div class="d-flex flex-stack py-3"><div class="d-flex align-items-center"><div class="symbol symbol-35px me-4"><span class="symbol-label bg-light-danger">{{ ki('cross-circle','fs-3 text-danger') }}</span></div><div class="mb-0 me-2"><a href="{{ url_for('prestamo_ver', id_prestamo=v.id) }}" class="fs-6 text-gray-800 text-hover-danger fw-bold">{{ v.nombre or 'Cliente' }}</a><div class="text-gray-400 fs-7">{{ v.dias_mora }} días de mora · ${{ '{:,.0f}'.format(v.total_debe or 0) }}</div></div></div></div>{% endfor %}<div class="separator my-2"></div>{% endif %}{% endif %}
+{% for s in sol_ultimas or [] %}<div class="d-flex flex-stack py-4"><div class="d-flex align-items-center"><div class="symbol symbol-35px me-4"><span class="symbol-label bg-light-primary">{{ ki('bill','fs-3 text-primary') }}</span></div><div class="mb-0 me-2"><a href="{{ sol_link or '/solicitudes' }}" class="fs-6 text-gray-800 text-hover-primary fw-bold">{{ s.nombre or ('Cliente #' ~ s.id_cliente) }}</a><div class="text-gray-400 fs-7">${{ '{:,.0f}'.format(s.monto) }} · {{ s.plazo_dias }} días · {{ s.estado }}</div></div></div><span class="badge badge-light fs-8">{{ s.fecha_solicitud.strftime('%d/%m %H:%M') if s.fecha_solicitud else '' }}</span></div>{% else %}<div class="text-center text-muted py-8">No hay solicitudes pendientes</div>{% endfor %}
+</div><div class="py-3 text-center border-top"><a href="{{ sol_link or '/solicitudes' }}" class="btn btn-color-gray-600 btn-active-color-primary">Ver todas {{ ki('arrow-right','fs-7') }}</a></div></div>
+<div class="tab-pane fade" id="adm_n2" role="tabpanel"><div class="scroll-y mh-325px my-5 px-8">{% if avisos_on %}{% if av_pagos %}<div class="text-gray-500 fs-8 fw-bold text-uppercase pt-2">Pagos recibidos</div>{% for d in av_pagos %}<div class="d-flex flex-stack py-3"><div class="d-flex align-items-center"><div class="symbol symbol-35px me-4"><span class="symbol-label bg-light-success">{{ ki('check-circle','fs-3 text-success') }}</span></div><div class="mb-0 me-2"><a href="{{ url_for('prestamo_ver', id_prestamo=d.id_prestamo) }}" class="fs-6 text-gray-800 text-hover-success fw-bold">{{ d.nombre or 'Cliente' }}</a><div class="text-gray-400 fs-7">${{ '{:,.0f}'.format(d.monto or 0) }}</div></div></div><span class="badge badge-light fs-8">{{ d.fecha_cobro.strftime('%d/%m') if d.fecha_cobro else '' }}</span></div>{% endfor %}<div class="separator my-2"></div>{% endif %}{% endif %}
+{% for s in sol_resueltas or [] %}<div class="d-flex flex-stack py-4"><div class="d-flex align-items-center"><div class="symbol symbol-35px me-4"><span class="symbol-label bg-light-{{ 'success' if s.estado == 'aprobada' else 'danger' }}">{{ ki('check-circle' if s.estado == 'aprobada' else 'cross-circle','fs-3 text-' ~ ('success' if s.estado == 'aprobada' else 'danger')) }}</span></div><div class="mb-0 me-2"><span class="fs-6 text-gray-800 fw-bold">{{ s.nombre or ('Cliente #' ~ s.id_cliente) }}</span><div class="text-gray-400 fs-7">${{ '{:,.0f}'.format(s.monto) }} · {{ s.estado }}</div></div></div><span class="badge badge-light fs-8">{{ s.fecha_respuesta.strftime('%d/%m %H:%M') if s.fecha_respuesta else '' }}</span></div>{% else %}<div class="d-flex flex-column px-4 pt-8 pb-4 text-center"><h3 class="fw-bold">Sin actualizaciones</h3><div class="text-gray-600 fw-semibold pt-1">Aún no has resuelto solicitudes</div><img class="mw-100 mh-200px mx-auto mt-4" alt="" src="{{ url_for('static', filename='metronic/media/illustrations/sigma-1/1.png') }}" onerror="this.style.display='none'"></div>{% endfor %}
+</div></div>
+<div class="tab-pane fade" id="adm_n3" role="tabpanel"><div class="scroll-y mh-325px my-5 px-8">
+{% for l in notif_logs or [] %}<div class="d-flex flex-stack py-4"><div class="d-flex align-items-center me-2"><span class="w-70px badge badge-light-success me-4">{{ l.tipo }}</span><span class="text-gray-800 fw-semibold">{{ l.titulo }}</span></div><span class="badge badge-light fs-8">{{ l.fecha_creacion.strftime('%d/%m %H:%M') if l.fecha_creacion else '' }}</span></div>{% else %}<div class="text-center text-muted py-8">Sin registros</div>{% endfor %}
+</div></div>
+</div></div></div>
+                <div class="dropdown">
+                    <button type="button" class="btn btn-icon bg-body btn-color-gray-600 btn-active-color-primary w-40px h-40px" data-bs-toggle="dropdown" aria-label="Tema">
+                        {{ ki('sun','fs-3 text-gray-700 theme-light-show') }}{{ ki('moon','fs-3 text-gray-700 theme-dark-show') }}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end py-2">
+                        <a class="dropdown-item" href="#" data-tema="light">{{ ki('sun','fs-5 me-2') }}Claro</a>
+                        <a class="dropdown-item" href="#" data-tema="dark">{{ ki('moon','fs-5 me-2') }}Oscuro</a>
+                        <a class="dropdown-item" href="#" data-tema="system">{{ ki('screen','fs-5 me-2') }}Sistema</a>
+                    </div>
+                </div>
+                <script>
+                (function () {
+                  function aplicar(m) {
+                    var r = m === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : m;
+                    document.documentElement.setAttribute('data-bs-theme', r);
+                    var i = document.getElementById('tema-icono');
+                    if (i) i.className = 'fa ' + (r === 'dark' ? 'fa-moon' : 'fa-sun') + ' text-gray-700 fs-3';
+                  }
+                  document.querySelectorAll('[data-tema]').forEach(function (a) {
+                    a.addEventListener('click', function (e) {
+                      e.preventDefault();
+                      var m = this.getAttribute('data-tema');
+                      try { localStorage.setItem('data-bs-theme', m); } catch (x) {}
+                      aplicar(m);
+                    });
+                  });
+                  var g = 'light';
+                  try { g = localStorage.getItem('data-bs-theme') || 'light'; } catch (x) {}
+                  aplicar(g);
+                })();
+                </script>
+            </div>
+        </div>
+    </div>
+</div>

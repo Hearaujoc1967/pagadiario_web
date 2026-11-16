@@ -7,7 +7,7 @@ class CapitalModel:
     @staticmethod
     def obtener_capital():
         """Obtiene el registro único del capital total."""
-        return query("SELECT * FROM t_capital LIMIT 1", fetchone=True)
+        return query("SELECT id, (SELECT COALESCE(SUM(capital),0) FROM t_det_capital) AS capital, fecha_creacion FROM t_capital ORDER BY id LIMIT 1", fetchone=True)
 
     @staticmethod
     def listar_aportes():

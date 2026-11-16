@@ -1,0 +1,124 @@
+/* Tanishi Finance - Glassmorphism (portfolio-glassmorphism-design) */
+body.glass{--primary:#6366f1;--primary-light:#818cf8;--primary-dark:#4f46e5;--glass-background:rgba(255,255,255,.55);--glass-border:rgba(255,255,255,.7);--text-primary:#1f2937;--text-secondary:#4b5563;--bg-primary:#f5f7ff;--bg-card:rgba(255,255,255,.45);--radius:15px;--shadow:0 8px 32px 0 rgba(31,38,135,.15);--tr:all .3s ease}
+body.glass.dark-theme{--primary:#818cf8;--primary-light:#a5b4fc;--glass-background:rgba(17,25,40,.7);--glass-border:rgba(255,255,255,.1);--text-primary:#f9fafb;--text-secondary:#d1d5db;--bg-primary:#111827;--bg-card:rgba(31,41,55,.5)}
+html{scroll-behavior:smooth}
+body.glass{font-family:'Inter',sans-serif;line-height:1.6;color:var(--text-primary)!important;background-color:var(--bg-primary)!important;background-image:radial-gradient(circle at 12px 12px,rgba(99,102,241,.13) 12px,transparent 13px),linear-gradient(rgba(99,102,241,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.05) 1px,transparent 1px)!important;background-size:100px 100px,25px 25px,25px 25px!important;background-attachment:fixed!important;overflow-x:hidden}
+body.glass .noise{position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+body.glass .container{max-width:1200px;margin:0 auto;padding:3.2rem 2rem 6rem;position:relative}
+body.glass .glass-card{background:var(--glass-background)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--glass-border)!important;border-radius:var(--radius)!important;box-shadow:var(--shadow)!important;padding:2rem!important;margin:0 0 2rem!important;max-width:none!important;position:relative;overflow:hidden;transition:var(--tr)}
+body.glass :is(.card,.p,.partner-card,.faq,.stat,.step,.about-card,.founder-card,.hero-card,.network-badge,.customer-rating,.trust-row>div){background:var(--bg-card)!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--glass-border)!important;border-radius:var(--radius)!important;box-shadow:none!important;transition:var(--tr)}
+body.glass :is(.card,.p,.stat,.partner-card):hover{transform:translateY(-4px);box-shadow:var(--shadow)!important}
+body.glass .partner-card{background:rgba(255,255,255,.85)!important}
+body.glass .glass-card :is(h1,h2,h3,h4){color:var(--text-primary)!important;font-family:'Poppins',sans-serif}
+body.glass .glass-card :is(p,small,li,label,.faq-a){color:var(--text-secondary)!important}
+body.glass .glass-card :is(.stat b,.trust-row b,.network-badge strong){color:var(--primary)!important}
+body.glass .glass-card :is(.trust-row span,.stat span,.step small,.network-badge span){color:var(--text-secondary)!important}
+body.glass .glass-card .step strong,body.glass .glass-card .faq-q{color:var(--text-primary)!important}
+body.glass .eyebrow,body.glass .p-num,body.glass .founder-label{color:var(--primary)!important;font-weight:700}
+body.glass .card .icon{background:linear-gradient(135deg,var(--primary),var(--primary-dark))!important;color:#fff!important;border-radius:12px!important}
+body.glass .badge{background:rgba(99,102,241,.12)!important;color:var(--primary)!important;border:1px solid rgba(99,102,241,.3)!important}
+body.glass .section-head h2,body.glass .glass-card>h2{color:var(--primary)!important}
+body.glass .section-head{border-bottom:2px solid var(--glass-border);padding-bottom:.75rem;margin-bottom:1.5rem}
+body.glass .section,body.glass .hero,body.glass .stats{scroll-margin-top:80px}
+body.glass .profile-header{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.4rem}
+body.glass .avatar{width:150px;height:150px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));box-shadow:0 5px 20px rgba(99,102,241,.4);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:1rem;padding:6px}
+body.glass .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;background:#fff}
+body.glass .profile-header h1{font-size:2.5rem;margin:0;background:linear-gradient(to right,var(--primary),var(--primary-light));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important}
+body.glass .profile-header h2{font-size:1.5rem;margin:0}
+body.glass .profile-header p{margin:.25rem 0 0}
+body.glass .profile-links{display:flex;flex-wrap:wrap;justify-content:center;gap:.75rem;margin-top:1rem}
+body.glass .hero{display:grid!important;grid-template-columns:1.2fr 1fr;gap:2rem;align-items:center}
+body.glass .hero h1{font-size:clamp(2rem,6vw,3.2rem)}
+body.glass .hero h1 span{background:linear-gradient(to right,#f59e0b,#ea580c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important}
+body.glass .hero .hero-buttons,body.glass .quick-contact{display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0}
+body.glass #contact>div[style]{background:transparent!important;border:0!important;padding:0!important}
+body.glass footer.glass-card{border-radius:var(--radius)!important}
+body.glass footer.glass-card :is(h4,a,li,p,div){color:var(--text-secondary)!important}
+body.glass footer.glass-card h4{color:var(--primary)!important}
+body.glass .glass-button{background:var(--glass-background);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--glass-border);color:var(--primary);cursor:pointer;transition:var(--tr)}
+body.glass .btn{border-radius:12px!important;transition:var(--tr)}
+body.glass .btn:hover{transform:translateY(-2px)}
+body.glass .btn-dark{background:rgba(99,102,241,.15)!important;color:var(--primary)!important;border:1px solid rgba(99,102,241,.35)!important}
+body.glass .theme-toggle,body.glass .mobile-nav-toggle{position:fixed;top:46px;z-index:1000;width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;font-size:1.2rem;box-shadow:0 4px 15px rgba(0,0,0,.15)}
+body.glass .theme-toggle{right:20px}
+body.glass .mobile-nav-toggle{left:20px;display:none}
+body.glass .glass-nav{background:var(--glass-background);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:.75rem;margin-bottom:2rem;position:sticky;top:1rem;z-index:100;box-shadow:var(--shadow)}
+body.glass .glass-nav ul{display:flex;justify-content:space-around;flex-wrap:wrap;list-style:none;margin:0;padding:0}
+body.glass .glass-nav a{display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;color:var(--text-secondary);border-radius:.5rem;transition:var(--tr);text-decoration:none}
+body.glass .glass-nav a:hover,body.glass .glass-nav a.active{color:var(--primary);background:rgba(99,102,241,.12)}
+@media (max-width:768px){
+ body.glass .container{padding:3rem 1rem 6rem}
+ body.glass .glass-card{padding:1.5rem!important}
+ body.glass .mobile-nav-toggle{display:flex}
+ body.glass .glass-nav{position:fixed;top:0;left:-100%;width:80%;height:100%;border-radius:0;padding:2rem;transition:left .3s ease;z-index:999;margin:0}
+ body.glass .glass-nav.mobile-active{left:0}
+ body.glass .glass-nav ul{flex-direction:column;gap:1rem;margin-top:4rem}
+ body.glass .hero{grid-template-columns:1fr}
+ body.glass .profile-header h1{font-size:2rem}
+ body.glass .avatar{width:120px;height:120px}
+}
+/* ---- v2: menu por encima + tarjetas de servicios ---- */
+body.glass header{position:static!important}
+body.glass .theme-toggle,body.glass .mobile-nav-toggle{z-index:3000}
+@media (max-width:768px){
+ body.glass .glass-nav{z-index:2000;background:rgba(255,255,255,.94);box-shadow:8px 0 40px rgba(31,38,135,.25)}
+ body.glass.dark-theme .glass-nav{background:rgba(17,25,40,.96)}
+}
+body.glass #services .grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1.75rem!important}
+body.glass #services .card{--a1:#6366f1;--a2:#4f46e5;position:relative;overflow:hidden;padding:1.75rem 1.5rem 1.5rem!important;border:1px solid var(--glass-border)!important;border-radius:20px!important;background:var(--glass-background)!important;box-shadow:0 14px 34px rgba(31,38,135,.22),0 3px 8px rgba(0,0,0,.10)!important}
+body.glass #services .card::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,var(--a1),var(--a2))}
+body.glass #services .card:nth-child(6n+2){--a1:#f97316;--a2:#ea580c}
+body.glass #services .card:nth-child(6n+3){--a1:#10b981;--a2:#059669}
+body.glass #services .card:nth-child(6n+4){--a1:#ec4899;--a2:#be185d}
+body.glass #services .card:nth-child(6n+5){--a1:#0ea5e9;--a2:#0369a1}
+body.glass #services .card:nth-child(6n+6){--a1:#f59e0b;--a2:#d97706}
+body.glass #services .card .icon{background:linear-gradient(135deg,var(--a1),var(--a2))!important;box-shadow:0 8px 18px rgba(0,0,0,.22)}
+body.glass #services .card h3{margin-top:.9rem}
+body.glass #services .card p{padding-bottom:1rem;margin-bottom:1rem;border-bottom:1px dashed rgba(99,102,241,.35)}
+body.glass #services .card:hover{transform:translateY(-6px);box-shadow:0 22px 46px rgba(31,38,135,.32),0 6px 14px rgba(0,0,0,.14)!important}
+/* ---- v3: botones flujo brillante ---- */
+body.glass :is(.btn,.mobile-cta a,.mobile-cta button,.card button,.card a){
+ --b-bg:linear-gradient(180deg,#4aa3ff,#1f6fe8 55%,#1e7dff);--b-col:#fff;--b-ts:0 1px 2px rgba(0,40,120,.3);--b-ic:currentColor;
+ --b-sh:inset 0 2px 3px rgba(255,255,255,.55),inset 0 -4px 6px rgba(120,225,255,.95),0 0 24px rgba(40,130,255,.6),0 12px 16px -8px rgba(20,80,200,.5);
+ background:var(--b-bg)!important;color:var(--b-col)!important;text-shadow:var(--b-ts);box-shadow:var(--b-sh)!important;border:0!important;border-radius:999px!important;font-weight:600;text-decoration:none;transition:transform .12s,filter .12s}
+body.glass :is(.btn,.card button,.card a){position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px}
+body.glass :is(.btn,.mobile-cta a,.mobile-cta button,.card button,.card a) i{color:var(--b-ic)!important}
+body.glass :is(.btn,.mobile-cta a,.mobile-cta button,.card button,.card a):hover{filter:brightness(1.05)}
+body.glass :is(.btn,.mobile-cta a,.mobile-cta button,.card button,.card a):active{transform:translateY(2px) scale(.985);filter:brightness(.96)}
+body.glass .btn.btn-gold{--b-bg:linear-gradient(180deg,#ffc983,#ff9d40 55%,#ff8a1f);--b-ts:0 1px 2px rgba(150,60,0,.35);--b-sh:inset 0 2px 3px rgba(255,255,255,.6),inset 0 -4px 6px rgba(255,225,140,.95),0 0 24px rgba(255,150,40,.6),0 12px 16px -8px rgba(220,110,10,.5)}
+body.glass .btn.btn-green,body.glass .mobile-cta .m-wa{--b-bg:linear-gradient(180deg,#fff,#eef1f6);--b-col:#2a2f38;--b-ts:none;--b-ic:#16a34a;--b-sh:inset 0 -3px 4px rgba(130,165,235,.55),0 10px 14px -8px rgba(0,0,0,.3)}
+body.glass .profile-links .btn.btn-green{--b-bg:linear-gradient(180deg,#2a4780,#12285a 60%,#0e2250);--b-col:#dbe6ff;--b-ic:currentColor;--b-sh:inset 0 1px 2px rgba(255,255,255,.25),inset 0 -4px 6px rgba(50,110,255,.95),0 12px 16px -8px rgba(10,30,100,.6)}
+body.glass .mobile-cta .m-apply{--b-bg:linear-gradient(180deg,#ff7a58,#ff3f2a 60%,#ff4a2b);--b-ts:0 1px 2px rgba(130,20,0,.35);--b-sh:inset 0 2px 3px rgba(255,255,255,.5),inset 0 -4px 6px rgba(255,200,120,.9),0 0 24px rgba(255,100,50,.55),0 12px 16px -8px rgba(200,50,20,.5)}
+body.glass .modal .btn.btn-dark{--b-bg:rgba(255,255,255,.4);--b-col:#8b94a0;--b-ts:none;--b-sh:inset 0 1px 2px #fff,inset 0 -2px 4px rgba(0,0,0,.05)}
+body.glass .profile-links .btn.btn-gold::before,body.glass .profile-links .btn.btn-gold::after{content:"";position:absolute;top:50%;height:2px;width:44px;pointer-events:none}
+body.glass .profile-links .btn.btn-gold::before{right:100%;margin-right:4px;background:linear-gradient(90deg,transparent,rgba(255,200,110,.95))}
+body.glass .profile-links .btn.btn-gold::after{left:100%;margin-left:4px;background:linear-gradient(270deg,transparent,rgba(255,200,110,.95))}
+body.glass .profile-links{gap:1rem}
+body.glass .card:nth-child(6n+2) :is(button,a){--b-bg:linear-gradient(180deg,#ffc983,#ff9d40 55%,#ff8a1f);--b-ts:0 1px 2px rgba(150,60,0,.35);--b-sh:inset 0 2px 3px rgba(255,255,255,.6),inset 0 -4px 6px rgba(255,225,140,.95),0 0 24px rgba(255,150,40,.6),0 12px 16px -8px rgba(220,110,10,.5)}
+body.glass .card:nth-child(6n+3) :is(button,a){--b-bg:linear-gradient(180deg,#2a4780,#12285a 60%,#0e2250);--b-col:#dbe6ff;--b-ts:none;--b-sh:inset 0 1px 2px rgba(255,255,255,.25),inset 0 -4px 6px rgba(50,110,255,.95),0 12px 16px -8px rgba(10,30,100,.6)}
+body.glass .card:nth-child(6n+4) :is(button,a){--b-bg:linear-gradient(180deg,#ef4040,#c40f14 60%,#b80d14);--b-ts:0 1px 2px rgba(90,0,0,.35);--b-sh:inset 0 2px 3px rgba(255,255,255,.4),inset 0 -4px 6px rgba(255,120,110,.85),0 12px 16px -8px rgba(160,10,10,.55)}
+body.glass .card:nth-child(6n+5) :is(button,a){--b-bg:linear-gradient(180deg,#ff7a58,#ff3f2a 60%,#ff4a2b);--b-ts:0 1px 2px rgba(130,20,0,.35);--b-sh:inset 0 2px 3px rgba(255,255,255,.5),inset 0 -4px 6px rgba(255,200,120,.9),0 0 24px rgba(255,100,50,.55),0 12px 16px -8px rgba(200,50,20,.5)}
+body.glass .card:nth-child(6n+6) :is(button,a){--b-bg:linear-gradient(180deg,#fff,#eef1f6);--b-col:#2a2f38;--b-ts:none;--b-sh:inset 0 -3px 4px rgba(130,165,235,.55),0 10px 14px -8px rgba(0,0,0,.3)}
+body.glass #services .card:nth-child(6n+1){--a1:#4aa3ff;--a2:#1f6fe8}
+body.glass #services .card:nth-child(6n+2){--a1:#ffc983;--a2:#ff8a1f}
+body.glass #services .card:nth-child(6n+3){--a1:#2a4780;--a2:#12285a}
+body.glass #services .card:nth-child(6n+4){--a1:#ef4040;--a2:#b80d14}
+body.glass #services .card:nth-child(6n+5){--a1:#ff7a58;--a2:#ff3f2a}
+body.glass #services .card:nth-child(6n+6){--a1:#94a3b8;--a2:#64748b}
+body.glass .theme-toggle,body.glass .mobile-nav-toggle{background:linear-gradient(180deg,#fff,#eef1f6)!important;color:#4f46e5!important;border:0!important;box-shadow:inset 0 -3px 4px rgba(130,165,235,.55),0 10px 14px -8px rgba(0,0,0,.35)!important}
+@media (prefers-reduced-motion:reduce){body.glass .btn{transition:none}}
+/* ---- v4: verde WhatsApp + etiqueta visible en botones blancos ---- */
+body.glass .btn.btn-green,body.glass .mobile-cta .m-wa{--b-bg:linear-gradient(180deg,#6df0a0,#1fb85a 55%,#18c25e);--b-col:#fff;--b-ts:0 1px 2px rgba(0,80,30,.35);--b-ic:#fff;--b-sh:inset 0 2px 3px rgba(255,255,255,.55),inset 0 -4px 6px rgba(150,255,190,.95),0 0 24px rgba(34,197,94,.6),0 12px 16px -8px rgba(10,120,50,.5)}
+body.glass .wa{background:linear-gradient(180deg,#6df0a0,#1fb85a 55%,#18c25e)!important;color:#fff!important;border:0!important;box-shadow:inset 0 2px 3px rgba(255,255,255,.55),inset 0 -4px 6px rgba(150,255,190,.95),0 0 24px rgba(34,197,94,.6),0 12px 16px -8px rgba(10,120,50,.5)!important}
+body.glass .card:nth-child(6n+6) :is(button,a),body.glass .card:nth-child(6n+6) :is(button,a) *{color:#2a2f38!important;text-shadow:none!important;-webkit-text-fill-color:#2a2f38!important}
+/* v5: logo sin círculo */
+body.glass .avatar{background:none!important;box-shadow:none!important;border-radius:0!important;padding:0!important;overflow:visible!important;width:auto!important;height:auto!important}
+body.glass .avatar img{width:auto!important;height:150px!important;max-width:100%;border-radius:0!important;background:transparent!important;object-fit:contain!important;padding:0!important;filter:drop-shadow(0 8px 14px rgba(31,38,135,.3))}
+@media (max-width:768px){body.glass .avatar img{height:130px!important}}
+/* v6: franja azul marino + sombra en las demas tarjetas (sin Servicios) */
+html body.glass :is(.stat,.p,.about-card,.founder-card,.partner-card,.faq,.hero-card,.network-badge,.customer-rating),
+body.glass .profile-header,body.glass #contact,body.glass footer.glass-card{position:relative;overflow:hidden;box-shadow:0 14px 34px rgba(31,38,135,.22),0 3px 8px rgba(0,0,0,.10)!important}
+html body.glass :is(.stat,.p,.about-card,.founder-card,.partner-card,.faq,.hero-card,.network-badge,.customer-rating)::before,
+body.glass .profile-header::before,body.glass #contact::before,body.glass footer.glass-card::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,#2a4780,#12285a);z-index:1;pointer-events:none}
+html body.glass :is(.stat,.p,.partner-card,.faq):hover{box-shadow:0 22px 46px rgba(31,38,135,.32),0 6px 14px rgba(0,0,0,.14)!important}
+body.glass.dark-theme :is(.stat,.p,.about-card,.founder-card,.partner-card,.faq,.hero-card,.network-badge,.customer-rating,.profile-header,#contact,footer.glass-card)::before{background:linear-gradient(90deg,#4aa3ff,#1f6fe8)}

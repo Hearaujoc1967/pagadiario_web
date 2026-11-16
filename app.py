@@ -1,14 +1,34 @@
 # app.py
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_session import Session
 from config import Config
 from database import query
+from telefono import normalizar
 import hashlib
 import os
 import socket
 import threading
 import webbrowser
 from datetime import date, timedelta
+
+import os
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+
+# ============================================
+# SILENCIAR WARNING DE WERKZEUG (solo desarrollo)
+# ============================================
+import sys
+class _FiltroStderr:
+    def write(self, msg):
+        if 'WARNING: This is a development server' in msg:
+            return
+        if 'Use a production WSGI server instead' in msg:
+            return
+        sys.__stderr__.write(msg)
+    def flush(self):
+        sys.__stderr__.flush()
+sys.stderr = _FiltroStderr()
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -26,6 +46,241 @@ os.makedirs(Config.SESSION_FILE_DIR, exist_ok=True)
 def sha1_hash(texto):
     """Genera el hash SHA1, igual que la función do_hash() de CodeIgniter."""
     return hashlib.sha1(texto.encode('utf-8')).hexdigest()
+
+
+import random
+from datetime import datetime
+
+def generar_codigo_otp():
+    """Genera un código OTP de 6 dígitos."""
+    import secrets
+    return str(100000 + secrets.randbelow(900000))
+
+
+def validar_campos_unicos():
+    """Valida si un campo (dni, email, telf) ya existe en t_cliente."""
+    campo = request.form.get('campo', '').strip()
+    valor = request.form.get('valor', '').strip()
+
+    # Mapear campo a columna real
+    mapa = {'dni': 'dni', 'cedula': 'dni', 'nombre': 'nombre', 'email': 'email', 'telefono': 'telf'}
+    if campo not in mapa or not valor:
+        return jsonify({'existe': False})
+
+    columna = mapa[campo]
+    try:
+        existe = query_estricto(
+            f"SELECT id, nombre, dni FROM t_cliente WHERE {columna} = %s LIMIT 1",
+            (valor,)
+        )
+        if existe:
+            return jsonify({'existe': True, 'nombre': existe['nombre']})
+        return jsonify({'existe': False})
+    except BaseDatosNoDisponible:
+        raise
+    except Exception as e:
+        print(f"Error validando {campo}: {e}", flush=True)
+        return jsonify({'existe': False, 'error': 'interno'}), 500
+
+
+def enviar_otp():
+    """Envía un código OTP al canal elegido (whatsapp/sms/email)."""
+    dni = request.form.get('dni', '').strip()
+    canal = request.form.get('canal', 'whatsapp').strip().lower()
+    contacto = request.form.get('contacto', '').strip()
+
+    if not dni:
+        return jsonify({'success': False, 'error': 'DNI es obligatorio'})
+
+    if canal not in ('whatsapp', 'sms', 'email'):
+        return jsonify({'success': False, 'error': 'Canal no válido'})
+
+    # Si no viene contacto, buscarlo en t_cliente
+    if not contacto:
+        cliente = query(
+            "SELECT telf, email FROM t_cliente WHERE dni = %s LIMIT 1",
+            (dni,),
+            fetchone=True
+        )
+        if cliente:
+            if canal == 'email':
+                contacto = cliente.get('email') or ''
+            else:
+                contacto = cliente.get('telf') or ''
+
+    if not contacto:
+        return jsonify({'success': False, 'error': 'No hay ' + ('email' if canal == 'email' else 'teléfono') + ' registrado'})
+
+    codigo = generar_codigo_otp()
+
+    try:
+        # Invalidar códigos anteriores del mismo DNI
+        query(
+            "UPDATE t_otp SET usado = 1 WHERE dni = %s AND usado = 0",
+            (dni,),
+            commit=True
+        )
+
+        # Crear nuevo código con expiración de 10 minutos
+        query(
+            """INSERT INTO t_otp (dni, telefono, codigo, tipo, fecha_expiracion)
+               VALUES (%s, %s, %s, %s, DATE_ADD(NOW(), INTERVAL 10 MINUTE))""",
+            (dni, contacto, codigo, 'canal_' + canal),
+            commit=True
+        )
+
+        # Modo desarrollo: devolvemos el código en la respuesta
+        resultado = enviar_otp_real(canal, contacto, codigo)
+
+        if not resultado['ok']:
+            print(f"❌ Error enviando OTP: {resultado['detalle']}")
+            return jsonify({
+                'success': False,
+                'error': f"No se pudo enviar por {canal}. Detalle: {resultado['detalle']}"
+            })
+
+        if resultado['modo'] == 'dev':
+            print(f"\n🔐 [MODO DEV] OTP [{canal.upper()}] para {dni} ({contacto}): {codigo}\n")
+            return jsonify({
+                'success': True,
+                'modo': 'dev',
+                'codigo_dev': codigo,
+                'canal': canal,
+                'contacto': contacto,
+                'mensaje': f'[Modo dev] Código: {codigo}'
+            })
+        else:
+            print(f"✅ OTP [{canal.upper()}] enviado a {contacto} ({dni})")
+            return jsonify({
+                'success': True,
+                'modo': 'real',
+                'canal': canal,
+                'contacto': contacto,
+                'mensaje': f'Código enviado por {canal}'
+            })
+    except Exception as e:
+        print(f"Error enviando OTP: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/register')
+def register():
+    return render_template('register.html')  # O el nombre exacto de tu archivo HTML de registro
+
+def verificar_otp():
+    """Verifica un código OTP ingresado por el usuario."""
+    dni = request.form.get('dni', '').strip()
+    codigo = request.form.get('codigo', '').strip()
+
+    if not dni or not codigo:
+        return jsonify({'success': False, 'error': 'DNI y código son obligatorios'})
+
+    try:
+        otp = query(
+            """SELECT * FROM t_otp
+               WHERE dni = %s AND codigo = %s AND usado = 0
+                 AND fecha_expiracion > NOW()
+               ORDER BY id DESC LIMIT 1""",
+            (dni, codigo),
+            fetchone=True
+        )
+
+        if otp:
+            query("UPDATE t_otp SET usado = 1 WHERE id = %s", (otp['id'],), commit=True)
+            return jsonify({'success': True, 'mensaje': 'Código verificado'})
+        return jsonify({'success': False, 'error': 'Código inválido o expirado'})
+    except Exception as e:
+        print(f"Error verificando OTP: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+
+def registro_cliente():
+    """Registra un nuevo cliente desde el formulario público.
+    Todo ocurre en UNA transacción: o se crean cliente + usuario y se consume el OTP, o no cambia nada."""
+    import pymysql
+    from claves import validar_clave
+    from database import get_connection
+
+    dni = request.form.get('dni', '').strip()
+    nombre = request.form.get('nombre', '').strip()
+    telf = normalizar(request.form.get('telefono', '').strip())
+    email = request.form.get('email', '').strip()
+    password = request.form.get('password', '').strip()
+    password2 = request.form.get('password2', '').strip()
+    codigo_otp = request.form.get('codigo_otp', '').strip()
+
+    # Validaciones que no necesitan la base
+    if not all([dni, nombre, telf, email, password, password2, codigo_otp]):
+        return jsonify({'success': False, 'error': 'Todos los campos son obligatorios'})
+    if password != password2:
+        return jsonify({'success': False, 'error': 'Las contraseñas no coinciden'})
+    error_clave = validar_clave(password, [dni, nombre, telf, email.split('@')[0]])
+    if error_clave:
+        return jsonify({'success': False, 'error': error_clave})
+
+    conn = get_connection()
+    if conn is None:
+        return jsonify({'success': False, 'error': 'Servicio no disponible. Intenta en unos minutos.'}), 503
+
+    try:
+        with conn.cursor() as cur:
+            conn.begin()
+
+            # 1) OTP vigente de esa cédula; FOR UPDATE evita que dos registros lo usen a la vez
+            cur.execute(
+                """SELECT id, telefono FROM t_otp
+                   WHERE dni = %s AND codigo = %s AND usado = 0
+                     AND fecha_expiracion > NOW()
+                   ORDER BY id DESC LIMIT 1 FOR UPDATE""",
+                (dni, codigo_otp))
+            otp = cur.fetchone()
+            if not otp:
+                conn.rollback()
+                return jsonify({'success': False, 'error': 'Código OTP inválido o expirado'})
+
+            # 2) El código solo vale para el teléfono al que se envió
+            if normalizar(otp['telefono']) != telf:
+                conn.rollback()
+                return jsonify({'success': False, 'error': 'El código no fue enviado a este teléfono'})
+
+            # 3) Duplicados
+            for col, val, msg in (('dni', dni, 'Ya existe un cliente con esa cédula'),
+                                  ('email', email, 'Ya existe un cliente con ese email'),
+                                  ('telf', telf, 'Ya existe un cliente con ese teléfono')):
+                cur.execute(f"SELECT id FROM t_cliente WHERE {col} = %s LIMIT 1", (val,))
+                if cur.fetchone():
+                    conn.rollback()
+                    return jsonify({'success': False, 'error': msg})
+            cur.execute("SELECT id FROM t_usuario WHERE login = %s LIMIT 1", (dni,))
+            if cur.fetchone():
+                conn.rollback()
+                return jsonify({'success': False, 'error': 'Ya existe un usuario con esa cédula'})
+
+            # 4) Cliente + usuario (login = cédula) + OTP consumido
+            cur.execute(
+                """INSERT INTO t_cliente
+                   (id_tipo_estado_cliente, id_reputacion, dni, nombre, telf, email,
+                    email_verificado, telefono_verificado, fecha_registro)
+                   VALUES (1, 1, %s, %s, %s, %s, 0, 1, CURDATE())""",
+                (dni, nombre, telf, email))
+            cur.execute(
+                """INSERT INTO t_usuario
+                   (id_estado_usuario, id_nivel, nombre, login, clave)
+                   VALUES (1, 4, %s, %s, %s)""",
+                (nombre, dni, sha1_hash(password)))
+            cur.execute("UPDATE t_otp SET usado = 1 WHERE id = %s", (otp['id'],))
+
+        conn.commit()
+        return jsonify({'success': True, 'mensaje': 'Registro exitoso'})
+    except pymysql.err.IntegrityError as e:
+        conn.rollback()
+        print(f"Registro revertido (dato repetido): {e}", flush=True)
+        return jsonify({'success': False, 'error': 'Ya existe un registro con esos datos'})
+    except Exception as e:
+        conn.rollback()
+        print(f"Error en registro (se revirtió todo): {e}", flush=True)
+        return jsonify({'success': False, 'error': 'No se pudo completar el registro. Intenta de nuevo.'}), 500
+    finally:
+        conn.close()
 
 
 def obtener_ip_local():
@@ -52,10 +307,209 @@ def abrir_navegador(ip):
 # ============================================================
 @app.route('/')
 def index():
-    """Página principal: redirige al login o al dashboard según la sesión."""
+    """Landing pública de Tanishi Finance.
+    Si ya hay sesión, va directo al panel correspondiente."""
     if session.get('logueado'):
+        if session.get('id_nivel') == 4:
+            return redirect(url_for('portal'))
         return redirect(url_for('dashboard'))
+    return render_template('tanishi/index.html')
+
+
+class BaseDatosNoDisponible(Exception):
+    """La base de datos no respondió (apagada o sin conexión)."""
+
+
+def query_estricto(sql, params=None):
+    """Como query(..., fetchone=True), pero distingue 'no hay fila' de 'la base no responde'."""
+    from database import get_connection
+    conn = get_connection()
+    if conn is None:
+        raise BaseDatosNoDisponible('sin conexión')
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql, params or ())
+            return cur.fetchone()
+    except Exception as e:
+        raise BaseDatosNoDisponible(str(e))
+    finally:
+        conn.close()
+
+
+@app.errorhandler(BaseDatosNoDisponible)
+def _base_datos_no_disponible(e):
+    print(f"Base de datos no disponible: {e}", flush=True)
+    return jsonify({'existe': False, 'error': 'db_no_disponible'}), 503
+
+
+# ---------------------------------------------------------------------
+# LÍMITES DE OTP (patch_08). En memoria: se reinician al reiniciar Flask.
+# ---------------------------------------------------------------------
+import time as _time
+
+_LIM_LOCK = threading.Lock()
+_LIM_EVENTOS = {}  # clave -> [marcas de tiempo]
+
+
+def _lim_purgar(clave, ventana, ahora):
+    ev = [t for t in _LIM_EVENTOS.get(clave, []) if ahora - t < ventana]
+    if ev:
+        _LIM_EVENTOS[clave] = ev
+    else:
+        _LIM_EVENTOS.pop(clave, None)
+    return ev
+
+
+def _lim_excedido(clave, maximo, ventana):
+    ahora = _time.time()
+    with _LIM_LOCK:
+        return len(_lim_purgar(clave, ventana, ahora)) >= maximo
+
+
+def _lim_anotar(clave, ventana):
+    ahora = _time.time()
+    with _LIM_LOCK:
+        ev = _lim_purgar(clave, ventana, ahora)
+        ev.append(ahora)
+        _LIM_EVENTOS[clave] = ev
+        if len(_LIM_EVENTOS) > 5000:  # evita crecer sin límite
+            for k in list(_LIM_EVENTOS)[:1000]:
+                _LIM_EVENTOS.pop(k, None)
+
+
+def _lim_limpiar(clave):
+    with _LIM_LOCK:
+        _LIM_EVENTOS.pop(clave, None)
+
+
+def _json_limite(msg, seg=None):
+    r = jsonify({'success': False, 'error': msg})
+    r.status_code = 429
+    if seg:
+        r.headers['Retry-After'] = str(seg)
+    return r
+
+
+def _otp_guardia_envio():
+    """None si el código puede enviarse; si no, la respuesta de rechazo."""
+    ip = request.remote_addr or '?'
+    dni = request.form.get('dni', '').strip()
+    contacto = request.form.get('contacto', '').strip()
+    canal = request.form.get('canal', 'whatsapp').strip().lower()
+    tel = normalizar(contacto) if (contacto and canal != 'email') else ''
+    if contacto and canal != 'email':
+        import re as _re
+        if not _re.fullmatch(r'[0-9]{5,12}', dni):
+            return jsonify({'success': False, 'error': 'Cédula inválida: solo números (5 a 12 dígitos)'})
+
+    # Un teléfono que ya pertenece a OTRO cliente no recibe códigos
+    if tel and dni:
+        otro = query("SELECT dni FROM t_cliente WHERE telf = %s AND dni <> %s LIMIT 1", (tel, dni), fetchone=True)
+        if otro:
+            return jsonify({'success': False, 'error': 'Ese teléfono ya está registrado'})
+
+    limites = [('otp_ip:' + ip, 20, 3600), ('otp_dni:' + dni, 5, 3600),
+               ('otp_gap:' + (tel or dni), 1, 45)]
+    if tel:
+        limites.append(('otp_tel:' + tel, 3, 900))
+    for clave, maximo, ventana in limites:
+        if _lim_excedido(clave, maximo, ventana):
+            return _json_limite('Demasiados códigos solicitados. Intenta de nuevo en unos minutos.', ventana)
+    for clave, _maximo, ventana in limites:
+        _lim_anotar(clave, ventana)
+    return None
+
+
+def _validar_registro_form():
+    """None si los datos del registro son válidos; si no, la respuesta de rechazo (patch_09)."""
+    import re as _re
+    f = request.form
+    dni = f.get('dni', '').strip()
+    nombre = ' '.join(f.get('nombre', '').split())
+    email = f.get('email', '').strip()
+    if not _re.fullmatch(r'[0-9]{5,12}', dni):
+        return jsonify({'success': False, 'error': 'Cédula inválida: solo números (5 a 12 dígitos)'})
+    palabras = [w for w in nombre.split(' ') if len(w) > 1]
+    if not (5 <= len(nombre) <= 80) or len(palabras) < 2 or not all(c.isalpha() or c in " '.-" for c in nombre):
+        return jsonify({'success': False, 'error': 'Nombre inválido: escribe nombre y apellido, solo letras'})
+    if len(email) > 120 or not _re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+', email):
+        return jsonify({'success': False, 'error': 'Email inválido'})
+    if not normalizar(f.get('telefono', '').strip()):
+        return jsonify({'success': False, 'error': 'Teléfono inválido'})
+    return None
+
+
+def _otp_sin_detalles(resp):
+    """El detalle interno de un envío fallido queda en el log; al navegador va un mensaje genérico."""
+    r = resp[0] if isinstance(resp, tuple) else resp
+    datos = r.get_json(silent=True) if hasattr(r, 'get_json') else None
+    if datos is not None and not datos.get('success') and 'sin_whatsapp' in str(datos.get('error', '')):
+        print(f"OTP no enviado: {datos.get('error')}", flush=True)
+        return jsonify({'success': False, 'error': 'Ese número no tiene WhatsApp. Revisa el teléfono.'})
+    if datos is not None and not datos.get('success') and str(datos.get('error', '')).startswith('No se pudo enviar'):
+        print(f"OTP no enviado: {datos.get('error')}", flush=True)
+        return jsonify({'success': False, 'error': 'No se pudo enviar el código. Intenta de nuevo en unos minutos.'})
+    return resp
+
+
+def _otp_con_intentos(fn):
+    """Ejecuta fn() y cuenta los códigos OTP fallidos por cédula e IP (bloqueo tras 5 / 20 en 15 min)."""
+    dni = request.form.get('dni', '').strip()
+    ip = request.remote_addr or '?'
+    if _lim_excedido('otp_fallos:' + dni, 5, 900) or _lim_excedido('otp_fallos_ip:' + ip, 20, 900):
+        return _json_limite('Demasiados intentos con el código. Espera unos minutos.', 900)
+    resp = fn()
+    r = resp[0] if isinstance(resp, tuple) else resp
+    datos = r.get_json(silent=True) if hasattr(r, 'get_json') else None
+    if datos is not None:
+        if datos.get('success'):
+            _lim_limpiar('otp_fallos:' + dni)
+        elif 'código' in str(datos.get('error', '')).lower():
+            _lim_anotar('otp_fallos:' + dni, 900)
+            _lim_anotar('otp_fallos_ip:' + ip, 900)
+    return resp
+
+
+@app.route('/api/validar_campo', methods=['POST'])
+def route_validar_campo():
+    """Endpoint: valida si un campo ya existe."""
+    return validar_campos_unicos()
+
+
+@app.route('/api/enviar_otp', methods=['POST'])
+def route_enviar_otp():
+    """Endpoint: envía un código OTP."""
+    rechazo = _otp_guardia_envio()
+    if rechazo is not None:
+        return rechazo
+    return _otp_sin_detalles(enviar_otp())
+
+
+@app.route('/api/verificar_otp', methods=['POST'])
+def route_verificar_otp():
+    """Endpoint: verifica un código OTP."""
+    return _otp_con_intentos(verificar_otp)
+
+
+@app.route('/api/registro_cliente', methods=['POST'])
+def route_registro_cliente():
+    """Endpoint: registra un cliente nuevo."""
+    rechazo = _validar_registro_form()
+    if rechazo is not None:
+        return rechazo
+    return _otp_con_intentos(registro_cliente)
+
+
+@app.route('/registro', methods=['GET'])
+def registro_view():
+    """Vista: formulario de registro."""
     return redirect(url_for('login'))
+
+
+@app.route('/verificar', methods=['GET'])
+def verificar_view():
+    """Vista: verificación OTP."""
+    return render_template('verificar.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -64,33 +518,169 @@ def login():
     if request.method == 'POST':
         usuario = request.form.get('txt_nombre_ususario', '').strip()
         password = request.form.get('txt_pass', '').strip()
-        hash_pass = sha1_hash(password)
-        
+        usuario = usuario[:60]
+        if not usuario or not password:
+            flash('Escribe tu usuario y contraseña', 'danger')
+            return redirect(url_for('login'))
+        ip = request.remote_addr or '?'
+        k_ui = f'login_fallos_ui:{usuario.lower()}|{ip}'
+        k_ip = f'login_fallos_ip:{ip}'
+        k_u = f'login_fallos_u:{usuario.lower()}'
+        if _lim_excedido(k_ui, 5, 900) or _lim_excedido(k_ip, 20, 900) or _lim_excedido(k_u, 15, 900):
+            flash('Demasiados intentos. Espera unos minutos e inténtalo de nuevo.', 'danger')
+            return redirect(url_for('login'))
+
         # Buscar usuario en la BD
-        user = query(
-            "SELECT * FROM t_usuario WHERE login = %s AND clave = %s",
-            (usuario, hash_pass),
-            fetchone=True
-        )
-        
+        try:
+            user = query_estricto(
+                "SELECT * FROM t_usuario WHERE login = %s",
+                (usuario,)
+            )
+        except BaseDatosNoDisponible:
+            flash('Servicio no disponible. Intenta de nuevo en unos minutos.', 'danger')
+            return redirect(url_for('login'))
+
         if user:
+            import hash_clave as _hc
+            _ok, _mig = _hc.verificar(password, user.get('clave'), user.get('clave_v2'))
+            if not _ok:
+                user = None
+            elif _mig:
+                try:
+                    query('UPDATE t_usuario SET clave_v2 = %s WHERE id = %s', (_hc.hash_fuerte(password), user['id']), commit=True)
+                except Exception:
+                    pass
+        if user:
+            # Bloquear usuarios inactivos ANTES de crear la sesión
+            if user['id_estado_usuario'] != 1:
+                flash('Usuario Inactivo', 'danger')
+                return redirect(url_for('login'))
+            _lim_limpiar(k_ui)
+            _lim_limpiar(k_u)
+            session.clear()  # evita fijación de sesión
             # Guardar datos en sesión
             session['logueado'] = True
             session['id'] = user['id']
             session['id_estado_usuario'] = user['id_estado_usuario']
             session['id_nivel'] = user['id_nivel']
             session['nombre'] = user['nombre']
-            
-            if user['id_estado_usuario'] == 1:
-                return redirect(url_for('dashboard'))
-            else:
-                flash('Usuario Inactivo', 'danger')
-                return redirect(url_for('login'))
+            session['login'] = user['login']
+            session['email'] = user.get('email') or ''
+
+
+            # Si es CLIENTE (nivel 4) -> buscar en t_cliente y redirigir al portal
+            if user['id_nivel'] == 4:
+                cliente = query(
+                    "SELECT id, nombre, dni, telf, email FROM t_cliente WHERE dni = %s LIMIT 1",
+                    (user['login'],),
+                    fetchone=True
+                )
+                if cliente:
+                    session['cliente_id'] = cliente['id']
+                    session['cliente_nombre'] = cliente['nombre']
+                    session['cliente_dni'] = cliente['dni']
+                    session['email'] = cliente.get('email') or ''
+                    return redirect(url_for('portal'))
+                else:
+                    session.clear()
+                    flash('No se encontró el cliente asociado a este usuario', 'danger')
+                    return redirect(url_for('login'))
+
+            # Admin, Cobrador, Socio -> dashboard
+            return redirect(url_for('dashboard'))
         else:
+            for _k in (k_ui, k_ip, k_u):
+                _lim_anotar(_k, 900)
             flash('Usuario o Clave Invalidos', 'danger')
             return redirect(url_for('login'))
-    
+
     return render_template('login.html')
+
+
+
+# Ruta antigua DESACTIVADA (cambiaba la clave al instante). Ahora: recuperacion.py
+def api_recuperar_password():
+    dato = request.form.get('dato', '').strip()
+    if not dato:
+        return jsonify({"success": False, "message": "Ingresa un correo o cédula válida."})
+
+    user = query("SELECT id, nombre, email, login FROM t_usuario WHERE email = %s OR login = %s LIMIT 1", (dato, dato), fetchone=True)
+    
+    if not user:
+        return jsonify({"success": False, "message": "No se encontró un usuario con ese correo o cédula."})
+    
+    if not user.get('email'):
+        return jsonify({"success": False, "message": "El usuario no tiene un correo registrado."})
+
+    import secrets
+    import string
+    import hashlib
+    
+    alphabet = string.ascii_letters + string.digits
+    nueva_pass = ''.join(secrets.choice(alphabet) for i in range(8))
+    hash_pass = hashlib.sha1(nueva_pass.encode('utf-8')).hexdigest()
+    
+    query("UPDATE t_usuario SET clave = %s, clave_v2 = NULL WHERE id = %s", (hash_pass, user['id']), commit=True)
+
+    try:
+        from notificaciones import enviar_email
+        asunto = "Recuperación de Contraseña - Pagadiario Web"
+        
+        # Usamos triples comillas para evitar errores de saltos de línea
+        cuerpo = f"""Hola {user['nombre']},
+
+Has solicitado recuperar tu contraseña.
+
+Tu nueva contraseña temporal es: {nueva_pass}
+
+Por seguridad, te recomendamos cambiarla al iniciar sesión.
+
+Atentamente,
+El equipo de Pagadiario."""
+        
+        exito, mensaje = enviar_email(user['email'], asunto, cuerpo)
+
+        if exito:
+            return jsonify({"success": True, "message": f"Contraseña enviada al correo: {user['email']}"})
+        else:
+            return jsonify({"success": False, "message": f"Error al enviar correo: {mensaje}"})
+            
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Error interno del servidor: {str(e)}"})
+
+
+
+
+
+
+
+
+
+@app.route('/api/validar_login_usuario', methods=['POST'])
+def api_validar_login_usuario():
+    ip = request.remote_addr or '?'
+    if _lim_excedido('chk_ip_m:' + ip, 60, 60) or _lim_excedido('chk_ip_h:' + ip, 600, 3600):
+        return jsonify({"existe": False, "limitado": True}), 429
+    _lim_anotar('chk_ip_m:' + ip, 60)
+    _lim_anotar('chk_ip_h:' + ip, 3600)
+
+    dni = request.form.get('valor', '').strip()[:60]
+    if not dni:
+        return jsonify({"existe": False})
+
+    user = query_estricto("SELECT id, nombre FROM t_usuario WHERE login = %s LIMIT 1", (dni,))
+
+    if user:
+        # Foto real en static/avatars; si no hay, el navegador dibuja las iniciales (el nombre no sale del servidor)
+        avatar_filename = f"avatars/{user['id']}.jpg"
+        if os.path.exists(os.path.join(app.static_folder, avatar_filename)):
+            return jsonify({"existe": True, "avatar": f"/static/{avatar_filename}"})
+        palabras = (user['nombre'] or '').split()
+        elegidas = palabras[:1] + palabras[-1:] if len(palabras) > 1 else palabras[:1]
+        iniciales = ''.join(w[0] for w in elegidas).upper()
+        return jsonify({"existe": True, "iniciales": iniciales[:2] or '?'})
+
+    return jsonify({"existe": False})
 
 @app.route('/dashboard')
 def dashboard():
@@ -206,6 +796,32 @@ def dashboard():
             'porcentaje': porcentaje
         })
     
+    # --- Período (selector de fechas) + datos del gráfico 3D ---
+    from datetime import datetime as _dt
+    def _f(v):
+        try:
+            return _dt.strptime(v, '%Y-%m-%d').date()
+        except Exception:
+            return None
+    p_ini = _f(request.args.get('start', ''))
+    p_fin = _f(request.args.get('end', ''))
+    p_label = request.args.get('label') or 'Reset (All)'
+    if not (p_ini and p_fin):
+        p_ini, p_fin, p_label = date(2000, 1, 1), hoy, 'Reset (All)'
+    top_clientes = query("""
+        SELECT c.nombre AS cliente, COALESCE(SUM(p.monto_prestado), 0) AS total
+        FROM t_prestamo p LEFT JOIN t_cliente c ON p.id_cliente = c.id
+        WHERE DATE(p.fecha_prestamo) BETWEEN %s AND %s
+        GROUP BY c.id, c.nombre ORDER BY total DESC LIMIT 10
+    """, (p_ini, p_fin), fetchall=True) or []
+    est = query("SELECT id_tipo_estado_cliente AS e, COUNT(*) AS n FROM t_cliente GROUP BY id_tipo_estado_cliente", fetchall=True) or []
+    conteo = {r['e']: int(r['n']) for r in est}
+    periodo = {
+        'inicio': p_ini.strftime('%Y-%m-%d'), 'fin': p_fin.strftime('%Y-%m-%d'), 'label': p_label,
+        'top_clientes': [{'nombre': r['cliente'] or 'Sin nombre', 'total': float(r['total'])} for r in top_clientes],
+        'activos': conteo.get(1, 0), 'inactivos': conteo.get(2, 0), 'lista_negra': conteo.get(3, 0),
+    }
+
     # --- Datos para el template ---
     meses_nombres = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 
                      'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
@@ -234,7 +850,8 @@ def dashboard():
                            ahora=hoy.strftime('%d/%m/%Y %H:%M'),
                            mes_actual=hoy.month,
                            meses_nombres=meses_nombres,
-                           anios_disponibles=anios_disponibles)
+                           anios_disponibles=anios_disponibles,
+                           periodo=periodo)
 
 
 # ============================================================
@@ -250,8 +867,88 @@ def clientes():
     if not session.get('logueado'):
         return redirect(url_for('login'))
     lista_clientes = ClienteModel.listar_todos()
-    return render_template('clientes.html', clientes=lista_clientes)
+    def _v(sql):
+        r = query(sql, fetchone=True)
+        return float(r['v']) if r and r['v'] is not None else 0
+    stats = {
+        'prestado': _v("SELECT COALESCE(SUM(monto_prestado),0) AS v FROM t_prestamo"),
+        'cobros_mes': _v("SELECT COALESCE(SUM(monto),0) AS v FROM t_det_prestamo WHERE MONTH(fecha_cobro)=MONTH(CURDATE()) AND YEAR(fecha_cobro)=YEAR(CURDATE())"),
+        'por_cobrar': _v("SELECT COALESCE(SUM(total_debe),0) AS v FROM t_prestamo WHERE id_estado_prestamo = 2"),
+        'con_deuda': _v("SELECT COUNT(DISTINCT id_cliente) AS v FROM t_prestamo WHERE id_estado_prestamo = 2 AND total_debe > 0"),
+    }
+    top = query("SELECT c.nombre AS n, SUM(p.monto_prestado) AS m, SUM(CASE WHEN p.id_estado_prestamo = 2 THEN p.total_debe ELSE 0 END) AS d FROM t_prestamo p JOIN t_cliente c ON c.id = p.id_cliente GROUP BY c.id, c.nombre ORDER BY m DESC LIMIT 10", fetchall=True) or []
+    top = [{'n': t['n'], 'm': float(t['m'] or 0), 'd': float(t['d'] or 0)} for t in top]
+    ex = {}
+    for r in (query("SELECT id, email_verificado AS ev, telefono_verificado AS tv FROM t_cliente", fetchall=True) or []):
+        ex[r['id']] = {'ev': int(r['ev'] or 0), 'tv': int(r['tv'] or 0), 'deu': 0}
+    for r in (query("SELECT DISTINCT id_cliente AS i FROM t_prestamo WHERE id_estado_prestamo = 2 AND total_debe > 0", fetchall=True) or []):
+        if r['i'] in ex:
+            ex[r['i']]['deu'] = 1
+    for r in (query("SELECT s.id_cliente AS i, s.estado AS e FROM t_solicitud_prestamo s JOIN (SELECT id_cliente, MAX(id) AS m FROM t_solicitud_prestamo GROUP BY id_cliente) x ON s.id = x.m", fetchall=True) or []):
+        if r['i'] in ex:
+            ex[r['i']]['sol'] = r['e']
+    return render_template('clientes.html', clientes=lista_clientes, stats=stats, top=top, ex=ex)
 
+
+@app.route('/api/clientes_top')
+def api_clientes_top():
+    if not session.get('logueado'):
+        return jsonify([]), 401
+    d = request.args.get('start') or '2000-01-01'
+    h = request.args.get('end') or '2100-01-01'
+    r = query("SELECT c.nombre AS n, SUM(p.monto_prestado) AS m, SUM(CASE WHEN p.id_estado_prestamo = 2 THEN p.total_debe ELSE 0 END) AS d FROM t_prestamo p JOIN t_cliente c ON c.id = p.id_cliente WHERE p.fecha_prestamo BETWEEN %s AND %s GROUP BY c.id, c.nombre ORDER BY m DESC LIMIT 10", (d, h), fetchall=True) or []
+    return jsonify([{'n': t['n'], 'm': float(t['m'] or 0), 'd': float(t['d'] or 0)} for t in r])
+
+@app.route('/api/clientes_stats')
+def api_clientes_stats():
+    if not session.get('logueado'):
+        return jsonify({}), 401
+    p = (request.args.get('start') or '2000-01-01', request.args.get('end') or '2100-01-01')
+    def _v(sql):
+        r = query(sql, p, fetchone=True)
+        return float(r['v']) if r and r['v'] is not None else 0
+    return jsonify({
+        'total': _v("SELECT COUNT(*) AS v FROM t_cliente WHERE fecha_registro BETWEEN %s AND %s"),
+        'activos': _v("SELECT COUNT(DISTINCT id_cliente) AS v FROM t_prestamo WHERE fecha_prestamo BETWEEN %s AND %s"),
+        'cobros': _v("SELECT COALESCE(SUM(monto),0) AS v FROM t_det_prestamo WHERE fecha_cobro BETWEEN %s AND %s"),
+        'prestado': _v("SELECT COALESCE(SUM(monto_prestado),0) AS v FROM t_prestamo WHERE fecha_prestamo BETWEEN %s AND %s"),
+        'por_cobrar': _v("SELECT COALESCE(SUM(total_debe),0) AS v FROM t_prestamo WHERE id_estado_prestamo = 2 AND fecha_prestamo BETWEEN %s AND %s"),
+        'con_deuda': _v("SELECT COUNT(DISTINCT id_cliente) AS v FROM t_prestamo WHERE id_estado_prestamo = 2 AND total_debe > 0 AND fecha_prestamo BETWEEN %s AND %s")
+    })
+
+@app.route('/api/clientes_series')
+def api_clientes_series():
+    import datetime as _dt
+    if not session.get('logueado'):
+        return jsonify({}), 401
+    N = 8
+    hoy = _dt.date.today()
+    try:
+        e = _dt.date.fromisoformat(request.args.get('end') or str(hoy))
+        s = _dt.date.fromisoformat(request.args.get('start') or '2000-01-01')
+    except ValueError:
+        return jsonify({}), 400
+    e = min(e, hoy)
+    if s.year <= 2000:
+        r = query("SELECT LEAST((SELECT MIN(fecha_prestamo) FROM t_prestamo),(SELECT MIN(fecha_registro) FROM t_cliente),(SELECT MIN(fecha_cobro) FROM t_det_prestamo)) AS v", fetchone=True)
+        if r and r['v']:
+            s = r['v'].date() if hasattr(r['v'], 'date') else r['v']
+    ancho = max(1, -(-((e - s).days + 1) // N))
+    def _serie(sql):
+        v = [0.0] * N
+        for r in (query(sql, (s, e), fetchall=True) or []):
+            d = r['d'].date() if hasattr(r['d'], 'date') else r['d']
+            i = min(N - 1, max(0, (d - s).days // ancho))
+            v[i] += float(r['v'] or 0)
+        return v
+    return jsonify({
+        'total': _serie("SELECT fecha_registro AS d, COUNT(*) AS v FROM t_cliente WHERE fecha_registro BETWEEN %s AND %s GROUP BY fecha_registro"),
+        'activos': _serie("SELECT fecha_prestamo AS d, COUNT(DISTINCT id_cliente) AS v FROM t_prestamo WHERE fecha_prestamo BETWEEN %s AND %s GROUP BY fecha_prestamo"),
+        'cobros': _serie("SELECT fecha_cobro AS d, SUM(monto) AS v FROM t_det_prestamo WHERE fecha_cobro BETWEEN %s AND %s GROUP BY fecha_cobro"),
+        'prestado': _serie("SELECT fecha_prestamo AS d, SUM(monto_prestado) AS v FROM t_prestamo WHERE fecha_prestamo BETWEEN %s AND %s GROUP BY fecha_prestamo"),
+        'por_cobrar': _serie("SELECT fecha_prestamo AS d, SUM(total_debe) AS v FROM t_prestamo WHERE id_estado_prestamo = 2 AND fecha_prestamo BETWEEN %s AND %s GROUP BY fecha_prestamo"),
+        'con_deuda': _serie("SELECT fecha_prestamo AS d, COUNT(DISTINCT id_cliente) AS v FROM t_prestamo WHERE id_estado_prestamo = 2 AND total_debe > 0 AND fecha_prestamo BETWEEN %s AND %s GROUP BY fecha_prestamo")
+    })
 @app.route('/cliente/nuevo', methods=['GET', 'POST'])
 def cliente_nuevo():
     if not session.get('logueado'):
@@ -262,7 +959,7 @@ def cliente_nuevo():
             'dni': request.form.get('dni', ''),
             'nombre': request.form.get('nombre', ''),
             'nombre_negocio': request.form.get('nombre_negocio', ''),
-            'telf': request.form.get('telf', ''),
+            'telf': normalizar(request.form.get('telf', '')),
             'email': request.form.get('email', ''),
             'direccion': request.form.get('direccion', ''),
             'direccion_cobro': request.form.get('direccion_cobro', ''),
@@ -277,6 +974,24 @@ def cliente_nuevo():
         return redirect(url_for('clientes'))
     
     return render_template('cliente_form.html', cliente=None, titulo='Nuevo Cliente')
+
+@app.route('/cliente/ver/<int:id_cliente>')
+def cliente_ver(id_cliente):
+    if not session.get('logueado'):
+        return redirect(url_for('login'))
+    cliente = ClienteModel.obtener_por_id(id_cliente)
+    if not cliente:
+        flash('Cliente no encontrado', 'danger')
+        return redirect(url_for('clientes'))
+    prestamos = PrestamoModel.listar_por_cliente(id_cliente) or []
+    activos = [p for p in prestamos if p['estado_prestamo'] == 'Activo']
+    stats = {
+        'total': len(prestamos),
+        'activos': len(activos),
+        'capital': sum(float(p['monto_prestado'] or 0) for p in prestamos if p['estado_prestamo'] != 'Por Aprobar'),
+        'debe': sum(float(p['total_debe'] or 0) for p in activos),
+    }
+    return render_template('cliente_ver.html', cliente=cliente, prestamos=prestamos, stats=stats)
 
 @app.route('/cliente/editar/<int:id_cliente>', methods=['GET', 'POST'])
 def cliente_editar(id_cliente):
@@ -293,7 +1008,7 @@ def cliente_editar(id_cliente):
             'dni': request.form.get('dni', ''),
             'nombre': request.form.get('nombre', ''),
             'nombre_negocio': request.form.get('nombre_negocio', ''),
-            'telf': request.form.get('telf', ''),
+            'telf': normalizar(request.form.get('telf', '')),
             'email': request.form.get('email', ''),
             'direccion': request.form.get('direccion', ''),
             'direccion_cobro': request.form.get('direccion_cobro', ''),
@@ -411,7 +1126,7 @@ def importar_contactos_confirmar(tipo):
         
         # Obtener datos editados del formulario
         nombre = request.form.get(f'nombre_{idx}', '').strip()
-        telefono = request.form.get(f'telefono_{idx}', '').strip()
+        telefono = normalizar(request.form.get(f'telefono_{idx}', '').strip())
         email = request.form.get(f'email_{idx}', '').strip()
         direccion = request.form.get(f'direccion_{idx}', '').strip()
         
@@ -445,10 +1160,10 @@ def importar_contactos_confirmar(tipo):
             # Generar login automático
             login = nombre.lower().replace(' ', '_')[:20]
             import hashlib
-            clave = hashlib.sha1('123456'.encode('utf-8')).hexdigest()
+            clave = hashlib.sha1(__import__('secrets').token_hex(16).encode('utf-8')).hexdigest()  # clave aleatoria: la cuenta nace inactiva
             query("""
                 INSERT INTO t_usuario (id_estado_usuario, id_nivel, nombre, login, clave)
-                VALUES (1, 2, %s, %s, %s)
+                VALUES (2, 2, %s, %s, %s)
             """, (nombre, login, clave), commit=True)
             insertados += 1
     
@@ -460,8 +1175,440 @@ def importar_contactos_confirmar(tipo):
 # ============================================================
 # MÓDULO DE PRÉSTAMOS (REAL)
 # ============================================================
+from notificaciones import enviar_otp as enviar_otp_real
 from models.prestamo import PrestamoModel
 from models.cliente import ClienteModel
+
+@app.route('/portal')
+def portal():
+    """Portal del cliente: solo ve SUS préstamos."""
+    if not session.get('logueado') or session.get('id_nivel') != 4:
+        return redirect(url_for('login'))
+
+    cliente_id = session.get('cliente_id')
+    if not cliente_id:
+        flash('No se encontró información del cliente', 'danger')
+        return redirect(url_for('login'))
+
+    # Préstamos del cliente
+    prestamos = query(
+        """SELECT p.*,
+                  e.descripcion AS estado_prestamo
+           FROM t_prestamo p
+           LEFT JOIN t_estado_prestamo e ON p.id_estado_prestamo = e.id
+           WHERE p.id_cliente = %s
+           ORDER BY p.id DESC""",
+        (cliente_id,),
+        fetchall=True
+    ) or []
+
+    # Para cada préstamo, calcular el total pagado
+    for p in prestamos:
+        pagado = query(
+            "SELECT COALESCE(SUM(monto), 0) AS total_pagado FROM t_det_prestamo WHERE id_prestamo = %s",
+            (p['id'],),
+            fetchone=True
+        )
+        total_pagado = float(pagado['total_pagado']) if pagado else 0
+        total_prestamo = float(p['total_prestado'] or 0)
+        p['pagado'] = total_pagado
+        p['saldo'] = total_prestamo - total_pagado
+        p['porcentaje'] = (total_pagado / total_prestamo * 100) if total_prestamo > 0 else 0
+
+    # Validar crédito vigente o mora
+    tiene_prestamo_activo = False
+    prestamo_activo_info = None
+    esta_en_mora = False
+    dias_mora = 0
+
+    activo = query(
+        """SELECT p.*,
+                  COALESCE((SELECT SUM(monto) FROM t_det_prestamo WHERE id_prestamo = p.id), 0) AS total_pagado
+           FROM t_prestamo p
+           WHERE p.id_cliente = %s AND p.id_estado_prestamo = 2
+           ORDER BY p.id DESC LIMIT 1""",
+        (cliente_id,),
+        fetchone=True
+    )
+
+    if activo:
+        tiene_prestamo_activo = True
+        saldo = float(activo['total_prestado'] or 0) - float(activo['total_pagado'] or 0)
+        prestamo_activo_info = {
+            'id': activo['id'],
+            'valor': float(activo['monto_prestado'] or 0),
+            'saldo': saldo,
+            'fecha_inicio': activo['fecha_prestamo'],
+            'fecha_final': activo['fecha_prox_cobro'],
+        }
+        dias_mora = int(activo['dias_mora'] or 0)
+        if dias_mora > 0:
+            esta_en_mora = True
+
+    # Notificaciones no leídas
+    notif = query(
+        "SELECT COUNT(*) AS total FROM t_notificacion WHERE id_cliente = %s AND leida = 0",
+        (cliente_id,),
+        fetchone=True
+    )
+    notif_no_leidas = notif['total'] if notif else 0
+
+    # Obtener datos completos del cliente
+    cliente_datos = query(
+        """SELECT id, dni, nombre, telf, email, ingreso_mensual,
+                  direccion, nombre_negocio, referencia_1, referencia_2
+           FROM t_cliente WHERE id = %s LIMIT 1""",
+        (cliente_id,),
+        fetchone=True
+    ) or {}
+
+    return render_template('portal.html',
+                           cliente_nombre=session.get('cliente_nombre'),
+                           cliente_dni=session.get('cliente_dni'),
+                           cliente_datos=cliente_datos,
+                           prestamos=prestamos,
+                           tiene_prestamo_activo=tiene_prestamo_activo,
+                           prestamo_activo_info=prestamo_activo_info,
+                           esta_en_mora=esta_en_mora,
+                           dias_mora=dias_mora,
+                           notif_no_leidas=notif_no_leidas)
+
+
+@app.route('/mi_perfil')
+def mi_perfil():
+    """Perfil del cliente."""
+    if not session.get('logueado') or session.get('id_nivel') != 4:
+        return redirect(url_for('login'))
+
+    cliente_id = session.get('cliente_id')
+    cliente = query(
+        "SELECT c.*, e.descripcion AS estado FROM t_cliente c LEFT JOIN t_tipo_estado_cliente e ON c.id_tipo_estado_cliente = e.id WHERE c.id = %s",
+        (cliente_id,),
+        fetchone=True
+    ) or {}
+
+    notif = query(
+        "SELECT COUNT(*) AS total FROM t_notificacion WHERE id_cliente = %s AND leida = 0",
+        (cliente_id,),
+        fetchone=True
+    )
+    notif_no_leidas = notif['total'] if notif else 0
+
+    return render_template('mi_perfil.html',
+                           cliente=cliente,
+                           cliente_nombre=session.get('cliente_nombre'),
+                           cliente_dni=session.get('cliente_dni'),
+                           notif_no_leidas=notif_no_leidas)
+
+
+@app.route('/cambiar_password', methods=['GET', 'POST'])
+def cambiar_password():
+    """Cambiar la contraseña del cliente."""
+    if not session.get('logueado') or session.get('id_nivel') != 4:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        actual = request.form.get('password_actual', '').strip()
+        nueva = request.form.get('password_nueva', '').strip()
+        confirmar = request.form.get('password_confirmar', '').strip()
+
+        user_id = session.get('id')
+
+        if not all([actual, nueva, confirmar]):
+            flash('Todos los campos son obligatorios', 'danger')
+            return redirect(url_for('cambiar_password'))
+
+        if nueva != confirmar:
+            flash('Las contraseñas no coinciden', 'danger')
+            return redirect(url_for('cambiar_password'))
+
+        if len(nueva) < 10:
+            flash('La contraseña debe tener al menos 10 caracteres', 'danger')
+            return redirect(url_for('cambiar_password'))
+
+        user = query(
+            "SELECT * FROM t_usuario WHERE id = %s",
+            (user_id,),
+            fetchone=True
+        )
+        import hash_clave as _hc
+        if not user or not _hc.verificar(actual, user.get('clave'), user.get('clave_v2'))[0]:
+            flash('La contraseña actual es incorrecta', 'danger')
+            return redirect(url_for('cambiar_password'))
+
+        query(
+            "UPDATE t_usuario SET clave = %s, clave_v2 = %s WHERE id = %s",
+            (sha1_hash(nueva), _hc.hash_fuerte(nueva) if _hc.v2_activo() else None, user_id),
+            commit=True
+        )
+
+        flash('Contraseña cambiada exitosamente', 'success')
+        return redirect(url_for('portal'))
+
+    cliente_id = session.get('cliente_id')
+    notif = query(
+        "SELECT COUNT(*) AS total FROM t_notificacion WHERE id_cliente = %s AND leida = 0",
+        (cliente_id,),
+        fetchone=True
+    )
+    notif_no_leidas = notif['total'] if notif else 0
+
+    return render_template('cambiar_password.html',
+                           cliente_nombre=session.get('cliente_nombre'),
+                           cliente_dni=session.get('cliente_dni'),
+                           notif_no_leidas=notif_no_leidas)
+
+
+@app.route('/eliminar_cuenta')
+def eliminar_cuenta():
+    """Página para eliminar la cuenta del cliente."""
+    if not session.get('logueado') or session.get('id_nivel') != 4:
+        return redirect(url_for('login'))
+
+    cliente_id = session.get('cliente_id')
+    notif = query(
+        "SELECT COUNT(*) AS total FROM t_notificacion WHERE id_cliente = %s AND leida = 0",
+        (cliente_id,),
+        fetchone=True
+    )
+    notif_no_leidas = notif['total'] if notif else 0
+
+    return render_template('eliminar_cuenta.html',
+                           cliente_nombre=session.get('cliente_nombre'),
+                           cliente_dni=session.get('cliente_dni'),
+                           notif_no_leidas=notif_no_leidas)
+
+
+@app.route('/notificaciones_cliente')
+def notificaciones_cliente():
+    """Notificaciones del cliente."""
+    if not session.get('logueado') or session.get('id_nivel') != 4:
+        return redirect(url_for('login'))
+
+    cliente_id = session.get('cliente_id')
+    notificaciones = query(
+        "SELECT * FROM t_notificacion WHERE id_cliente = %s ORDER BY fecha_creacion DESC LIMIT 50",
+        (cliente_id,),
+        fetchall=True
+    ) or []
+
+    notif = query(
+        "SELECT COUNT(*) AS total FROM t_notificacion WHERE id_cliente = %s AND leida = 0",
+        (cliente_id,),
+        fetchone=True
+    )
+    notif_no_leidas = notif['total'] if notif else 0
+
+    query("UPDATE t_notificacion SET leida = 1 WHERE id_cliente = %s AND leida = 0",
+          (cliente_id,), commit=True)
+
+    return render_template('notificaciones_cliente.html',
+                           cliente_nombre=session.get('cliente_nombre'),
+                           cliente_dni=session.get('cliente_dni'),
+                           notificaciones=notificaciones,
+                           notif_no_leidas=notif_no_leidas)
+
+
+@app.route('/solicitar_prestamo', methods=['POST'])
+def solicitar_prestamo():
+    """El cliente envía una solicitud de nuevo préstamo."""
+    if not session.get('logueado') or session.get('id_nivel') != 4:
+        return redirect(url_for('login'))
+
+    cliente_id = session.get('cliente_id')
+    monto = float(request.form.get('monto', 0))
+    plazo = int(request.form.get('plazo', 0))
+
+    if monto < 50000 or monto > 20000000:
+        flash('El monto debe estar entre $50.000 y $20.000.000', 'danger')
+        return redirect(url_for('portal'))
+
+    if plazo not in [7, 14, 21, 30, 45, 60]:
+        flash('Plazo no válido', 'danger')
+        return redirect(url_for('portal'))
+
+    # Detectar crédito vigente o mora
+    activo = query(
+        """SELECT p.*, p.dias_mora
+           FROM t_prestamo p
+           WHERE p.id_cliente = %s AND p.id_estado_prestamo = 2
+           ORDER BY p.id DESC LIMIT 1""",
+        (cliente_id,),
+        fetchone=True
+    )
+
+    estado = 'pendiente'
+    comentario = f"Solicitud creada desde el portal del cliente. Monto: ${monto:,.0f}, Plazo: {plazo} días."
+
+    if activo:
+        if int(activo['dias_mora'] or 0) > 0:
+            estado = 'rechazada'
+            comentario = f"RECHAZADA POR SISTEMA: Cliente en mora ({activo['dias_mora']} días). " + comentario
+        else:
+            estado = 'rechazada'
+            comentario = "RECHAZADA POR SISTEMA: Cliente con crédito vigente. " + comentario
+
+    query(
+        """INSERT INTO t_solicitud_prestamo
+           (id_cliente, monto, plazo_dias, estado, comentario_admin)
+           VALUES (%s, %s, %s, %s, %s)""",
+        (cliente_id, monto, plazo, estado, comentario),
+        commit=True
+    )
+
+    if estado == 'rechazada':
+        flash('Tu solicitud fue registrada, pero no puede ser aprobada porque tienes un crédito vigente. El administrador la revisará.', 'warning')
+    else:
+        flash('Solicitud enviada correctamente. El administrador la revisará.', 'success')
+
+    return redirect(url_for('portal'))
+
+
+@app.route('/solicitudes')
+def solicitudes():
+    if not session.get('logueado') or session.get('id_nivel') == 4:
+        return redirect(url_for('login'))
+    lista = query(
+        "SELECT s.*, c.nombre FROM t_solicitud_prestamo s LEFT JOIN t_cliente c ON c.id = s.id_cliente "
+        "ORDER BY (s.fecha_respuesta IS NULL) DESC, s.id DESC LIMIT 100", fetchall=True) or []
+    return render_template('solicitudes_pw.html', solicitudes=lista)
+
+
+@app.route('/solicitudes/<int:id_sol>/<accion>', methods=['POST'])
+def solicitud_resolver(id_sol, accion):
+    if not session.get('logueado') or session.get('id_nivel') == 4:
+        return redirect(url_for('login'))
+    sol = query("SELECT * FROM t_solicitud_prestamo WHERE id = %s", (id_sol,), fetchone=True)
+    if accion not in ('aprobar', 'rechazar') or not sol or sol['fecha_respuesta']:
+        flash('Solicitud no válida o ya resuelta.', 'warning')
+        return redirect(url_for('solicitudes'))
+    estado = 'aprobada' if accion == 'aprobar' else 'rechazada'
+    query("UPDATE t_solicitud_prestamo SET estado = %s, fecha_respuesta = NOW(), "
+          "comentario_admin = CONCAT(COALESCE(comentario_admin, ''), %s) WHERE id = %s",
+          (estado, ' | Resuelta por el administrador: ' + estado, id_sol), commit=True)
+    crear_notificacion(sol['id_cliente'], 'solicitud', 'Solicitud ' + estado,
+                       'El administrador {} tu solicitud de ${:,.0f}.'.format(estado, sol['monto']))
+    flash('Solicitud ' + estado + '.', 'success')
+    return redirect(url_for('solicitudes'))
+
+
+def _extra_avisos():
+    try:
+        r = query("SELECT notificaciones FROM t_usuario WHERE id=%s", (session.get('id'),), fetchone=True)
+        if r and int(r['notificaciones']) == 0:
+            return {'avisos_on': False}
+        venc = query("SELECT p.id, c.nombre, p.dias_mora, p.total_debe FROM t_prestamo p LEFT JOIN t_cliente c ON c.id=p.id_cliente WHERE p.id_estado_prestamo=2 AND p.dias_mora>0 ORDER BY p.dias_mora DESC LIMIT 5", fetchall=True) or []
+        nv = query("SELECT COUNT(*) AS total FROM t_prestamo WHERE id_estado_prestamo=2 AND dias_mora>0", fetchone=True)
+        pagos = query("SELECT d.id, d.id_prestamo, c.nombre, d.monto, d.fecha_cobro FROM t_det_prestamo d JOIN t_prestamo p ON p.id=d.id_prestamo LEFT JOIN t_cliente c ON c.id=p.id_cliente ORDER BY d.fecha_cobro DESC, d.id DESC LIMIT 5", fetchall=True) or []
+        return {'avisos_on': True, 'av_venc': venc, 'av_venc_total': (nv or {}).get('total', 0), 'av_pagos': pagos}
+    except Exception as e:
+        print('avisos:', e)
+        return {'avisos_on': False}
+
+
+@app.context_processor
+def inyectar_solicitudes_admin():
+    """Campana del admin: solicitudes sin resolver por el administrador."""
+    if not session.get('logueado'):
+        return {}
+    if session.get('id_nivel') == 4:
+        cid = session.get('cliente_id')
+        if not cid:
+            return {}
+        base = "SELECT s.id, s.id_cliente, c.nombre, s.monto, s.plazo_dias, s.estado, s.fecha_solicitud, s.fecha_respuesta FROM t_solicitud_prestamo s LEFT JOIN t_cliente c ON c.id = s.id_cliente WHERE s.id_cliente = %s AND "
+        pend = query(base + "s.fecha_respuesta IS NULL ORDER BY s.id DESC LIMIT 5", (cid,), fetchall=True) or []
+        res = query(base + "s.fecha_respuesta IS NOT NULL ORDER BY s.fecha_respuesta DESC LIMIT 5", (cid,), fetchall=True) or []
+        logs = query("SELECT id, id_cliente, tipo, titulo, fecha_creacion FROM t_notificacion WHERE id_cliente = %s ORDER BY id DESC LIMIT 8", (cid,), fetchall=True) or []
+        return {'sol_total': len(pend), 'sol_ultimas': pend, 'sol_resueltas': res, 'notif_logs': logs, 'sol_link': '/notificaciones_cliente'}
+    fila = query("SELECT COUNT(*) AS total FROM t_solicitud_prestamo WHERE fecha_respuesta IS NULL", fetchone=True)
+    ultimas = query(
+        "SELECT s.id, s.id_cliente, c.nombre, s.monto, s.plazo_dias, s.estado, s.fecha_solicitud FROM t_solicitud_prestamo s LEFT JOIN t_cliente c ON c.id = s.id_cliente "
+        "WHERE s.fecha_respuesta IS NULL ORDER BY s.id DESC LIMIT 5", fetchall=True)
+    resueltas = query(
+        "SELECT s.id, c.nombre, s.id_cliente, s.monto, s.estado, s.fecha_respuesta FROM t_solicitud_prestamo s "
+        "LEFT JOIN t_cliente c ON c.id = s.id_cliente WHERE s.fecha_respuesta IS NOT NULL "
+        "ORDER BY s.fecha_respuesta DESC LIMIT 5", fetchall=True)
+    logs = query("SELECT id, id_cliente, tipo, titulo, fecha_creacion FROM t_notificacion ORDER BY id DESC LIMIT 8", fetchall=True)
+    return {'sol_total': (fila or {}).get('total', 0), 'sol_ultimas': ultimas or [],
+            'sol_resueltas': resueltas or [], 'notif_logs': logs or [], **_extra_avisos()}
+
+
+def crear_notificacion(id_cliente, tipo, titulo, mensaje, id_prestamo=None):
+    """Inserta una notificacion para el cliente en t_notificacion."""
+    try:
+        query(
+            "INSERT INTO t_notificacion (id_cliente, tipo, titulo, mensaje, id_prestamo) VALUES (%s, %s, %s, %s, %s)",
+            (id_cliente, tipo, titulo, mensaje, id_prestamo), commit=True
+        )
+    except Exception as e:
+        print("Error creando notificacion:", e)
+
+
+@app.route('/solicitar_prestamo_paso', methods=['POST'])
+def solicitar_prestamo_paso():
+    """Endpoint JSON para el portal del cliente."""
+    if not session.get('logueado') or session.get('id_nivel') != 4:
+        return jsonify({'success': False, 'error': 'Sesión no válida'}), 401
+
+    cliente_id = session.get('cliente_id')
+    if not cliente_id:
+        return jsonify({'success': False, 'error': 'Cliente no identificado'}), 400
+
+    try:
+        monto = float(request.form.get('monto', 0))
+        plazo = int(request.form.get('plazo', 0))
+    except (TypeError, ValueError):
+        return jsonify({'success': False, 'error': 'Monto o plazo inválidos'}), 400
+
+    if monto < 50000 or monto > 20000000:
+        return jsonify({'success': False, 'error': 'El monto debe estar entre $50.000 y $20.000.000'}), 400
+
+    if plazo not in [7, 14, 21, 30, 45, 60]:
+        return jsonify({'success': False, 'error': 'Plazo no válido'}), 400
+
+    activo = query(
+        """SELECT p.*, p.dias_mora FROM t_prestamo p
+           WHERE p.id_cliente = %s AND p.id_estado_prestamo = 2
+           ORDER BY p.id DESC LIMIT 1""",
+        (cliente_id,), fetchone=True
+    )
+
+    estado = 'pendiente'
+    advertencia = None
+    comentario = "Solicitud creada desde el portal. Monto: ${:,.0f}, Plazo: {} días.".format(monto, plazo)
+
+    if activo:
+        if int(activo.get('dias_mora') or 0) > 0:
+            estado = 'rechazada'
+            advertencia = "Tienes un crédito en mora ({} días).".format(activo['dias_mora'])
+            comentario = "RECHAZADA POR SISTEMA: Cliente en mora. " + comentario
+        else:
+            estado = 'rechazada'
+            advertencia = "Tienes un crédito vigente."
+            comentario = "RECHAZADA POR SISTEMA: Cliente con crédito vigente. " + comentario
+
+    try:
+        query(
+            """INSERT INTO t_solicitud_prestamo
+               (id_cliente, monto, plazo_dias, estado, comentario_admin)
+               VALUES (%s, %s, %s, %s, %s)""",
+            (cliente_id, monto, plazo, estado, comentario),
+            commit=True
+        )
+    except Exception as e:
+        return jsonify({'success': False, 'error': 'Error al guardar: ' + str(e)}), 500
+
+    if estado == 'pendiente':
+        crear_notificacion(cliente_id, 'solicitud', 'Solicitud enviada',
+                           'Tu solicitud de ${:,.0f} a {} días fue enviada y está en revisión.'.format(monto, plazo))
+    else:
+        crear_notificacion(cliente_id, 'solicitud', 'Solicitud en revisión', 'El administrador revisará tu solicitud. ' + (advertencia or ''))
+
+    resp = {'success': True}
+    if advertencia:
+        resp['advertencia'] = advertencia
+    return jsonify(resp)
+
 
 @app.route('/prestamos')
 def prestamos():
@@ -578,7 +1725,22 @@ def prestamo_ver(id_prestamo):
     if not prestamo:
         flash('Préstamo no encontrado', 'danger')
         return redirect(url_for('prestamos'))
-    return render_template('prestamo_ver.html', prestamo=prestamo, pagos=pagos)
+    from datetime import date, timedelta, datetime
+    n = int(prestamo['numero_cuotas'] or 0)
+    dias = {'Semanal': 7, 'Quincenal': 15, 'Mensual': 30}.get(prestamo.get('tipo_prestamo') or 'Diario', 1)
+    tot = float(prestamo['total_prestado'] or 0)
+    cuota = tot / n if n else 0
+    cap = float(prestamo['monto_prestado'] or 0) / n if n else 0
+    pagadas = max(n - int(prestamo['cuotas_debe'] or 0), 0)
+    hoy = date.today()
+    cron = []
+    if n and prestamo['fecha_prestamo']:
+        f0 = datetime.strptime(str(prestamo['fecha_prestamo'])[:10], '%Y-%m-%d').date()
+        for i in range(1, n + 1):
+            fe = f0 + timedelta(days=dias * i)
+            est = 'Pagada' if i <= pagadas else ('Vencida' if fe < hoy else 'Pendiente')
+            cron.append({'n': i, 'fecha': fe.strftime('%Y-%m-%d'), 'cuota': cuota, 'capital': cap, 'interes': cuota - cap, 'saldo': max(tot - cuota * i, 0), 'estado': est})
+    return render_template('prestamo_ver.html', prestamo=prestamo, pagos=pagos, cronograma=cron, dias_cuota=dias)
 
 @app.route('/prestamo/aprobar/<int:id_prestamo>')
 def prestamo_aprobar(id_prestamo):
@@ -817,8 +1979,15 @@ from models.socio import SocioModel
 def socios():
     if not session.get('logueado'):
         return redirect(url_for('login'))
-    lista = SocioModel.listar_todos()
-    return render_template('socios.html', socios=lista)
+    lista = SocioModel.listar_todos() or []
+    ap = query("SELECT id_socio, COALESCE(SUM(capital),0) AS t, COUNT(*) AS n FROM t_det_capital GROUP BY id_socio", fetchall=True) or []
+    am = {r['id_socio']: float(r['t'] or 0) for r in ap}
+    cn = {r['id_socio']: int(r['n'] or 0) for r in ap}
+    tot = sum(am.values())
+    filas = [{'id': x['id'], 'nombre': x['nombre'], 'usuario_nombre': x['usuario_nombre'], 'usuario_login': x['usuario_login'], 'aporte': am.get(x['id'], 0.0), 'n': cn.get(x['id'], 0), 'pct': (am.get(x['id'], 0.0) * 100 / tot) if tot else 0.0} for x in lista]
+    top = max(filas, key=lambda z: z['aporte']) if filas else None
+    datos = [[f['nombre'], f['aporte']] for f in sorted(filas, key=lambda z: -z['aporte']) if f['aporte'] > 0]
+    return render_template('socios.html', socios=filas, total=tot, top=top, datos=datos)
 
 @app.route('/socio/nuevo', methods=['GET', 'POST'])
 def socio_nuevo():
@@ -1467,7 +2636,7 @@ def usuario_nuevo():
     
     if request.method == 'POST':
         nombre = request.form.get('nombre', '')
-        login = request.form.get('login', '')
+        login = request.form.get('login', '').strip()
         clave = request.form.get('clave', '')
         id_nivel = request.form.get('id_nivel', 1)
         id_estado_usuario = request.form.get('id_estado_usuario', 1)
@@ -1515,7 +2684,7 @@ def usuario_editar(id_usuario):
     
     if request.method == 'POST':
         nombre = request.form.get('nombre', '')
-        login = request.form.get('login', '')
+        login = request.form.get('login', '').strip()
         clave = request.form.get('clave', '')
         id_nivel = request.form.get('id_nivel', 1)
         id_estado_usuario = request.form.get('id_estado_usuario', 1)
@@ -1618,22 +2787,67 @@ def logout():
 # ============================================================
 # INICIAR SERVIDOR AUTOMÁTICAMENTE
 # ============================================================
+
+# --- Idioma del menu de usuario (solo guarda la eleccion y la bandera) ---
+IDIOMAS = {'en':'united-states.svg','es':'spain.svg','de':'germany.svg','ja':'japan.svg','fr':'france.svg'}
+
+@app.context_processor
+def inyectar_cop():
+    return {"cop": lambda v: "$" + f"{float(v or 0):,.0f}".replace(",", ".")}
+
+@app.context_processor
+def inyectar_ver():
+    def ver(ruta):
+        try:
+            return int(os.path.getmtime(os.path.join(app.static_folder, ruta)))
+        except OSError:
+            return 0
+    return {"ver": ver}
+
+@app.context_processor
+def inyectar_idioma():
+    l = session.get('lang', 'es')
+    return {'lang': l, 'flag': IDIOMAS.get(l, 'spain.svg')}
+
+@app.route('/set_lang/<lang>')
+def set_lang(lang):
+    if lang in IDIOMAS:
+        session['lang'] = lang
+    return redirect(request.referrer or url_for('dashboard'))
+
+import prestamos_api; prestamos_api.registrar(app, query)
+import cobradores_api; cobradores_api.registrar(app, query)
+import socios_api; socios_api.registrar(app, query)
+import capital_api; capital_api.registrar(app, query)
+import gastos_api; gastos_api.registrar(app, query)
+import cierre_api; cierre_api.registrar(app, query)
+import reportes_api; reportes_api.registrar(app, query)
+import perfil_admin; perfil_admin.registrar(app, query, sha1_hash)
+import caja_api; caja_api.registrar(app, query)
+import github_auth; github_auth.registrar(app, query)
+import google_auth; google_auth.registrar(app, query)
+import facebook_auth; facebook_auth.registrar(app, query)
+import oauth_registro; oauth_registro.registrar(app, query)
+
+# --- Recuperación de contraseña por enlace (módulo recuperacion.py) ---
+from recuperacion import recuperacion_bp
+app.register_blueprint(recuperacion_bp)
+
+
 if __name__ == '__main__':
-    ip_local = obtener_ip_local()
-    
+    # Abrir navegador
+    import threading
+    import webbrowser
+    def abrir_navegador():
+        webbrowser.open("http://127.0.0.1:5000")
+    threading.Timer(1.5, abrir_navegador).start()
+
+    # Servidor de producción Waitress (sin WARNING)
+    from waitress import serve
     print("=" * 60)
-    print("  SISTEMA PAGADIARIO - VERSIÓN PYTHON (Flask)")
+    print("  SISTEMA PAGADIARIO - VERSIÓN PYTHON (Waitress)")
     print("=" * 60)
-    print(f"  Servidor corriendo en:  http://0.0.0.0:5000")
-    print(f"  Abre desde tu celular:  http://{ip_local}:5000")
-    print(f"  Abre desde otra PC:     http://{ip_local}:5000")
+    print(f"  Servidor corriendo en:  http://127.0.0.1:5000")
     print("=" * 60)
-    print("  Presiona CTRL+C para detener el servidor")
-    print("=" * 60)
-    
-    # Abrir el navegador automáticamente después de 2 segundos
-    threading.Timer(2.0, abrir_navegador, args=[ip_local]).start()
-    
-    # Iniciar Flask en el puerto 5000 (libre)
-    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
+    serve(app, host='127.0.0.1', port=5000, threads=4)
   

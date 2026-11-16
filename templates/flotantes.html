@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pagadiario - Acceso</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+      :root {
+        --clr-Green: hsl(150, 100%, 38%);
+        --clr-bg: rgb(4, 0, 27);
+        --clr-form-bg: rgba(255, 255, 255, 0.1);
+        --clr-white: rgba(255, 255, 255, 0.2);
+        
+        --brand-color: #4F46E5;
+        --text-main: #ffffff;
+        --text-sub: rgba(255, 255, 255, 0.6);
+        --input-bg: rgba(255, 255, 255, 0.2);
+        --input-text: #ffffff;
+        --label-bg: rgba(0, 0, 0, 0.4);
+      }
+
+      /* Variables Modo Claro */
+      body.light-mode {
+        --clr-bg: #eef2f9;
+        --clr-form-bg: rgba(255, 255, 255, 0.6);
+        --brand-color: #2563eb;
+        --text-main: #0f172a;
+        --text-sub: #64748b;
+        --input-bg: #ffffff;
+        --input-text: #0f172a;
+        --label-bg: rgba(255, 255, 255, 0.8);
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: var(--clr-bg);
+        color: var(--text-main);
+        
+        /* Simetría perfecta */
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        padding: 20px;
+        overflow: hidden;
+        transition: background-color 0.5s ease;
+      }
+
+      main {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .top-container {
+        position: relative;
+        width: 100%;
+        max-width: 24rem;
+        height: 100%;
+      }
+
+      /* Esferas de colores */
+      .top-container::after,
+      .top-container::before {
+        content: "";
+        position: absolute;
+        height: 10rem;
+        width: 10rem;
+        border-radius: 50%;
+        z-index: 0;
+      }
+
+      .top-container::after {
+        top: -4rem;
+        right: -1rem;
+        background: linear-gradient(rgb(102, 255, 0), rgb(0, 204, 255));
+      }
+
+      .top-container::before {
+        bottom: -4rem;
+        left: -1rem;
+        background: linear-gradient(rgb(255, 0, 170), rgb(255, 187, 0));
+      }
+
+      /* Formulario */
+      form {
+        position: relative;
+        z-index: 1;
+        background-color: var(--clr-form-bg);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        border-radius: 20px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+      }
+
+      /* Toggle Tema */
+      .theme-toggle {
+        position: absolute; top: 15px; right: 15px;
+        width: 35px; height: 35px; border-radius: 50%;
+        background: var(--input-bg); border: 1px solid rgba(255,255,255,0.2);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; color: var(--text-main); z-index: 10; transition: all 0.3s;
+      }
+      .theme-toggle:hover { transform: scale(1.1); }
+      .theme-toggle .sun-icon { display: none; }
+      body.light-mode .theme-toggle .moon-icon { display: none; }
+      body.light-mode .theme-toggle .sun-icon { display: block; }
+
+      /* Cabecera */
+      .header-section {
+        text-align: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .brand-logo {
+        font-size: 2rem;
+        color: var(--brand-color);
+        margin-bottom: 5px;
+      }
+
+      h1 {
+        font-weight: 500;
+        font-size: 1.8rem;
+        margin: 0;
+      }
+
+      /* Redes Sociales */
+      .social-container {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 0.5rem;
+      }
+
+      .social-btn {
+        width: 45px; height: 45px;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        display: flex; align-items: center; justify-content: center;
+        text-decoration: none; transition: all 0.2s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+      .social-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+      .social-btn svg { width: 22px; height: 22px; }
+
+      /* Contenedor de Inputs */
+      .inputs-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow-y: auto;
+        padding: 5px 0;
+        scrollbar-width: none;
+      }
+      .inputs-container::-webkit-scrollbar { display: none; }
+
+      /* ---- INPUTS Y LABELS FLOTANTES ---- */
+      .input-wrapper {
+        margin-bottom: 1.2rem;
+        position: relative;
+        height: 3.2rem;
+      }
+
+      .input {
+        background-color: var(--input-bg);
+        color: var(--input-text);
+        border: 2px solid transparent;
+        border-radius: 8px;
+        padding: 0 2.8rem 0 1rem;
+        height: 100%;
+        width: 100%;
+        outline: none;
+        font-family: inherit;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+      }
+
+      .input:focus,
+      .input:hover,
+      .input:not(:placeholder-shown).input:not(:focus) {
+        border: 2px solid var(--clr-Green);
+      }
+
+      .label {
+        position: absolute;
+        pointer-events: none;
+        top: 50%;
+        left: 1rem;
+        transform: translateY(-50%);
+        transition: all 0.2s ease;
+        color: var(--text-sub);
+        font-weight: 500;
+      }
+
+      /* Efecto flotante */
+      .input:focus ~ .label,
+      .input:not(:placeholder-shown).input:not(:focus) ~ .label {
+        top: -10px;
+        font-size: 0.75rem;
+        background-color: var(--clr-Green);
+        color: #ffffff;
+        border-radius: 4px;
+        padding: 0.2rem 0.5rem;
+        line-height: 100%;
+        font-weight: 600;
+      }
+
+      /* Icono del Ojo */
+      .toggle-eye {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: var(--text-sub);
+        font-size: 1.1rem;
+        z-index: 2;
+      }
+      .toggle-eye:hover { color: var(--text-main); }
+
+      /* Fila de Opciones */
+      .options-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+
+      .options-row label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-sub);
+        cursor: pointer;
+      }
+
+      .text-link {
+        color: var(--brand-color);
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .text-link:hover { text-decoration: underline; }
+
+      /* Checkbox Términos */
+      .terms-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: var(--text-sub);
+        margin-bottom: 1rem;
+      }
+
+      /* Botón Arcoíris */
+      button.btn-submit {
+        background: linear-gradient(to right, rgb(102, 255, 0), rgb(0, 204, 255), rgb(255, 0, 170), rgb(255, 187, 0));
+        border: none;
+        border-radius: 8px;
+        margin: 0 auto 0.5rem auto;
+        display: block;
+        height: 3rem;
+        width: 100%;
+        max-width: 80%;
+        color: white;
+        font-weight: 800;
+        font-size: 1rem;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      button.btn-submit:hover {
+        letter-spacing: 2px;
+        max-width: 85%;
+        box-shadow: 0 0 20px rgba(0, 204, 255, 0.6);
+      }
+
+      /* Botón cambio de form */
+      .switch-form-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-sub);
+        font-size: 0.85rem;
+        cursor: pointer;
+        text-align: center;
+        font-family: inherit;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+      }
+      .switch-form-btn strong { color: var(--brand-color); }
+
+      /* Lógica de Formularios */
+      .form-panel { display: none; flex-direction: column; height: 100%; }
+      .form-panel.active { display: flex; }
+
+      /* Medidor de contraseña */
+      .password-meter { display: flex; gap: 4px; margin: -0.5rem 0 0.5rem 0; width: 100%; }
+      .password-meter .segment { flex: 1; height: 3px; background: rgba(0,0,0,0.1); border-radius: 2px; transition: background 0.3s ease; }
+      body:not(.light-mode) .password-meter .segment { background: rgba(255,255,255,0.1); }
+      
+      /* FIX: Forzamos los colores para que sobreescriban el fondo del modo oscuro */
+      .password-meter .segment.active-weak { background: #ef4444 !important; }
+      .password-meter .segment.active-medium { background: #f59e0b !important; }
+      .password-meter .segment.active-strong { background: #10b981 !important; }
+      .password-meter .segment.active-very { background: #3b82f6 !important; }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <div class="top-container">
+        
+        <div class="theme-toggle" id="themeToggle">
+          <svg class="moon-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <svg class="sun-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </div>
+
+        <form action="" onsubmit="return false">
+          
+          <!-- FORMULARIO LOGIN -->
+          <div id="form-login" class="form-panel active">
+            <div class="header-section">
+              <div class="brand-logo"><i class="fas fa-hand-holding-usd"></i></div>
+              <h1>Sign In</h1>
+            </div>
+
+            <div class="social-container">
+              <a href="#" class="social-btn">
+                <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              </a>
+              <a href="#" class="social-btn">
+                <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+              <a href="#" class="social-btn">
+                <svg viewBox="0 0 24 24" fill="#333"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+              </a>
+            </div>
+
+            <div class="inputs-container">
+              <div class="input-wrapper">
+                <input class="input" id="login-user" type="text" autocomplete="off" placeholder="" required />
+                <label class="label" for="login-user">Usuario o Cédula</label>
+              </div>
+
+              <div class="input-wrapper">
+                <input class="input" id="login-pass" type="password" placeholder="" required />
+                <label class="label" for="login-pass">Contraseña</label>
+                <i class="fas fa-eye toggle-eye" onclick="togglePassword('login-pass', this)"></i>
+              </div>
+
+              <div class="options-row">
+                <label><input type="checkbox"> Recordarme</label>
+                <a href="#" class="text-link">¿Olvidaste tu contraseña?</a>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Sign In</button>
+            
+            <button type="button" class="switch-form-btn" onclick="toggleForm('signup')">
+              Don't have an account? <strong>Sign Up</strong>
+            </button>
+          </div>
+
+          <!-- FORMULARIO REGISTRO -->
+          <div id="form-signup" class="form-panel">
+            <div class="header-section">
+              <div class="brand-logo"><i class="fas fa-hand-holding-usd"></i></div>
+              <h1>Sign Up</h1>
+            </div>
+
+            <div class="social-container">
+              <a href="#" class="social-btn">
+                <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              </a>
+              <a href="#" class="social-btn">
+                <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+              <a href="#" class="social-btn">
+                <svg viewBox="0 0 24 24" fill="#333"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+              </a>
+            </div>
+
+            <div class="inputs-container">
+              <div class="input-wrapper">
+                <input class="input" id="signup-cedula" type="text" autocomplete="off" placeholder="" required />
+                <label class="label" for="signup-cedula">Cédula</label>
+              </div>
+
+              <div class="input-wrapper">
+                <input class="input" id="signup-name" type="text" autocomplete="off" placeholder="" required />
+                <label class="label" for="signup-name">Nombre Completo</label>
+              </div>
+
+              <div class="input-wrapper">
+                <input class="input" id="signup-email" type="email" autocomplete="off" placeholder="" required />
+                <label class="label" for="signup-email">Email</label>
+              </div>
+
+              <div class="input-wrapper">
+                <input class="input" id="signup-pass" type="password" placeholder="" required />
+                <label class="label" for="signup-pass">Contraseña</label>
+                <i class="fas fa-eye toggle-eye" onclick="togglePassword('signup-pass', this)"></i>
+              </div>
+
+              <!-- Medidor de contraseña -->
+              <div class="password-meter" id="meter-password">
+                <div class="segment" data-seg="1"></div>
+                <div class="segment" data-seg="2"></div>
+                <div class="segment" data-seg="3"></div>
+                <div class="segment" data-seg="4"></div>
+              </div>
+
+              <div class="input-wrapper">
+                <input class="input" id="signup-confirm" type="password" placeholder="" required />
+                <label class="label" for="signup-confirm">Confirmar Contraseña</label>
+                <i class="fas fa-eye toggle-eye" onclick="togglePassword('signup-confirm', this)"></i>
+              </div>
+
+              <div class="terms-wrapper">
+                <input type="checkbox" id="terms" required>
+                <label for="terms">Acepto los términos y condiciones</label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Sign Up</button>
+            
+            <button type="button" class="switch-form-btn" onclick="toggleForm('login')">
+              Already have an account? <strong>Sign In</strong>
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </main>
+
+    <script>
+      // 1. Toggle Modo Oscuro / Claro
+      document.getElementById('themeToggle').addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+      });
+
+      // 2. Lógica para Mostrar/Ocultar Contraseña
+      function togglePassword(inputId, icon) {
+        const input = document.getElementById(inputId);
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+        } else {
+          input.type = 'password';
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+        }
+      }
+
+      // 3. Cambiar entre Login y Registro
+      function toggleForm(formType) {
+        const loginForm = document.getElementById('form-login');
+        const signupForm = document.getElementById('form-signup');
+
+        if (formType === 'signup') {
+          loginForm.classList.remove('active');
+          signupForm.classList.add('active');
+        } else {
+          signupForm.classList.remove('active');
+          loginForm.classList.add('active');
+        }
+      }
+
+      // 4. Medidor de Fortaleza de Contraseña
+      const passInput = document.getElementById('signup-pass');
+      const meterSegments = document.querySelectorAll('#meter-password .segment');
+
+      if (passInput) {
+        passInput.addEventListener('input', function() {
+          const val = this.value;
+          let strength = 0;
+          
+          // Validaciones de seguridad
+          if (val.length >= 8) strength++;
+          if (/[A-Z]/.test(val) && /[a-z]/.test(val)) strength++;
+          if (/\d/.test(val)) strength++;
+          if (/[^A-Za-z0-9]/.test(val)) strength++;
+
+          // Pintar los segmentos
+          meterSegments.forEach((seg, index) => {
+            seg.className = 'segment'; // Resetear clases
+            if (index < strength) {
+              if (strength === 1) seg.classList.add('active-weak');
+              else if (strength === 2) seg.classList.add('active-medium');
+              else if (strength === 3) seg.classList.add('active-strong');
+              else if (strength === 4) seg.classList.add('active-very');
+            }
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

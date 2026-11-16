@@ -1,51 +1,38 @@
-{% extends "base.html" %}
-
+{% extends "base_pw.html" %}
+{% set page_title = "Registrar pago" %}
 {% block title %}Registrar Pago - Pagadiario{% endblock %}
-
-{% block body %}
-
-{% include '_sidebar.html' %}<div class="main-content">
-    <div class="topbar">
-        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-money-bill-wave"></i> Registrar Pago</h4>
+{% macro cop(v) %}${{ "{:,.0f}".format(v or 0).replace(',', '.') }}{% endmacro %}
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="alert alert-{{ category }} p-4 mb-5">{{ message }}</div>{% endfor %}{% endwith %}
+<div class="card border-0 overflow-hidden mb-5" style="background:linear-gradient(160deg,#009ef7,#0062a3)">
+  <div class="card-body p-6 pb-15">
+    <div class="d-flex align-items-center">
+      <div class="symbol symbol-60px symbol-circle me-4 flex-shrink-0"><span class="symbol-label bg-white text-primary fs-1 fw-bold">{{ (prestamo.cliente or '?')[0]|upper }}</span></div>
+      <div style="min-width:0"><div class="text-white fs-3 fw-bold">{{ prestamo.cliente }}</div><div class="text-white opacity-75">Préstamo #{{ prestamo.id }}</div></div>
     </div>
-
-    <div class="p-4">
-        <div class="card-panel">
-            <h5><i class="fas fa-info-circle"></i> Préstamo #{{ prestamo.id }}</h5>
-            <p><strong>Cliente:</strong> {{ prestamo.cliente }}</p>
-            <p><strong>Total Debe:</strong> <span class="text-danger">{{ "%.2f"|format(prestamo.total_debe or 0) }}</span></p>
-            <p><strong>Cuotas Pendientes:</strong> {{ prestamo.cuotas_debe or 0 }}</p>
-            <p><strong>Monto por Cuota:</strong> {{ "%.2f"|format(prestamo.monto_x_cuotas or 0) }}</p>
-        </div>
-
-        <div class="card-panel">
-            <h5><i class="fas fa-dollar-sign"></i> Registrar Pago</h5>
-            <form method="POST">
-                <div class="mb-3">
-                    <label class="form-label">Monto del Pago *</label>
-                    <input type="number" step="0.01" class="form-control form-control-lg" 
-                           name="monto" 
-                           value="{{ '%.2f'|format(prestamo.monto_x_cuotas or 0) }}" 
-                           required>
-                    <small class="text-muted">Sugerido: {{ "%.2f"|format(prestamo.monto_x_cuotas or 0) }}</small>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Observaciones</label>
-                    <textarea class="form-control" name="descripcion" rows="2">Pago Efectuado</textarea>
-                </div>
-                
-                <div class="d-flex justify-content-between mt-3">
-                    <a href="{{ url_for('prestamo_ver', id_prestamo=prestamo.id) }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Cancelar
-                    </a>
-                    <button type="submit" class="btn btn-success btn-lg">
-                        <i class="fas fa-check"></i> Registrar Pago
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+  </div>
 </div>
-
+<div class="card shadow-sm mx-3 mb-5" style="margin-top:-60px;position:relative">
+  <div class="card-body p-5"><div class="row g-3">
+    <div class="col-6"><div class="rounded p-4 bg-light-danger"><div class="text-danger fs-8 fw-semibold">Total debe</div><div class="fs-4 fw-bolder text-danger text-nowrap">{{ cop(prestamo.total_debe) }}</div></div></div>
+    <div class="col-6"><div class="rounded p-4 bg-light-warning"><div class="text-warning fs-8 fw-semibold">Cuotas pendientes</div><div class="fs-4 fw-bolder text-gray-900">{{ prestamo.cuotas_debe or 0 }}</div></div></div>
+    <div class="col-12"><div class="rounded p-4 bg-light-primary"><div class="text-primary fs-8 fw-semibold">Valor por cuota</div><div class="fs-4 fw-bolder text-gray-900 text-nowrap">{{ cop(prestamo.monto_x_cuotas) }}</div></div></div>
+  </div></div>
+</div>
+<form method="POST">
+<div class="card mb-5">
+  <div class="card-header border-0 pt-5"><h3 class="card-title fw-bold fs-3">Registrar pago</h3></div>
+  <div class="card-body pt-2">
+    <div class="mb-6"><label class="form-label fw-semibold required">Monto del pago</label>
+      <input type="number" step="0.01" class="form-control form-control-solid form-control-lg fs-2 fw-bold" name="monto" value="{{ '%.2f'|format(prestamo.monto_x_cuotas or 0) }}" required>
+      <div class="text-muted fs-8 mt-2">Sugerido: {{ cop(prestamo.monto_x_cuotas) }}</div></div>
+    <div><label class="form-label fw-semibold">Observaciones</label>
+      <textarea class="form-control form-control-solid" name="descripcion" rows="2">Pago Efectuado</textarea></div>
+  </div>
+</div>
+<div class="d-flex justify-content-end gap-3 mb-10">
+  <a href="{{ url_for('prestamo_ver', id_prestamo=prestamo.id) }}" class="btn btn-light">Cancelar</a>
+  <button type="submit" class="btn btn-primary">Registrar pago</button>
+</div>
+</form>
 {% endblock %}

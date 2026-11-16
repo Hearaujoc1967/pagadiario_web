@@ -1,0 +1,51 @@
+{% extends "base_cliente.html" %}
+
+{% block title %}Mi Perfil - Pagadiario{% endblock %}
+{% block page_title %}Mi Perfil{% endblock %}
+{% block breadcrumb %}Mi Perfil{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header border-0 pt-5">
+        <h3 class="card-title fw-bold fs-3">Mis Datos</h3>
+    </div>
+    <div class="card-body">
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <label class="fw-semibold text-muted fs-7">Cédula</label>
+                <div class="fs-5 fw-bold">{{ cliente.dni or cliente_dni }}</div>
+            </div>
+            <div class="col-md-6">
+                <label class="fw-semibold text-muted fs-7">Nombre</label>
+                <div class="fs-5 fw-bold">{{ cliente.nombre or cliente_nombre }}</div>
+            </div>
+        </div>
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <label class="fw-semibold text-muted fs-7">Teléfono</label>
+                <div class="fs-5">{{ cliente.telf or '-' }}</div>
+            </div>
+            <div class="col-md-6">
+                <label class="fw-semibold text-muted fs-7">Email</label>
+                <div class="fs-5">{{ cliente.email or '-' }}</div>
+            </div>
+        </div>
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <label class="fw-semibold text-muted fs-7">Dirección</label>
+                <div class="fs-5">{{ cliente.direccion or '-' }}</div>
+            </div>
+            <div class="col-md-6">
+                <label class="fw-semibold text-muted fs-7">Estado</label>
+                <div class="fs-5">
+                    {% if cliente.estado == 'Activo' %}
+                    <span class="badge badge-success">Activo</span>
+                    {% else %}
+                    <span class="badge badge-danger">{{ cliente.estado or 'N/A' }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

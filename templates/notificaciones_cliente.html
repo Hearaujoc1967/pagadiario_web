@@ -1,0 +1,42 @@
+{% extends "base_cliente.html" %}
+
+{% block title %}Mis Notificaciones - Pagadiario{% endblock %}
+{% block page_title %}Notificaciones{% endblock %}
+{% block breadcrumb %}Notificaciones{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header border-0 pt-5">
+        <h3 class="card-title fw-bold fs-3">Mis Notificaciones</h3>
+    </div>
+    <div class="card-body py-3">
+        {% if notificaciones %}
+            {% for n in notificaciones %}
+            <div class="d-flex flex-stack py-4 border-bottom">
+                <div class="d-flex align-items-center">
+                    <div class="symbol symbol-45px me-4">
+                        <span class="symbol-label bg-light-{{ 'success' if n.tipo == 'prestamo_aprobado' else 'danger' if n.tipo == 'prestamo_rechazado' else 'info' }}">
+                            <i class="ki-duotone ki-{{ 'check-circle' if n.tipo == 'prestamo_aprobado' else 'cross-circle' if n.tipo == 'prestamo_rechazado' else 'notification-on' }} fs-2 text-{{ 'success' if n.tipo == 'prestamo_aprobado' else 'danger' if n.tipo == 'prestamo_rechazado' else 'info' }}">
+                                <span class="path1"></span><span class="path2"></span>
+                            </i>
+                        </span>
+                    </div>
+                    <div>
+                        <div class="fs-6 text-gray-800 fw-bold">{{ n.titulo }}</div>
+                        <div class="text-muted fs-7">{{ n.mensaje[:120] }}{% if n.mensaje|length > 120 %}...{% endif %}</div>
+                        <div class="text-muted fs-8 mt-1">{{ n.fecha_creacion }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="text-center text-muted py-10">
+            <i class="ki-duotone ki-notification-on fs-3x text-muted mb-3">
+                <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+            </i>
+            <p>No tienes notificaciones.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends "base_pw.html" %}
+{% set page_title = "Configuración de cuenta" %}
+{% block title %}Configuración de cuenta - Pagadiario{% endblock %}
+{% block content %}
+{% set _msgs = get_flashed_messages(with_categories=true) %}
+<noscript>{% for category, message in _msgs %}<div class="alert alert-{{ category }} p-4 mb-5">{{ message }}</div>{% endfor %}</noscript>
+
+<style>
+  .fb{position:absolute;top:-13px;right:18px;line-height:1.2;z-index:4;max-width:calc(100% - 36px);margin:0;padding:3px 12px;border-radius:12px;font-size:.78rem;font-weight:700;color:#fff;background:#5b6678;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 6px 12px -4px rgba(0,0,0,.45),inset 0 1px 1px rgba(255,255,255,.35)}
+  .fb:empty{display:none}
+  .fb[data-s="ok"]{background:linear-gradient(180deg,#1fa866,#0f7a45)}
+  .fb[data-s="err"]{background:linear-gradient(180deg,#e04855,#b81d2a)}
+  .fb[data-s="wait"]{background:#5b6678}
+  #pw-toasts{position:fixed;top:5rem;right:1rem;z-index:2000;display:flex;flex-direction:column;gap:.6rem;max-width:min(92vw,360px)}
+  .pw-toast{display:flex;align-items:flex-start;padding:.85rem 1rem;border-radius:.6rem;cursor:pointer;font-size:.95rem;line-height:1.35;
+    background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#181c32);border:1px solid var(--bs-border-color,#e4e6ef);border-left:4px solid var(--c,#009ef7);
+    box-shadow:0 8px 24px rgba(0,0,0,.14);animation:pwIn .25s ease}
+  .pw-toast.ok{--c:#17c653}.pw-toast.err{--c:#f1416c}.pw-toast.info{--c:#009ef7}
+  @keyframes pwIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+  .pw-eye{position:absolute;top:50%;right:.5rem;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:2.25rem;height:2.25rem;border:0;border-radius:.5rem;background:transparent;color:var(--bs-text-muted,#7e8299);cursor:pointer}
+  .pw-eye:hover,.pw-eye:focus-visible{background:var(--bs-gray-200,#eff2f5);color:var(--bs-body-color,#181c32)}
+  .pw-field .form-control{padding-right:3rem}
+  .pw-meter{display:flex;gap:6px;margin-top:.6rem}
+  .pw-meter i{flex:1;height:6px;border-radius:9px;background:var(--bs-gray-300,#dbdfe9);transition:background .25s}
+  .pw-meter i:nth-child(1){--c:#e74c3c}.pw-meter i:nth-child(2){--c:#f1c40f}.pw-meter i:nth-child(3){--c:#2ecc71}.pw-meter i:nth-child(4){--c:#6366f1}
+  .pw-meter[data-s="1"] i:nth-child(-n+1),.pw-meter[data-s="2"] i:nth-child(-n+2),.pw-meter[data-s="3"] i:nth-child(-n+3),.pw-meter[data-s="4"] i{background:var(--c)}
+  .pw-note{min-height:1.2rem;margin-top:.4rem;font-size:.85rem;color:var(--bs-text-muted,#7e8299)}
+  .pw-note.ok{color:#17c653}.pw-note.err{color:#f1416c}
+  @media (prefers-reduced-motion:reduce){.pw-toast{animation:none}.pw-meter i{transition:none}}
+</style>
+
+<div id="pw-toasts" aria-live="polite"></div>
+
+<form method="POST" id="form-cuenta" novalidate>
+<div class="card mb-5"><div class="card-header border-0 pt-5"><h3 class="card-title flex-column align-items-start"><span class="fw-bold fs-3">Cambiar contraseña</span><span class="text-muted fs-7 mt-1">Mínimo 10 caracteres</span></h3></div>
+<div class="card-body pt-2"><div class="row g-5">
+
+<div class="col-md-4"><label class="form-label fw-semibold required" for="pw-actual">Contraseña actual</label>
+<div class="position-relative pw-field"><input type="password" id="pw-actual" class="form-control form-control-solid" name="actual" value="{{ v_actual|default('') }}" required autocomplete="current-password"><button type="button" class="pw-eye" data-eye="pw-actual" aria-label="Mostrar contraseña" aria-pressed="false"></button><small class="fb" id="fb-actual" aria-live="polite"></small></div></div>
+
+<div class="col-md-4"><label class="form-label fw-semibold required" for="pw-nueva">Nueva contraseña</label>
+<div class="position-relative pw-field"><input type="password" id="pw-nueva" class="form-control form-control-solid" name="nueva" value="{{ v_nueva|default('') }}" required minlength="10" autocomplete="new-password"><button type="button" class="pw-eye" data-eye="pw-nueva" aria-label="Mostrar contraseña" aria-pressed="false"></button></div>
+<div class="pw-meter" id="pw-meter" data-s="0" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<div class="pw-note" id="pw-hint" aria-live="polite">Usa 10 o más caracteres, con mayúsculas, números y símbolos.</div></div>
+
+<div class="col-md-4"><label class="form-label fw-semibold required" for="pw-confirmar">Confirmar contraseña</label>
+<div class="position-relative pw-field"><input type="password" id="pw-confirmar" class="form-control form-control-solid" name="confirmar" value="{{ v_conf|default('') }}" required minlength="10" autocomplete="new-password"><button type="button" class="pw-eye" data-eye="pw-confirmar" aria-label="Mostrar contraseña" aria-pressed="false"></button></div>
+<div class="pw-note" id="pw-match" aria-live="polite"></div></div>
+
+</div></div></div>
+<div class="d-flex justify-content-end gap-3 mb-10"><a href="{{ url_for('perfil_admin') }}" class="btn btn-light">Volver al perfil</a><button type="submit" class="btn btn-primary">Cambiar contraseña</button></div>
+</form>
+
+<script>
+(function () {
+  const $ = s => document.querySelector(s);
+  const MIN = 10;
+  const EYE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const EYE_OFF = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 19C5 19 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg>';
+
+  /* Avisos emergentes (los mensajes del servidor también salen aquí) */
+  const box = $('#pw-toasts');
+  function toast(msg, type, ms) {
+    const t = document.createElement('div');
+    t.className = 'pw-toast ' + (type || 'info');
+    t.setAttribute('role', type === 'err' ? 'alert' : 'status');
+    t.textContent = msg;
+    const close = () => t.remove();
+    t.addEventListener('click', close);
+    box.appendChild(t);
+    setTimeout(close, ms || 4500);
+  }
+  const FLASH = {{ _msgs|tojson }};
+  FLASH.forEach(([c, m]) => toast(m, c === 'danger' || c === 'error' ? 'err' : c === 'success' ? 'ok' : 'info'));
+
+  /* Ojitos */
+  document.querySelectorAll('[data-eye]').forEach(b => {
+    b.innerHTML = EYE;
+    b.addEventListener('click', () => {
+      const i = document.getElementById(b.dataset.eye), show = i.type === 'password';
+      i.type = show ? 'text' : 'password';
+      b.setAttribute('aria-pressed', String(show));
+      b.setAttribute('aria-label', show ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      b.innerHTML = show ? EYE_OFF : EYE;
+    });
+  });
+
+  /* Fortaleza en 4 segmentos (igual que el registro): longitud, mayúscula+minúscula, número y símbolo */
+  const actual = $('#pw-actual'), nueva = $('#pw-nueva'), conf = $('#pw-confirmar');
+  const meter = $('#pw-meter'), hint = $('#pw-hint'), match = $('#pw-match');
+  const NOMBRES = ['', 'Débil', 'Aceptable', 'Buena', 'Excelente'];
+  function evalNueva() {
+    const v = nueva.value;
+    const f = [v.length >= MIN, /[a-z]/.test(v) && /[A-Z]/.test(v), /\d/.test(v), /[^A-Za-z0-9]/.test(v)];
+    let s = f.filter(Boolean).length;
+    if (v.length < MIN) s = Math.min(s, 1);          // una clave corta nunca se ve "aceptable"
+    meter.dataset.s = v ? s : 0;
+    if (!v) { hint.textContent = 'Usa 10 o más caracteres, con mayúsculas, números y símbolos.'; hint.className = 'pw-note'; return; }
+    const falta = [];
+    if (!f[0]) falta.push('al menos ' + MIN + ' caracteres');
+    if (!f[1]) falta.push('mayúsculas y minúsculas');
+    if (!f[2]) falta.push('un número');
+    if (!f[3]) falta.push('un símbolo');
+    hint.textContent = NOMBRES[s] + (falta.length ? ' · falta: ' + falta.join(', ') : '');
+    hint.className = 'pw-note ' + (s >= 3 ? 'ok' : s <= 1 ? 'err' : '');
+  }
+  function evalMatch() {
+    if (!conf.value) { match.textContent = ''; match.className = 'pw-note'; return; }
+    const ok = conf.value === nueva.value;
+    match.textContent = ok ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden';
+    match.className = 'pw-note ' + (ok ? 'ok' : 'err');
+  }
+  nueva.addEventListener('input', () => { evalNueva(); evalMatch(); });
+  conf.addEventListener('input', evalMatch);
+
+  /* Contraseña actual: se comprueba al salir del campo; el aviso va en el borde, como en el login */
+  (function () {
+    const campo = $('#pw-actual'), fb = $('#fb-actual');
+    let ultimo = null;
+    function aviso(msg, st) { fb.textContent = msg; if (st) fb.dataset.s = st; else delete fb.dataset.s; }
+    campo.addEventListener('input', () => { ultimo = null; aviso(''); });
+    campo.addEventListener('blur', () => {
+      const v = campo.value;
+      if (!v || v === ultimo) return;
+      ultimo = v;
+      aviso('Verificando…', 'wait');
+      fetch('/api/verificar_actual', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        credentials: 'same-origin',
+        body: 'actual=' + encodeURIComponent(v)
+      })
+        .then(r => r.json().then(d => ({ st: r.status, d: d })))
+        .then(x => {
+          if (x.st === 429) aviso('Demasiados intentos', 'err');
+          else if (x.d.valida === false) aviso('Contraseña actual incorrecta', 'err');
+          else if (x.d.valida === true) aviso('Contraseña actual correcta', 'ok');
+          else aviso('');
+        })
+        .catch(() => aviso(''));
+    });
+  })();
+
+  /* Envío: se avisa aquí antes de molestar al servidor */
+  $('#form-cuenta').addEventListener('submit', e => {
+    let msg = '', campo = null;
+    if (!actual.value) { msg = 'Escribe tu contraseña actual'; campo = actual; }
+    else if (nueva.value.length < MIN) { msg = 'La nueva contraseña debe tener al menos ' + MIN + ' caracteres'; campo = nueva; }
+    else if (nueva.value === actual.value) { msg = 'La nueva contraseña debe ser distinta de la actual'; campo = nueva; }
+    else if (conf.value !== nueva.value) { msg = 'La confirmación no coincide con la nueva contraseña'; campo = conf; }
+    if (!msg) return;
+    e.preventDefault();
+    toast(msg, 'err');
+    campo.focus();
+  });
+})();
+</script>
+{% endblock %}

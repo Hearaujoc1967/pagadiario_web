@@ -1,106 +1,145 @@
-{% extends "base.html" %}
-
+{% extends "base_pw.html" %}
 {% block title %}Clientes - Pagadiario{% endblock %}
+{% block head %}<link href="{{ url_for('static', filename='metronic/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet"><style>.table-responsive{max-height:60vh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.table-responsive thead th{position:sticky;top:0;z-index:2;background:var(--bs-card-bg,#fff)}#pill_cli{scrollbar-width:none}#pill_cli::-webkit-scrollbar{display:none}table.dataTable thead th.sorting:before,table.dataTable thead th.sorting:after{opacity:.5!important}table.dataTable thead th.sorting_asc:before,table.dataTable thead th.sorting_desc:after{opacity:1!important}table.dataTable thead th{padding-right:24px!important;white-space:nowrap}.select2-container .select2-selection__rendered{font-size:.95rem!important}.select2-results__option{font-size:.95rem!important;padding:.5rem .75rem!important}</style>{% endblock %}
+{% block content %}
+<div class="d-flex flex-column gap-5 p-4">
+{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}
+<div class="alert alert-{{ category }} mb-0">{{ message }}</div>
+{% endfor %}{% endwith %}
+<h3 class="fw-bold text-gray-900 mb-0">Directorio de Clientes<span class="text-muted fs-7 fw-semibold ms-2">/ Gestión</span></h3>
+{% macro cop(v) %}{% if v >= 1000000 %}${{ '%.1f'|format(v/1000000) }}M{% elif v >= 1000 %}${{ '%.0f'|format(v/1000) }}k{% else %}${{ '%.0f'|format(v) }}{% endif %}{% endmacro %}
+<div class="card border-0 overflow-hidden" style="background:linear-gradient(160deg,#00c2cb,#00797f)"><div class="card-body p-3 pb-15"><div class="d-flex justify-content-between align-items-center mb-2"><div id="tit_cli" class="text-white fw-bold fs-7">Top 10 clientes por monto prestado</div><div id="rango_top" class="btn btn-sm btn-light d-flex align-items-center px-3"><span id="rango_txt" class="fw-bold text-gray-700">Todo el período</span><i class="ki-duotone ki-calendar-8 fs-2 ms-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i></div></div><div id="tabs_cli" class="d-flex gap-2 mb-2 overflow-auto flex-nowrap" style="scrollbar-width:none"><button class="btn btn-sm btn-light fw-bold text-nowrap" data-v="top">Top 10</button><button class="btn btn-sm btn-active-light btn-color-white text-nowrap" data-v="estado">Estado</button><button class="btn btn-sm btn-active-light btn-color-white text-nowrap" data-v="aging">Mora</button><button class="btn btn-sm btn-active-light btn-color-white text-nowrap" data-v="reputacion">Reputación</button><button class="btn btn-sm btn-active-light btn-color-white text-nowrap" data-v="cobrador">Cobrador</button></div><div id="grafico_top" style="height:260px"></div><div id="grafico_salud" style="height:260px;display:none"></div></div></div>
+<div class="px-2 position-relative" style="margin-top:-60px"><div class="card border-0 shadow-sm"><div class="card-body py-2 px-4">
+<div style="height:76px" class="d-flex align-items-center"><div class="symbol symbol-40px me-3 flex-shrink-0"><span class="symbol-label" style="background:#00c2cb"><i class="ki-duotone ki-people fs-2 text-white"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></span></div><div class="flex-grow-1" style="min-width:0"><div class="text-gray-900 fw-bold fs-7 lh-sm">Total clientes</div><div class="text-gray-500 fs-9 text-nowrap">Registrados</div></div><div class="d-flex flex-column align-items-end flex-shrink-0 ms-2" style="width:76px"><div id="v_tot" class="text-gray-900 fw-bolder fs-6 text-nowrap lh-1 mb-2">{{ clientes|length }}</div><div id="sp_tot" style="width:76px;height:24px"></div></div></div>
+<div style="height:76px" class="d-flex align-items-center border-top border-gray-200"><div class="symbol symbol-40px me-3 flex-shrink-0"><span class="symbol-label" style="background:#7239ea"><i class="ki-duotone ki-user-tick fs-2 text-white"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></span></div><div class="flex-grow-1" style="min-width:0"><div class="text-gray-900 fw-bold fs-7 lh-sm">Clientes activos</div><div class="text-gray-500 fs-9 text-nowrap">Con préstamo</div></div><div class="d-flex flex-column align-items-end flex-shrink-0 ms-2" style="width:76px"><div id="n_act" class="text-gray-900 fw-bolder fs-6 text-nowrap lh-1 mb-2">0</div><div id="sp_act" style="width:76px;height:24px"></div></div></div>
+<div style="height:76px" class="d-flex align-items-center border-top border-gray-200"><div class="symbol symbol-40px me-3 flex-shrink-0"><span class="symbol-label" style="background:#009ef7"><i class="ki-duotone ki-dollar fs-2 text-white"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></span></div><div class="flex-grow-1" style="min-width:0"><div class="text-gray-900 fw-bold fs-7 lh-sm">Cobros del período</div><div class="text-gray-500 fs-9 text-nowrap">Pagos recibidos</div></div><div class="d-flex flex-column align-items-end flex-shrink-0 ms-2" style="width:76px"><div id="v_cob" class="text-gray-900 fw-bolder fs-6 text-nowrap lh-1 mb-2">{{ cop(stats.cobros_mes) }}</div><div id="sp_cob" style="width:76px;height:24px"></div></div></div>
+<div style="height:76px" class="d-flex align-items-center border-top border-gray-200"><div class="symbol symbol-40px me-3 flex-shrink-0"><span class="symbol-label" style="background:#3e5bff"><i class="ki-duotone ki-bank fs-2 text-white"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></span></div><div class="flex-grow-1" style="min-width:0"><div class="text-gray-900 fw-bold fs-7 lh-sm">Préstamos otorgados</div><div class="text-gray-500 fs-9 text-nowrap">Monto prestado</div></div><div class="d-flex flex-column align-items-end flex-shrink-0 ms-2" style="width:76px"><div id="v_pre" class="text-gray-900 fw-bolder fs-6 text-nowrap lh-1 mb-2">{{ cop(stats.prestado) }}</div><div id="sp_pre" style="width:76px;height:24px"></div></div></div>
+<div style="height:76px" class="d-flex align-items-center border-top border-gray-200"><div class="symbol symbol-40px me-3 flex-shrink-0"><span class="symbol-label" style="background:#0bb5e8"><i class="ki-duotone ki-wallet fs-2 text-white"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></span></div><div class="flex-grow-1" style="min-width:0"><div class="text-gray-900 fw-bold fs-7 lh-sm">Por cobrar</div><div class="text-gray-500 fs-9 text-nowrap">Saldo pendiente</div></div><div class="d-flex flex-column align-items-end flex-shrink-0 ms-2" style="width:76px"><div id="v_por" class="text-gray-900 fw-bolder fs-6 text-nowrap lh-1 mb-2">{{ cop(stats.por_cobrar) }}</div><div id="sp_por" style="width:76px;height:24px"></div></div></div>
+<div style="height:76px" class="d-flex align-items-center border-top border-gray-200"><div class="symbol symbol-40px me-3 flex-shrink-0"><span class="symbol-label" style="background:#8950fc"><i class="ki-duotone ki-information-5 fs-2 text-white"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></span></div><div class="flex-grow-1" style="min-width:0"><div class="text-gray-900 fw-bold fs-7 lh-sm">Clientes con deuda</div><div class="text-gray-500 fs-9 text-nowrap">Con saldo activo</div></div><div class="d-flex flex-column align-items-end flex-shrink-0 ms-2" style="width:76px"><div id="v_deu" class="text-gray-900 fw-bolder fs-6 text-nowrap lh-1 mb-2">{{ stats.con_deuda|int }}</div><div id="sp_deu" style="width:76px;height:24px"></div></div></div>
+</div></div></div>
+<div class="card"><div class="card-header border-0 pt-5"><h3 class="card-title fw-bold fs-4 text-gray-900">Lista de Clientes</h3>
+<div class="card-toolbar gap-2"><a href="{{ url_for('importar_contactos', tipo='clientes') }}" class="btn btn-sm btn-light-primary">Importar</a><a href="{{ url_for('cliente_nuevo') }}" class="btn btn-sm btn-primary"><i class="ki-duotone ki-plus fs-3"><span class="path1"></span><span class="path2"></span></i>Nuevo</a></div></div>
+<div class="card-body py-3">
+<div class="position-relative mb-4"><i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4 top-50 translate-middle-y text-muted"><span class="path1"></span><span class="path2"></span></i><input type="text" id="buscar_cli" class="form-control form-control-solid w-100 ps-12" placeholder="Buscar nombre, DNI, negocio o teléfono..."></div>
 
-{% block body %}
-
-{% include '_sidebar.html' %}<div class="main-content">
-    <div class="topbar">
-        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-users"></i> Clientes</h4>
-        <span><i class="fas fa-user-circle"></i> <strong>{{ session.nombre }}</strong></span>
-    </div>
-
-    <div class="p-4">
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        <div class="card-panel">
-         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h5 class="mb-0"><i class="fas fa-list"></i> Lista de Clientes</h5>
-    <div>
-        <a href="{{ url_for('importar_contactos', tipo='clientes') }}" class="btn btn-info">
-            <i class="fas fa-address-book"></i> Importar Contactos
-        </a>
-        <a href="{{ url_for('cliente_nuevo') }}" class="btn btn-success">
-            <i class="fas fa-plus"></i> Añadir Cliente
-        </a>
-    </div>
-</div>   
-          
-            
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>DNI</th>
-                            <th>Nombre</th>
-                            <th>Negocio</th>
-                            <th>Teléfono</th>
-                            <th>Estado</th>
-                            <th>Reputación</th>
-                            <th>Cobrador</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if clientes %}
-                            {% for c in clientes %}
-                                <tr>
-                                    <td>{{ c.id }}</td>
-                                    <td>{{ c.dni }}</td>
-                                    <td><strong>{{ c.nombre }}</strong></td>
-                                    <td>{{ c.nombre_negocio or '-' }}</td>
-                                    <td>{{ c.telf or '-' }}</td>
-                                    <td>
-                                        {% if c.estado == 'Activo' %}
-                                            <span class="badge bg-success">{{ c.estado }}</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">{{ c.estado }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ c.reputacion or '-' }}</td>
-                                    <td>{{ c.cobrador or '-' }}</td>
-                                    <td>
-                                        <a href="{{ url_for('cliente_editar', id_cliente=c.id) }}" class="btn btn-sm btn-warning" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ url_for('cliente_eliminar', id_cliente=c.id) }}" 
-                                           class="btn btn-sm btn-danger" 
-                                           onclick="return confirm('¿Eliminar este cliente?');" 
-                                           title="Eliminar">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="9" class="text-center text-muted py-4">
-                                    <i class="fas fa-inbox" style="font-size: 2rem;"></i>
-                                    <p class="mt-2">No hay clientes registrados</p>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-            
-            <p class="text-muted mt-2 mb-0">
-                <i class="fas fa-info-circle"></i> Total: <strong>{{ clientes|length }}</strong> cliente(s)
-            </p>
-        </div>
-    </div>
+<div class="d-flex justify-content-end mb-3"><button type="button" id="btn_filtros" class="btn btn-sm btn-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"><i class="ki-duotone ki-filter fs-3"><span class="path1"></span><span class="path2"></span></i><span id="t_fil">Filtros</span><span id="n_fil" class="badge badge-circle badge-primary ms-2 d-none">0</span></button>
+<div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true" id="menu_filtros">
+<div class="px-7 py-5"><div class="fs-5 text-gray-900 fw-bold">Opciones de filtro</div></div>
+<div class="separator border-gray-200"></div>
+<div class="px-7 py-5">
+<div class="mb-6"><label class="form-label fw-semibold">Estado:</label><select id="f_est" class="form-select form-select-solid" data-placeholder="Seleccionar opción"><option value="todos">Todos</option><option value="activo">Activo</option><option value="inactivo">Inactivo</option><option value="lista negra">Lista Negra</option></select></div>
+<div class="mb-6"><label class="form-label fw-semibold">Reputación:</label><select id="f_rep" class="form-select form-select-solid" data-placeholder="Seleccionar opción"><option value="todos">Todos</option><option value="Buena">Buena</option><option value="Regular">Regular</option><option value="Mala">Mala</option></select></div>
+<div class="mb-6"><label class="form-label fw-semibold">Última solicitud:</label><select id="f_sol" class="form-select form-select-solid" data-placeholder="Seleccionar opción"><option value="todos">Todos</option><option value="pendiente">Pendiente</option><option value="aprobada">Aprobada</option><option value="rechazada">Rechazada</option><option value="ninguna">Sin solicitudes</option></select></div>
+<div class="mb-6"><label class="form-label fw-semibold">Deuda:</label><div class="d-flex"><label class="form-check form-check-sm form-check-custom form-check-solid me-5"><input class="form-check-input" type="checkbox" id="f_con"><span class="form-check-label">Con deuda</span></label><label class="form-check form-check-sm form-check-custom form-check-solid"><input class="form-check-input" type="checkbox" id="f_sin"><span class="form-check-label">Sin deuda</span></label></div></div>
+<div class="mb-8"><label class="form-label fw-semibold">Verificados:</label><label class="form-check form-switch form-switch-sm form-check-custom form-check-solid mb-3"><input class="form-check-input" type="checkbox" id="f_ev"><span class="form-check-label fw-semibold text-muted">Correo verificado</span></label><label class="form-check form-switch form-switch-sm form-check-custom form-check-solid"><input class="form-check-input" type="checkbox" id="f_tv"><span class="form-check-label fw-semibold text-muted">Teléfono verificado</span></label></div>
+<div class="d-flex justify-content-end"><button type="button" id="f_reset" class="btn btn-sm btn-light btn-active-light-primary me-2">Restablecer</button><button type="button" id="f_apply" class="btn btn-sm btn-primary">Aplicar</button></div>
+</div></div></div>
+<select id="filtro_cob" class="form-select form-select-solid fs-7 mb-4"><option value="">Todos los cobradores</option></select>
+<div class="table-responsive">
+<table id="tabla_cli" class="table fs-6 table-row-dashed table-row-gray-300 align-middle gs-0 gy-3">
+<thead><tr class="fw-bold text-gray-500 fs-7 text-uppercase"><th>#</th><th>Cliente</th><th>DNI</th><th>Negocio</th><th>Teléfono</th><th>Cobrador</th><th>Estado</th><th>Reputación</th><th>Última solicitud</th><th>Deuda</th><th>Verificados</th><th class="text-end">Acciones</th></tr></thead>
+<tbody>
+{% for c in clientes %}
+{% set e = ex.get(c.id, {}) %}<tr data-rep="{{ c.reputacion or '' }}" data-deu="{{ e.get('deu', 0) }}" data-ev="{{ e.get('ev', 0) }}" data-tv="{{ e.get('tv', 0) }}" data-sol="{{ e.get('sol', '') }}"><td class="text-gray-600">{{ c.id }}</td>
+<td data-order="{{ c.nombre }}" data-search="{{ c.nombre }} {{ c.email or '' }}"><div class="d-flex align-items-center"><div class="symbol symbol-circle symbol-35px me-2 flex-shrink-0 d-flex align-items-center justify-content-center" style="background-color:#7239ea;color:white;min-width:35px;height:35px"><span class="fs-6 fw-bold">{{ (c.nombre or '-')[0]|upper }}</span></div><div class="d-flex flex-column"><span class="text-gray-900 fw-bold">{{ c.nombre }}</span><span class="text-muted fs-8">{{ c.email or 'sin correo' }}</span></div></div></td>
+<td class="text-gray-600">{{ c.dni or '-' }}</td>
+<td class="text-gray-600">{{ c.nombre_negocio or '-' }}</td>
+<td class="text-gray-600">{{ c.telf or '-' }}</td>
+<td class="text-gray-600" data-search="{{ c.cobrador or '-' }}">{{ c.cobrador or '-' }}</td>
+<td>{% if (c.estado or '')|lower|truncate(6, True, '') == 'activo' %}<span class="badge badge-light-success">{{ c.estado }}</span>{% else %}<span class="badge badge-light-danger">{{ c.estado or 'Sin estado' }}</span>{% endif %}</td>
+{% set rp = c.reputacion or '' %}<td>{% if rp == 'Buena' %}<span class="badge badge-light-success">Buena</span>{% elif rp == 'Regular' %}<span class="badge badge-light-warning">Regular</span>{% elif rp == 'Mala' %}<span class="badge badge-light-danger">Mala</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+{% set sl = e.get('sol', '') %}<td>{% if sl == 'pendiente' %}<span class="badge badge-light-warning">Pendiente</span>{% elif sl == 'aprobada' %}<span class="badge badge-light-success">Aprobada</span>{% elif sl == 'rechazada' %}<span class="badge badge-light-danger">Rechazada</span>{% else %}<span class="badge badge-light text-gray-600">Sin solicitud</span>{% endif %}</td>
+<td>{% if e.get('deu', 0) == 1 %}<span class="badge badge-light-danger">Con deuda</span>{% else %}<span class="badge badge-light-success">Sin deuda</span>{% endif %}</td>
+<td class="text-nowrap"><span class="badge {{ 'badge-light-success' if e.get('ev', 0) == 1 else 'badge-light text-gray-500' }} me-1">Correo</span><span class="badge {{ 'badge-light-success' if e.get('tv', 0) == 1 else 'badge-light text-gray-500' }}">Teléfono</span></td>
+<td class="text-end text-nowrap">
+<a href="{{ url_for('cliente_ver', id_cliente=c.id) }}" class="btn btn-sm btn-light-primary me-1">Ver</a><a href="{{ url_for('cliente_editar', id_cliente=c.id) }}" class="btn btn-icon btn-sm btn-light-warning" title="Editar"><i class="ki-duotone ki-pencil fs-3"><span class="path1"></span><span class="path2"></span></i></a>
+<a href="{{ url_for('cliente_eliminar', id_cliente=c.id) }}" class="btn btn-icon btn-sm btn-light-danger" title="Eliminar" onclick="return confirm('¿Eliminar este cliente?');"><i class="ki-duotone ki-trash fs-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></a>
+</td></tr>
+{% endfor %}
+</tbody></table></div></div></div>
 </div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/highcharts/highcharts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/highcharts/highcharts-3d.js') }}"></script>
+<script src="{{ url_for('static', filename='metronic/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+<script>
+$(function(){
+var rows=$("#tabla_cli tbody tr"),tot=[],act=[],ina=[],c=0,a=0,i=0,cob={};
+function esAct(r){return $(r).children().eq(6).text().trim().toLowerCase().indexOf("activo")===0}
+rows.each(function(){var ok=esAct(this);c++;if(ok)a++;else i++;tot.push(c);act.push(a);ina.push(ok?0:1);var v=$(this).children().eq(5).attr("data-search");if(v&&v!=="-")cob[v]=1});
+$("#n_act").text(a);$("#n_ina").text(i);
+function sp(id,t,d){if(!d.length)return;new ApexCharts(document.querySelector(id),{chart:{type:t,height:50,sparkline:{enabled:true}},series:[{data:d}],colors:["#ffffff"],stroke:{curve:"smooth",width:3},plotOptions:{bar:{columnWidth:"55%",borderRadius:2}},tooltip:{enabled:false}}).render()}
 
+var tp={{ top|tojson }};
+try{if(typeof Highcharts==="undefined")throw new Error("Highcharts no cargó");if(!tp.length)throw new Error("top vacío");Highcharts.chart("grafico_top",{chart:{type:"column",backgroundColor:"transparent",options3d:{enabled:true,alpha:12,beta:15,depth:60,viewDistance:25}},title:{text:null},xAxis:{categories:tp.map(function(x){return x.n.split(" ")[0]}),labels:{style:{color:"#fff",fontWeight:"bold",fontSize:"10px"},rotation:-35}},yAxis:{title:{text:null},labels:{style:{color:"#fff"}},gridLineColor:"rgba(255,255,255,.15)"},legend:{enabled:false},credits:{enabled:false},tooltip:{pointFormat:"Prestado: <b>${point.y:,.0f}</b>"},plotOptions:{column:{depth:40,colorByPoint:true,dataLabels:{enabled:true,color:"#fff",style:{fontSize:"11px",fontWeight:"bold",textOutline:"none"},formatter:function(){var v=this.y;return v>=1e6?(v/1e6).toFixed(1)+"M":v>=1e3?(v/1e3).toFixed(1)+"k":v}},colors:["#f1416c","#7239ea","#50cd89","#009ef7","#f1850a","#0bb5e8","#ffc700","#8950fc","#3e5bff","#7ee0ff"]}},series:[{name:"Prestado",data:tp.map(function(x){return x.m})}]});}catch(e){$("#grafico_top").html("<div class=\"text-white p-3\">Error: "+e.message+"</div>")}
+var L={lengthMenu:"Mostrar _MENU_",info:"_START_-_END_ de _TOTAL_",infoEmpty:"Sin datos",zeroRecords:"Sin resultados",paginate:{previous:"‹",next:"›"}};
+var t=$("#tabla_cli").DataTable({dom:"tip",language:L,pageLength:25,order:[[0,"desc"]],columnDefs:[{orderable:false,targets:-1}]}),f="todos",s=$("#filtro_cob");
+Object.keys(cob).sort().forEach(function(v){s.append($("<option>").val(v).text(v))});
+$.fn.dataTable.ext.search.push(function(st,d){if(st.nTable.id!=="tabla_cli")return true;var ok=$("<div>").html(d[6]).text().trim().toLowerCase().indexOf("activo")===0;if(f==="act"&&!ok)return false;if(f==="ina"&&ok)return false;return !s.val()||d[5]===s.val()});
+$("#buscar_cli").on("keyup",function(){t.search(this.value).draw()});
+$("#pill_cli button").on("click",function(){$("#pill_cli button").removeClass("active");$(this).addClass("active");f=$(this).data("f");t.draw()});
+s.select2({width:"100%",minimumResultsForSearch:Infinity,theme:"bootstrap5"}).on("change",function(){t.draw()});
+});
+</script>
+<script>
+(function(){var el=$("#rango_top");if(!el.length||typeof moment==="undefined")return;
+function ap(s,e,l){$("#rango_txt").text(l==="Rango personalizado"?s.format("DD/MM/YYYY")+" - "+e.format("DD/MM/YYYY"):l);
+$.getJSON("/api/clientes_top",{start:s.format("YYYY-MM-DD"),end:e.format("YYYY-MM-DD")},function(r){
+var c=Highcharts.charts.filter(function(x){return x&&x.renderTo.id==="grafico_top"})[0];if(!c)return;
+c.xAxis[0].setCategories(r.map(function(x){return x.n.split(" ")[0]}));
+c.series[0].setData(r.map(function(x){return x.m}));c.setTitle({text:r.length?null:"Sin préstamos en este período",style:{color:"#fff",fontSize:"13px"}})})}
+var m=moment,d=m().subtract(1,"days"),ms=m().subtract(1,"month");
+el.daterangepicker({startDate:m("2000-01-01"),endDate:m(),opens:"left",ranges:{"Todo el período":[m("2000-01-01"),m()],"Hoy":[m(),m()],"Ayer":[d,d],"Últimos 7 días":[m().subtract(6,"days"),m()],"Últimos 30 días":[m().subtract(29,"days"),m()],"Este mes":[m().startOf("month"),m().endOf("month")],"El mes pasado":[ms.clone().startOf("month"),ms.clone().endOf("month")]},
+locale:{format:"DD/MM/YYYY",applyLabel:"Aplicar",cancelLabel:"Cancelar",customRangeLabel:"Rango personalizado",daysOfWeek:["Do","Lu","Ma","Mi","Ju","Vi","Sá"],monthNames:["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],firstDay:1}},ap);
+})();
+</script>
+<script>
+(function(){
+function cop(v){v=Math.round(v);return v>=1e6?"$"+(v/1e6).toFixed(1)+"M":v>=1e3?"$"+Math.round(v/1e3)+"k":"$"+v}
+function carga(s,e){$.getJSON("/api/clientes_stats",{start:s,end:e},function(r){
+$("#v_tot").text(r.total);$("#n_act").text(r.activos);$("#v_cob").text(cop(r.cobros));
+$("#v_pre").text(cop(r.prestado));$("#v_por").text(cop(r.por_cobrar));$("#v_deu").text(r.con_deuda)})}
+$("#rango_top").on("apply.daterangepicker",function(ev,p){carga(p.startDate.format("YYYY-MM-DD"),p.endDate.format("YYYY-MM-DD"))});
+})();
+</script>
+<script>
+$(function(){
+var T=$("#tabla_cli").DataTable(),F={},mp=$("#menu_filtros");
+function rs(){F={est:"",rep:"",sol:"",con:false,sin:false,ev:false,tv:false}}rs();
+["#f_est","#f_rep","#f_sol"].forEach(function(i){$(i).select2({width:"100%",minimumResultsForSearch:Infinity,theme:"bootstrap5",dropdownParent:mp})});
+$.fn.dataTable.ext.search.push(function(st,d,i){if(st.nTable.id!=="tabla_cli")return true;
+var tr=st.aoData[i].nTr,g=function(k){return tr.getAttribute("data-"+k)||""};
+if(F.est&&$("<div>").html(d[6]).text().trim().toLowerCase()!==F.est)return false;
+if(F.rep&&g("rep")!==F.rep)return false;
+if(F.sol&&(g("sol")||"ninguna")!==F.sol)return false;
+if(F.con&&!F.sin&&g("deu")!=="1")return false;
+if(F.sin&&!F.con&&g("deu")!=="0")return false;
+if(F.ev&&g("ev")!=="1")return false;
+if(F.tv&&g("tv")!=="1")return false;
+return true});
+function cuenta(){var p=[];if(F.est)p.push($("#f_est option:selected").text());if(F.rep)p.push($("#f_rep option:selected").text());if(F.sol)p.push($("#f_sol option:selected").text());if(F.con!==F.sin)p.push(F.con?"Con deuda":"Sin deuda");if(F.ev)p.push("Correo verif.");if(F.tv)p.push("Tel. verif.");$("#t_fil").text(p.length?(p.length>2?p.slice(0,2).join(", ")+" +"+(p.length-2):p.join(", ")):"Filtros");$("#n_fil").text(T.page.info().recordsDisplay).toggleClass("d-none",!p.length)}T.on("draw",cuenta);
+$("#f_apply").on("click",function(){F={est:($("#f_est").val()==="todos"?"":$("#f_est").val())||"",rep:($("#f_rep").val()==="todos"?"":$("#f_rep").val())||"",sol:($("#f_sol").val()==="todos"?"":$("#f_sol").val())||"",con:$("#f_con").prop("checked"),sin:$("#f_sin").prop("checked"),ev:$("#f_ev").prop("checked"),tv:$("#f_tv").prop("checked")};cuenta();document.getElementById("btn_filtros").click();T.draw()});
+$("#f_reset").on("click",function(){$("#f_est,#f_rep,#f_sol").val("todos").trigger("change");$("#menu_filtros input[type=checkbox]").prop("checked",false);rs();cuenta();T.draw()});
+});
+</script>
+<script>
+(function(){
+var C={total:["sp_tot","#00c2cb"],activos:["sp_act","#7239ea"],cobros:["sp_cob","#009ef7"],prestado:["sp_pre","#3e5bff"],por_cobrar:["sp_por","#0bb5e8"],con_deuda:["sp_deu","#8950fc"]};
+function dib(id,v,c){var el=document.getElementById(id);if(!el)return;var mx=Math.max.apply(null,v),mn=Math.min.apply(null,v),n=v.length,p=[];
+for(var i=0;i<n;i++){var y=mx===mn?12:22-(v[i]-mn)/(mx-mn)*20;p.push((2+i*72/(n-1)).toFixed(1)+","+y.toFixed(1))}
+el.innerHTML='<svg width="76" height="24" viewBox="0 0 76 24"><polyline points="'+p.join(" ")+'" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'}
+function serie(s,e){$.getJSON("/api/clientes_series",{start:s,end:e},function(r){Object.keys(C).forEach(function(k){if(r[k])dib(C[k][0],r[k],C[k][1])})})}
+$("#rango_top").on("apply.daterangepicker",function(ev,p){serie(p.startDate.format("YYYY-MM-DD"),p.endDate.format("YYYY-MM-DD"))});
+serie("2000-01-01",moment().format("YYYY-MM-DD"));
+})();
+</script>
+<script>
+(function(){let S=null,R=['2000-01-01','2100-01-01'],v='top';const bl={color:'#fff'},CO=['#fff','#ffe08a','#b8f5ee','#ff9fb2','#c7b8ff'];
+function pinta(){if(v==='top'||!S)return;const e=v==='estado'||v==='reputacion';Highcharts.chart('grafico_salud',{chart:{type:e?'pie':(v==='cobrador'?'bar':'column'),backgroundColor:'transparent',height:260},title:{text:null},credits:{enabled:false},colors:CO,legend:{enabled:e,itemStyle:bl},xAxis:{type:'category',labels:{style:v==='cobrador'?Object.assign({},bl,{textOverflow:'none',whiteSpace:'nowrap'}):bl}},yAxis:{title:{text:null},allowDecimals:false,labels:{style:bl},gridLineColor:'rgba(255,255,255,.15)'},plotOptions:e?{pie:{innerSize:'55%',borderColor:'#fff',dataLabels:{enabled:false},showInLegend:true}}:{column:{borderRadius:3,colorByPoint:true}},series:[{name:v==='aging'?'Préstamos activos':'Clientes',data:S[v]}]})}
+function carga(){$.getJSON('/api/clientes_salud',{start:R[0],end:R[1]},function(r){S=r;pinta()})}
+$('#tabs_cli .btn').on('click',function(){v=this.dataset.v;$('#tit_cli').text({top:'Top 10 clientes por monto prestado',estado:'Clientes por estado',aging:'Préstamos activos por días de mora',reputacion:'Clientes por reputación',cobrador:'Clientes por cobrador'}[v]);$('#tabs_cli .btn').removeClass('btn-light fw-bold').addClass('btn-active-light btn-color-white');$(this).removeClass('btn-active-light btn-color-white').addClass('btn-light fw-bold');$('#grafico_top').toggle(v==='top');$('#grafico_salud').toggle(v!=='top');if(v==='top'){Highcharts.charts.forEach(function(c){if(c&&c.renderTo.id==='grafico_top')c.reflow()})}else pinta()});
+$('#rango_top').on('apply.daterangepicker',function(ev,p){R=[p.startDate.format('YYYY-MM-DD'),p.endDate.format('YYYY-MM-DD')];carga()});
+carga();})();
+</script>
 {% endblock %}

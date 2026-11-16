@@ -1,126 +1,80 @@
-{% extends "base.html" %}
-
+{% extends "base_pw.html" %}
+{% set page_title = "Caja" %}
 {% block title %}Caja - Pagadiario{% endblock %}
-
-{% block body %}
-
-{% include '_sidebar.html' %}<div class="main-content">
-    <div class="topbar">
-        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-cash-register"></i> Caja</h4>
-        <span><i class="fas fa-user-circle"></i> <strong>{{ session.nombre }}</strong></span>
-    </div>
-
-    <div class="p-4">
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        <!-- Tarjetas de resumen -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="small-box bg-success">
-                    <div class="icon"><i class="fas fa-cash-register"></i></div>
-                    <h3>{{ "%.2f"|format(caja.total_caja or 0) }}</h3>
-                    <p>Total en Caja</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="small-box bg-info">
-                    <div class="icon"><i class="fas fa-arrow-down"></i></div>
-                    <h3>{{ "%.2f"|format(total_ingresos) }}</h3>
-                    <p>Total Ingresos</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="small-box bg-danger">
-                    <div class="icon"><i class="fas fa-arrow-up"></i></div>
-                    <h3>{{ "%.2f"|format(total_egresos) }}</h3>
-                    <p>Total Egresos</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card-panel">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0"><i class="fas fa-list"></i> Movimientos de Caja</h5>
-                <a href="{{ url_for('caja_nuevo_movimiento') }}" class="btn btn-success">
-                    <i class="fas fa-plus"></i> Registrar Movimiento
-                </a>
-            </div>
-            
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
-                    <thead class="table-dark">
-                        <thead class="table-dark">
-    <tr>
-        <th>ID</th>
-        <th>Tipo</th>
-        <th>Monto</th>
-        <th>Fecha</th>
-        <th>Acciones</th>
-    </tr>
-</thead>
-                    </thead>
-                    <tbody>
-                        {% if movimientos %}
-                            {% for m in movimientos %}
-                                <tr>
-    <td>{{ m.id }}</td>
-    <td>
-        {% if m.clase == 'ingreso' %}
-            <span class="badge bg-success">{{ m.tipo_movimiento }}</span>
-        {% else %}
-            <span class="badge bg-danger">{{ m.tipo_movimiento }}</span>
-        {% endif %}
-    </td>
-    <td>
-        {% if m.clase == 'ingreso' %}
-            <strong class="text-success">+ {{ "%.2f"|format(m.monto) }}</strong>
-        {% else %}
-            <strong class="text-danger">- {{ "%.2f"|format(m.monto) }}</strong>
-        {% endif %}
-    </td>
-    <td>{{ m.fecha }}</td>
-    <td>
-        <a href="{{ url_for('caja_editar_movimiento', id_movimiento=m.id) }}" 
-           class="btn btn-sm btn-warning" title="Editar">
-            <i class="fas fa-edit"></i>
-        </a>
-        <a href="{{ url_for('caja_eliminar_movimiento', id_movimiento=m.id) }}" 
-           class="btn btn-sm btn-danger" 
-           onclick="return confirm('¿Eliminar este movimiento? El total de la caja se recalculará.');" 
-           title="Eliminar">
-            <i class="fas fa-trash"></i>
-        </a>
-    </td>
-</tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="5" class="text-center text-muted py-4">
-                                    <i class="fas fa-inbox" style="font-size: 2rem;"></i>
-                                    <p class="mt-2">No hay movimientos registrados</p>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-            
-            <p class="text-muted mt-2 mb-0">
-                <i class="fas fa-info-circle"></i> Total: <strong>{{ movimientos|length }}</strong> movimiento(s)
-            </p>
-        </div>
-    </div>
+{% block head %}<link href="{{ url_for('static', filename='metronic/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet"><style>.table-responsive{max-height:60vh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}</style>{% endblock %}
+{% block content %}
+<div class="d-flex flex-column gap-5 p-4">
+{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}
+<div class="alert alert-{{ category }} mb-0">{{ message }}</div>
+{% endfor %}{% endwith %}
+<h3 class="fw-bold text-gray-900 mb-0">Caja</h3>
+<div class="card border-0 overflow-hidden" style="background:linear-gradient(160deg,#50cd89,#1f7a4d)"><div class="card-body p-3">
+<div class="d-flex justify-content-between align-items-center mb-2"><div class="text-white fw-bold fs-7">Movimientos de caja</div><div id="rango_caja" class="btn btn-sm btn-light d-flex align-items-center px-3"><span id="caja_lbl" class="fw-bold text-gray-700">Últimos 60 días</span><i class="ki-duotone ki-calendar-8 fs-2 ms-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i></div></div>
+<div id="caja_sub" class="text-white fs-8 opacity-75"></div><div id="caja_rng" class="text-white fs-8 fw-bold mb-2"></div>
+<div id="tabs_caja" class="d-flex gap-2 mb-2 overflow-auto flex-nowrap" style="scrollbar-width:none"><button type="button" data-v="ie" class="btn btn-sm btn-light fw-bold text-nowrap">Flujo</button><button type="button" data-v="tipos" class="btn btn-sm btn-active-light btn-color-white text-nowrap">Tipos</button><button type="button" data-v="cuadre" class="btn btn-sm btn-active-light btn-color-white text-nowrap">Cuadre</button></div>
+<div id="caja_chart"></div><div id="caja_msg" class="text-white fs-7"></div></div></div>
+<div class="row g-3">
+<div class="col-4"><div class="card h-100 border-0" style="background:#00c2cb"><div class="card-body p-3"><div class="text-white fw-bold fs-6 text-nowrap">{{ cop(caja.total_caja or 0) }}</div><div class="text-white fs-8">Total caja</div></div></div></div>
+<div class="col-4"><div class="card h-100 border-0" style="background:#7239ea"><div class="card-body p-3"><div class="text-white fw-bold fs-6 text-nowrap">{{ cop(total_ingresos or 0) }}</div><div class="text-white fs-8">Ingresos</div></div></div></div>
+<div class="col-4"><div class="card h-100 border-0" style="background:#009ef7"><div class="card-body p-3"><div class="text-white fw-bold fs-6 text-nowrap">{{ cop(total_egresos or 0) }}</div><div class="text-white fs-8">Egresos</div></div></div></div>
 </div>
-
+<div class="card"><div class="card-header border-0 pt-5"><h3 class="card-title fw-bold fs-4 text-gray-900">Lista de movimientos</h3><div class="card-toolbar"><a href="{{ url_for('caja_nuevo_movimiento') }}" class="btn btn-sm btn-primary">Nuevo</a></div></div>
+<div class="card-body py-3">
+<div class="position-relative mb-4"><i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4" style="top:50%;transform:translateY(-50%)"><span class="path1"></span><span class="path2"></span></i><input id="buscar_caja" class="form-control form-control-solid ps-12" placeholder="Buscar movimiento"></div>
+<div class="table-responsive"><table id="tabla_caja" class="table fs-7 table-row-dashed table-row-gray-300 align-middle gs-0 gy-3">
+<thead><tr class="fw-bold text-gray-500"><th>ID</th><th>Tipo</th><th>Monto</th><th>Fecha</th><th class="text-end">Acciones</th></tr></thead>
+<tbody>{% for m in movimientos %}
+<tr><td>{{ m.id }}</td>
+<td><span class="badge badge-light-{{ 'success' if m.clase == 'ingreso' else 'danger' }} text-nowrap">{{ m.tipo_movimiento }}</span></td>
+<td data-order="{{ m.monto }}" class="fw-bold text-{{ 'success' if m.clase == 'ingreso' else 'danger' }} text-nowrap">{{ '+' if m.clase == 'ingreso' else '-' }} {{ cop(m.monto) }}</td>
+<td class="text-nowrap">{{ m.fecha }}</td>
+<td class="text-end text-nowrap"><a href="{{ url_for('caja_editar_movimiento', id_movimiento=m.id) }}" class="btn btn-icon btn-sm btn-light-warning me-1" title="Editar"><i class="ki-duotone ki-pencil fs-3"><span class="path1"></span><span class="path2"></span></i></a><a href="{{ url_for('caja_eliminar_movimiento', id_movimiento=m.id) }}" class="btn btn-icon btn-sm btn-light-danger" title="Eliminar" onclick="return confirm('¿Eliminar este movimiento? El total de la caja se recalculará.');"><i class="ki-duotone ki-trash fs-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></a></td></tr>
+{% endfor %}</tbody></table></div></div></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='metronic/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+<script src="{{ url_for('static', filename='js/highcharts/highcharts.js') }}"></script>
+<script>
+$(function(){
+var T=$("#tabla_caja").DataTable({dom:"rtip",pageLength:10,order:[[0,"desc"]],language:{emptyTable:"No hay movimientos registrados",zeroRecords:"Sin resultados",info:"_START_–_END_ de _TOTAL_",infoEmpty:"",infoFiltered:"",paginate:{previous:"‹",next:"›"}},columnDefs:[{orderable:false,targets:4}]});
+$("#buscar_caja").on("keyup",function(){T.search(this.value).draw()});
+var m=moment,D=null,V="ie",CH=null,txt="#e6fbfc";
+var SUB={ie:"Ingresos (cobro, capital) vs. egresos (gasto, préstamo)",tipos:"Composición de los movimientos por tipo",cuadre:"Cierre registrado menos el esperado, por día"};
+function fm(v){var s=v<0?"-":"",a=Math.abs(v);return s+"$"+(a>=1e6?(a/1e6).toLocaleString("es-CO",{maximumFractionDigits:1})+" M":Math.round(a/1e3).toLocaleString("es-CO")+" mil")}
+function fc(v){return "$"+Highcharts.numberFormat(v,0,",",".")}
+function draw(){
+if(!D)return;
+$("#caja_sub").text(SUB[V]);
+var vacio=(V==="ie"&&!D.periodos.length)||(V==="tipos"&&!D.tipos.length)||(V==="cuadre"&&!D.cuadre.length);
+if(CH){CH.destroy();CH=null}
+$("#caja_chart").empty();
+if(vacio){$("#caja_chart").html('<div class="text-white text-center py-15">Sin movimientos en este período</div>');return}
+var o={chart:{backgroundColor:"transparent",height:340},title:{text:null},credits:{enabled:false},legend:{itemStyle:{color:"#ffffff"},itemHoverStyle:{color:"#ffffff"}},tooltip:{pointFormatter:function(){return this.series.name+": <b>"+fc(this.y)+"</b>"}}};
+var yv={title:{text:null},gridLineColor:"rgba(255,255,255,.25)",labels:{rotation:0,style:{color:txt},formatter:function(){return fm(this.value)}}};
+if(V==="ie"){
+o.xAxis={categories:D.periodos,labels:{style:{color:txt}}};o.yAxis=yv;
+o.series=[{type:"column",name:"Ingresos",data:D.ing,color:"#ffffff"},{type:"column",name:"Egresos",data:D.egr,color:"#7239ea"}];
+}else if(V==="tipos"){
+o.chart.type="pie";
+o.tooltip={pointFormatter:function(){return this.name+": <b>"+fc(this.y)+"</b>"}};
+o.colors=["#ffffff","#ffe08a","#7239ea","#ff9aa2"];
+o.plotOptions={pie:{innerSize:"60%",dataLabels:{enabled:false},showInLegend:true,borderWidth:0}};
+o.series=[{name:"Movimientos",data:D.tipos.map(function(x){return {name:x[0],y:x[1]}})}];
+}else{
+o.legend={enabled:false};
+o.xAxis={categories:D.cuadre.map(function(x){return x[0]}),labels:{style:{color:txt}}};o.yAxis=yv;
+o.series=[{type:"column",name:"Diferencia",data:D.cuadre.map(function(x){return x[1]}),zones:[{value:0,color:"#ff9aa2"},{color:"#ffffff"}]}];
+}
+CH=Highcharts.chart("caja_chart",o);
+}
+$("#tabs_caja .btn").on("click",function(){V=$(this).data("v");$("#tabs_caja .btn").attr("class","btn btn-sm btn-active-light btn-color-white text-nowrap");$(this).attr("class","btn btn-sm btn-light fw-bold text-nowrap");draw()});
+function load(a,b){$("#caja_msg").text("");$.getJSON("/api/caja_graficos",{start:a,end:b},function(d){D=d;draw()}).fail(function(){$("#caja_msg").text("No se pudo cargar el gráfico")})}
+function cb(s,e,l){$("#caja_rng").text(s.format("DD/MM/YYYY")+" - "+e.format("DD/MM/YYYY"));$("#caja_lbl").text(l&&l!=="Rango personalizado"?l:"Personalizado");load(s.format("YYYY-MM-DD"),e.format("YYYY-MM-DD"))}
+var d=m().subtract(1,"days"),ms=m().subtract(1,"month");
+$("#rango_caja").daterangepicker({startDate:m().subtract(59,"days"),endDate:m(),opens:"left",locale:{format:"DD/MM/YYYY",applyLabel:"Aplicar",cancelLabel:"Cancelar",customRangeLabel:"Rango personalizado"},ranges:{"Todo el período":[m("2000-01-01"),m()],"Hoy":[m(),m()],"Ayer":[d,d],"Últimos 7 días":[m().subtract(6,"days"),m()],"Últimos 30 días":[m().subtract(29,"days"),m()],"Últimos 60 días":[m().subtract(59,"days"),m()],"Este mes":[m().startOf("month"),m().endOf("month")],"El mes pasado":[ms.clone().startOf("month"),ms.clone().endOf("month")],"Este año":[m().startOf("year"),m()]}},cb);
+var dp=$("#rango_caja").data("daterangepicker");$("#rango_caja").off("click.daterangepicker focus.daterangepicker").on("click",function(){if(dp.isShowing){dp.hide()}else{dp.show()}});
+cb(m().subtract(59,"days"),m(),"Últimos 60 días");
+});
+</script>
 {% endblock %}

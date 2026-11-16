@@ -1,136 +1,77 @@
-{% extends "base.html" %}
-
+{% extends "base_pw.html" %}
 {% block title %}Préstamos - Pagadiario{% endblock %}
-
-{% block body %}
-
-{% include '_sidebar.html' %}<div class="main-content">
-    <div class="topbar">
-        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-hand-holding-usd"></i> Préstamos</h4>
-        <span><i class="fas fa-user-circle"></i> <strong>{{ session.nombre }}</strong></span>
-    </div>
-
-    <div class="p-4">
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        <!-- Filtros rápidos -->
-        <div class="mb-3">
-            <a href="{{ url_for('prestamos') }}" class="btn btn-sm btn-outline-primary">Todos</a>
-            <a href="{{ url_for('prestamos_por_estado', id_estado=1) }}" class="btn btn-sm btn-outline-warning">Por Aprobar</a>
-            <a href="{{ url_for('prestamos_por_estado', id_estado=2) }}" class="btn btn-sm btn-outline-success">Activos</a>
-            <a href="{{ url_for('prestamos_por_estado', id_estado=3) }}" class="btn btn-sm btn-outline-secondary">Finalizados</a>
-            <a href="{{ url_for('prestamos_por_estado', id_estado=4) }}" class="btn btn-sm btn-outline-danger">Rechazados</a>
-        </div>
-        
-        <div class="card-panel">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0"><i class="fas fa-list"></i> Lista de Préstamos</h5>
-                <a href="{{ url_for('prestamo_nuevo') }}" class="btn btn-success">
-                    <i class="fas fa-plus"></i> Añadir Préstamo
-                </a>
-            </div>
-            
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Cliente</th>
-                            <th>Monto</th>
-                            <th>Interés</th>
-                            <th>Total</th>
-                            <th>Cuotas</th>
-                            <th>Debe</th>
-                            <th>Estado</th>
-                            <th>Fecha</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if prestamos %}
-                            {% for p in prestamos %}
-                                <tr>
-                                    <td>{{ p.id }}</td>
-                                    <td><strong>{{ p.cliente }}</strong><br><small class="text-muted">DNI: {{ p.cliente_dni }}</small></td>
-                                    <td>{{ "%.2f"|format(p.monto_prestado or 0) }}</td>
-                                    <td>{{ "%.2f"|format(p.interes or 0) }}</td>
-                                    <td>{{ "%.2f"|format(p.total_prestado or 0) }}</td>
-                                    <td>{{ p.numero_cuotas }}</td>
-                                    <td><strong class="text-danger">{{ "%.2f"|format(p.total_debe or 0) }}</strong></td>
-                                    <td>
-                                        {% if p.estado_prestamo == 'Por Aprobar' %}
-                                            <span class="badge bg-warning text-dark">{{ p.estado_prestamo }}</span>
-                                        {% elif p.estado_prestamo == 'Activo' %}
-                                            <span class="badge bg-success">{{ p.estado_prestamo }}</span>
-                                        {% elif p.estado_prestamo == 'Finalizado' %}
-                                            <span class="badge bg-secondary">{{ p.estado_prestamo }}</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">{{ p.estado_prestamo }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ p.fecha_prestamo }}</td>
-                                    <td>
-    <a href="{{ url_for('prestamo_ver', id_prestamo=p.id) }}" class="btn btn-sm btn-info" title="Ver detalle">
-        <i class="fas fa-eye"></i>
-    </a>
-    <a href="{{ url_for('prestamo_editar', id_prestamo=p.id) }}" class="btn btn-sm btn-warning" title="Editar">
-        <i class="fas fa-edit"></i>
-    </a>
-    <a href="{{ url_for('prestamo_eliminar', id_prestamo=p.id) }}" 
-       class="btn btn-sm btn-danger" 
-       onclick="return confirm('¿Eliminar este préstamo?');" 
-       title="Eliminar">
-        <i class="fas fa-trash"></i>
-    </a>
-</td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="10" class="text-center text-muted py-4">
-                                    <i class="fas fa-inbox" style="font-size: 2rem;"></i>
-                                    <p class="mt-2">No hay préstamos registrados</p>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-            
-            <p class="text-muted mt-2 mb-0">
-                <i class="fas fa-info-circle"></i> Total: <strong>{{ prestamos|length if prestamos else 0 }}</strong> préstamo(s)
-            </p>
-        </div>
-    </div>
-</div>
-
+{% block head %}<link href="{{ url_for('static', filename='metronic/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet"><style>.table-responsive{max-height:60vh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.table-responsive thead th{position:sticky;top:0;z-index:2;background:var(--bs-card-bg,#fff)}#tabs_madre,#pill_pre{scrollbar-width:none;overflow-x:auto;flex-wrap:nowrap}#tabs_madre::-webkit-scrollbar,#pill_pre::-webkit-scrollbar{display:none}#tabs_madre .btn{white-space:nowrap}table.dataTable thead th{padding-right:24px!important;white-space:nowrap}.table-responsive{overflow-x:auto!important;max-width:100%}#tabla_pre{width:max-content!important;min-width:100%}</style>{% endblock %}
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}{% for c, m in messages %}<div class="alert alert-{{ c }} alert-dismissible fade show">{{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>{% endfor %}{% endwith %}
+<div class="card border-0 overflow-hidden mb-5" style="background:linear-gradient(160deg,#009ef7,#0062a3)"><div class="card-body p-3 pb-15">
+<div class="d-flex justify-content-between align-items-center mb-3"><div class="text-white fw-bold fs-7">Análisis de préstamos</div><div id="rango_pre" class="btn btn-sm btn-light d-flex align-items-center px-3"><span id="rango_txt" class="fw-bold text-gray-700">Todo el período</span><i class="ki-duotone ki-calendar-8 fs-2 ms-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i></div></div>
+<div id="tabs_madre" class="d-flex gap-2 mb-3"><button class="btn btn-sm btn-light fw-bold" data-v="cuota">Cuota</button><button class="btn btn-sm btn-active-light btn-color-white" data-v="saldo">Saldo</button><button class="btn btn-sm btn-active-light btn-color-white" data-v="dona">Desglose</button><button class="btn btn-sm btn-active-light btn-color-white" data-v="cascada">Cascada</button><button class="btn btn-sm btn-active-light btn-color-white" data-v="cartera">Cartera</button></div>
+<div id="grafico_madre" style="height:280px"></div>
+</div></div>
+<div class="card border-0 shadow-sm mx-3 mt-n10 mb-5 position-relative"><div class="card-body p-3">
+{% for ic, col, t, s, i in [('ki-bank','#3e5bff','Total préstamos','En el período','tot'),('ki-user-tick','#7239ea','Activos','En cobro','act'),('ki-time','#f6c000','Por aprobar','Esperando decisión','apr'),('ki-dollar','#009ef7','Capital prestado','Activos y finalizados','cap'),('ki-wallet','#0bb5e8','Por cobrar','Saldo pendiente','por'),('ki-information-5','#f1416c','En mora','Activos con atraso','mor')] %}
+<div style="height:76px" class="d-flex align-items-center{{ '' if loop.first else ' border-top border-gray-200' }}"><div class="symbol symbol-40px me-3 flex-shrink-0"><span class="symbol-label" style="background:{{ col }}"><i class="ki-duotone {{ ic }} fs-2 text-white"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></span></div><div class="flex-grow-1" style="min-width:0"><div class="text-gray-900 fw-bold fs-7 lh-sm">{{ t }}</div><div class="text-gray-500 fs-9 text-nowrap">{{ s }}</div></div><div class="d-flex flex-column align-items-end flex-shrink-0 ms-2" style="width:76px"><div id="v_{{ i }}" class="text-gray-900 fw-bolder fs-6 text-nowrap lh-1 mb-2">0</div><div id="sp_{{ i }}" style="width:76px;height:24px"></div></div></div>
+{% endfor %}
+</div></div>
+<div class="card border-0 shadow-sm"><div class="card-body p-3">
+<div class="position-relative mb-4"><i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4 top-50 translate-middle-y text-muted"><span class="path1"></span><span class="path2"></span></i><input type="text" id="buscar_pre" class="form-control form-control-solid w-100 ps-12" placeholder="Buscar cliente, DNI, cobrador o #..."></div>
+<div class="d-flex justify-content-end gap-2 mb-3"><a href="{{ url_for('prestamo_nuevo') }}" class="btn btn-sm btn-primary">Nuevo préstamo</a><button type="button" id="btn_filtros" class="btn btn-sm btn-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end"><i class="ki-duotone ki-filter fs-3"><span class="path1"></span><span class="path2"></span></i><span id="t_fil">Filtros</span><span id="n_fil" class="badge badge-circle badge-primary ms-2 d-none">0</span></button>
+<div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true" id="menu_filtros">
+<div class="px-7 py-5"><div class="fs-5 text-gray-900 fw-bold">Opciones de filtro</div></div>
+<div class="separator border-gray-200"></div>
+<div class="px-7 py-5">
+<div class="mb-6"><label class="form-label fw-semibold">Estado:</label><select id="f_est" class="form-select form-select-solid"><option value="todos">Todos</option><option value="Por Aprobar">Por aprobar</option><option value="Activo">Activo</option><option value="Finalizado">Finalizado</option><option value="Rechazado">Rechazado</option></select></div>
+<div class="mb-6"><label class="form-label fw-semibold">Cobrador:</label><select id="f_cob" class="form-select form-select-solid"><option value="todos">Todos</option></select></div>
+<div class="mb-8"><label class="form-label fw-semibold">Deuda:</label><div class="d-flex"><label class="form-check form-check-sm form-check-custom form-check-solid me-5"><input class="form-check-input" type="checkbox" id="f_con"><span class="form-check-label">Con saldo</span></label><label class="form-check form-check-sm form-check-custom form-check-solid"><input class="form-check-input" type="checkbox" id="f_sin"><span class="form-check-label">Sin saldo</span></label></div></div>
+<div class="d-flex justify-content-end"><button type="button" id="f_reset" class="btn btn-sm btn-light btn-active-light-primary me-2">Restablecer</button><button type="button" id="f_apply" class="btn btn-sm btn-primary">Aplicar</button></div>
+</div></div></div>
+<div class="table-responsive"><table id="tabla_pre" class="table fs-6 table-row-dashed table-row-gray-300 align-middle gs-0 gy-3">
+<thead><tr class="fw-bold text-muted"><th>#</th><th>Cliente</th><th>Cobrador</th><th>Estado</th><th>Capital</th><th>Total</th><th>Cuota</th><th>Debe</th><th>Próx. cobro</th><th></th></tr></thead><tbody>
+{% for p in prestamos %}<tr data-fp="{{ ((p.fecha_prestamo or '')|string)[:10] }}" data-est="{{ p.estado_prestamo }}" data-cob="{{ p.cobrador or '' }}" data-deu="{{ 1 if (p.total_debe or 0)>0 else 0 }}"><td>{{ p.id }}</td><td><div class="d-flex align-items-center"><span class="symbol symbol-35px me-3 flex-shrink-0"><span class="symbol-label bg-light-primary text-primary fw-bold">{{ (p.cliente or '?')[0]|upper }}</span></span><div><div class="fw-bold text-gray-900 text-nowrap">{{ p.cliente }}</div><div class="text-muted fs-8">{{ p.cliente_dni or '' }}</div></div></div></td><td class="text-nowrap">{{ p.cobrador or '—' }}</td><td><span class="badge badge-light-{{ {'Por Aprobar':'warning','Activo':'primary','Finalizado':'success','Rechazado':'danger'}.get(p.estado_prestamo,'secondary') }}">{{ p.estado_prestamo }}</span></td><td data-order="{{ p.monto_prestado or 0 }}" class="text-nowrap">{{ cop(p.monto_prestado or 0) }}</td><td data-order="{{ p.total_prestado or 0 }}" class="text-nowrap">{{ cop(p.total_prestado or 0) }}</td><td data-order="{{ p.monto_x_cuotas or 0 }}" class="text-nowrap">{{ cop(p.monto_x_cuotas or 0) }} <span class="text-muted fs-8">x{{ p.numero_cuotas }}</span></td><td data-order="{{ p.total_debe or 0 }}" class="text-nowrap">{{ cop(p.total_debe or 0) }}</td><td class="text-nowrap">{{ p.fecha_prox_cobro or '—' }}</td><td><a href="{{ url_for('prestamo_ver', id_prestamo=p.id) }}" class="btn btn-sm btn-light-primary me-1">Ver</a><a href="{{ url_for('prestamo_editar', id_prestamo=p.id) }}" class="btn btn-icon btn-sm btn-light-warning me-1" title="Editar"><i class="ki-duotone ki-pencil fs-3"><span class="path1"></span><span class="path2"></span></i></a><a href="{{ url_for('prestamo_eliminar', id_prestamo=p.id) }}" class="btn btn-icon btn-sm btn-light-danger" title="Eliminar" onclick="return confirm('¿Eliminar este préstamo?');"><i class="ki-duotone ki-trash fs-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></a></td></tr>{% endfor %}
+</tbody></table></div></div></div>
 {% endblock %}
-
-
-
-
-
-
-
-<td>
-    <a href="{{ url_for('prestamo_ver', id_prestamo=p.id) }}" class="btn btn-sm btn-info" title="Ver detalle">
-        <i class="fas fa-eye"></i>
-    </a>
-    <a href="{{ url_for('prestamo_eliminar', id_prestamo=p.id) }}" 
-       class="btn btn-sm btn-danger" 
-       onclick="return confirm('¿Eliminar este préstamo?');" 
-       title="Eliminar">
-        <i class="fas fa-trash"></i>
-    </a>
-</td>
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/highcharts/highcharts.js') }}"></script>
+<script src="{{ url_for('static', filename='metronic/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+<script>
+const D=[{% for p in prestamos %}{p:{{ ((p.fecha_prestamo or '')|string)[:10]|tojson }},e:{{ p.estado_prestamo|tojson }},m:{{ (p.monto_prestado or 0)|float }},t:{{ (p.total_prestado or 0)|float }},c:{{ (p.monto_x_cuotas or 0)|float }},d:{{ (p.total_debe or 0)|float }},f:{{ (p.fecha_prox_cobro or '')|string|tojson }}},{% endfor %}];
+const hoy=new Date().toISOString().slice(0,10),nf=new Intl.NumberFormat('es-CO',{notation:'compact',maximumFractionDigits:1});
+const sum=(a,k)=>a.reduce((s,x)=>s+x[k],0),act=D.filter(x=>x.e==='Activo');
+const V={tot:D.length,act:act.length,apr:D.filter(x=>x.e==='Por Aprobar').length,cap:'$'+nf.format(sum(D.filter(x=>x.e==='Activo'||x.e==='Finalizado'),'m')),por:'$'+nf.format(sum(act,'d')),mor:act.filter(x=>x.f&&x.f<hoy).length};
+for(const k in V)document.getElementById('v_'+k).textContent=V[k];
+const E=['Por Aprobar','Activo','Finalizado','Rechazado'],by=f=>E.map(e=>f(D.filter(x=>x.e===e))),mo=act.filter(x=>x.f&&x.f<hoy);
+const CS={tot:'#4c5bf5',act:'#7239ea',apr:'#f6c000',cap:'#009ef7',por:'#0bb4e8',mor:'#f1416c'};const sp=(i,t,d)=>new ApexCharts(document.querySelector('#sp_'+i),{chart:{type:t,height:24,width:76,sparkline:{enabled:true}},series:[{data:d}],colors:[CS[i]||'#7e8299'],stroke:{width:2},tooltip:{enabled:false}}).render();
+function spR(r){const ds=r.map(x=>x.p).filter(Boolean).sort(),L=ds.length&&(new Date(ds[ds.length-1])-new Date(ds[0]))/864e5<=62?10:7;const ms=[...new Set(r.map(x=>(x.p||'').slice(0,L)))].filter(Boolean).sort().slice(L===10?-31:-12),pm=(g,f)=>ms.map(mm=>f(g.filter(x=>(x.p||'').slice(0,L)===mm))),a=r.filter(x=>x.e==='Activo'),m2=a.filter(x=>x.f&&x.f<hoy),cf=r.filter(x=>x.e==='Activo'||x.e==='Finalizado'),o={tot:['bar',pm(r,g=>g.length)],act:['line',pm(a,g=>g.length)],apr:['bar',pm(r.filter(x=>x.e==='Por Aprobar'),g=>g.length)],cap:['bar',pm(cf,g=>sum(g,'m'))],por:['line',pm(a,g=>sum(g,'d'))],mor:['bar',[a.length-m2.length,m2.length]]};
+for(const k in o){document.getElementById('sp_'+k).innerHTML='';sp(k,o[k][0],o[k][1].length?o[k][1]:[0])}
+}
+spR(D);
+let RG=['2000-01-01','2100-01-01'];
+$.fn.dataTable.ext.search.push((st,d,i)=>{if(st.nTable.id!=='tabla_pre')return true;const f=st.aoData[i].nTr.dataset.fp||'';return !f||(f>=RG[0]&&f<=RG[1])});
+function aplicaRango(s,e){RG=[s,e];const r=D.filter(x=>x.p>=s&&x.p<=e),a=r.filter(x=>x.e==='Activo'),h=new Date().toISOString().slice(0,10),q={tot:r.length,act:a.length,apr:r.filter(x=>x.e==='Por Aprobar').length,cap:'$'+nf.format(sum(r.filter(x=>x.e==='Activo'||x.e==='Finalizado'),'m')),por:'$'+nf.format(sum(a,'d')),mor:a.filter(x=>x.f&&x.f<h).length};for(const k in q)document.getElementById('v_'+k).textContent=q[k];spR(r);try{T.draw()}catch(err){}}
+let M=null,vista='cuota';const bl={color:'#fff'},CO=['#fff','#ffe08a','#b8f5ee','#ff9fb2'];
+function pinta(){if(!M)return;const m=M.meses,pie=vista==='dona'||vista==='cartera',k=M.cartera;let o={chart:{backgroundColor:'transparent',height:280},title:{text:null},credits:{enabled:false},colors:CO,legend:{itemStyle:bl},tooltip:{valuePrefix:vista==='cartera'?'':'$',valueDecimals:0}};
+if(pie){o.chart.type='pie';o.plotOptions={pie:{innerSize:'55%',borderColor:'#fff',dataLabels:{enabled:false},showInLegend:true}};o.series=[{name:vista,data:vista==='dona'?[['Capital',M.dona.capital],['Interés',M.dona.interes]]:[['Pagados',k.pagados],['Al día',k.al_dia],['Mora temprana',k.temprana],['Mora grave',k.grave]]}]}
+else{const ax={categories:m,labels:{style:bl}},ay={title:{text:null},labels:{style:bl,formatter:function(){return nf.format(this.value)}},gridLineColor:'rgba(255,255,255,.15)'};o.xAxis=ax;o.yAxis=ay;
+if(vista==='cuota'){o.chart.type='column';o.plotOptions={column:{stacking:'normal',borderRadius:3}};o.series=[{name:'Capital',data:M.capital},{name:'Interés',data:M.interes}]}
+else if(vista==='saldo'){let a=0,b=0;o.chart.type='areaspline';o.legend.enabled=false;o.series=[{name:'Saldo',color:'#fff',fillOpacity:.25,data:M.meses.map((_,i)=>{a+=M.desembolso[i];b+=M.cobro[i];return Math.round(a-b)})}]}
+else{o.chart.type='column';o.legend.enabled=false;o.series=[{name:'Monto',colorByPoint:true,data:[['Capital',M.dona.capital],['Interés',M.dona.interes],['Total',M.dona.capital+M.dona.interes]]}];o.xAxis={type:'category',labels:{style:bl}}}}
+if(!pie&&!m.length)o.title={text:'Sin datos en este período',style:bl};Highcharts.chart('grafico_madre',o)}
+function carga(s,e){aplicaRango(s,e);$.getJSON('/api/prestamos_madre',{start:s,end:e},function(r){M=r;try{pinta()}catch(err){alert('Error en el gráfico: '+err.message)}}).fail(function(x){alert('Error cargando gráfico: '+x.status)})}
+document.querySelectorAll('#tabs_madre .btn').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tabs_madre .btn').forEach(x=>x.className='btn btn-sm btn-active-light btn-color-white');b.className='btn btn-sm btn-light fw-bold';vista=b.dataset.v;pinta()});
+(function(){const m=moment,d=m().subtract(1,'days'),ms=m().subtract(1,'month');
+$('#rango_pre').daterangepicker({startDate:m('2000-01-01'),endDate:m(),opens:'left',ranges:{'Todo el período':[m('2000-01-01'),m()],'Hoy':[m(),m()],'Ayer':[d,d],'Últimos 7 días':[m().subtract(6,'days'),m()],'Últimos 30 días':[m().subtract(29,'days'),m()],'Este mes':[m().startOf('month'),m().endOf('month')],'El mes pasado':[ms.clone().startOf('month'),ms.clone().endOf('month')]},locale:{format:'DD/MM/YYYY',applyLabel:'Aplicar',cancelLabel:'Cancelar',customRangeLabel:'Rango personalizado',daysOfWeek:['Do','Lu','Ma','Mi','Ju','Vi','Sá'],monthNames:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],firstDay:1}},function(s,e,l){$('#rango_txt').text(l==='Rango personalizado'?s.format('DD/MM/YYYY')+' - '+e.format('DD/MM/YYYY'):l);carga(s.format('YYYY-MM-DD'),e.format('YYYY-MM-DD'))})})();
+carga('2000-01-01','2100-01-01');
+const T=$('#tabla_pre').DataTable({dom:'t<"d-flex justify-content-between align-items-center mt-3"ip>',pageLength:25,order:[[0,'desc']],columnDefs:[{orderable:false,targets:-1}]});
+document.getElementById('buscar_pre').oninput=e=>T.search(e.target.value).draw();
+(function(){const mp=$('#menu_filtros');let F={est:'',cob:'',con:false,sin:false};
+[...new Set([...document.querySelectorAll('#tabla_pre tbody tr')].map(r=>r.dataset.cob).filter(Boolean))].sort().forEach(v=>$('#f_cob').append($('<option>').val(v).text(v)));
+['#f_est','#f_cob'].forEach(i=>$(i).select2({width:'100%',minimumResultsForSearch:Infinity,theme:'bootstrap5',dropdownParent:mp}));
+$.fn.dataTable.ext.search.push((st,d,i)=>{if(st.nTable.id!=='tabla_pre')return true;const g=st.aoData[i].nTr.dataset;if(F.est&&g.est!==F.est)return false;if(F.cob&&g.cob!==F.cob)return false;if(F.con&&!F.sin&&g.deu!=='1')return false;if(F.sin&&!F.con&&g.deu!=='0')return false;return true});
+function cuenta(){const p=[];if(F.est)p.push($('#f_est option:selected').text());if(F.cob)p.push(F.cob);if(F.con!==F.sin)p.push(F.con?'Con saldo':'Sin saldo');$('#t_fil').text(p.length?(p.length>2?p.slice(0,2).join(', ')+' +'+(p.length-2):p.join(', ')):'Filtros');$('#n_fil').text(T.page.info().recordsDisplay).toggleClass('d-none',!p.length)}
+T.on('draw',cuenta);
+const v=i=>$(i).val()==='todos'?'':($(i).val()||'');
+$('#f_apply').on('click',()=>{F={est:v('#f_est'),cob:v('#f_cob'),con:$('#f_con').prop('checked'),sin:$('#f_sin').prop('checked')};document.getElementById('btn_filtros').click();T.draw()});
+$('#f_reset').on('click',()=>{$('#f_est,#f_cob').val('todos').trigger('change');$('#menu_filtros input[type=checkbox]').prop('checked',false);F={est:'',cob:'',con:false,sin:false};T.draw()});
+})();
+</script>
+{% endblock %}

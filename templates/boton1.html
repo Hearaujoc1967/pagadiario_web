@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Botones de Vidrio 3D</title>
+  <style>
+    /* Fondo con degradado para apreciar el efecto de transparencia */
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Estilos base para los botones de vidrio */
+    .glass-btn {
+      position: relative;
+      padding: 16px 40px;
+      font-size: 18px;
+      font-weight: 600;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.3s ease;
+      
+      /* Desenfoque del fondo (Efecto Glassmorphism core) */
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* 🔵 BOTÓN PRINCIPAL: "Start project" */
+    .btn-primary {
+      color: #ffffff;
+      /* Fondo azul translúcido */
+      background: linear-gradient(180deg, rgba(14, 82, 194, 0.4) 0%, rgba(10, 48, 122, 0.7) 100%);
+      
+      /* Borde exterior que simula el grosor del vidrio */
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      
+      /* Sombras: 
+         1. Sombra interior superior (brillo)
+         2. Sombra interior inferior (profundidad)
+         3. Sombra exterior difusa de base
+         4. Destello azul exterior */
+      box-shadow: 
+        inset 0 4px 6px rgba(255, 255, 255, 0.5),
+        inset 0 -4px 8px rgba(0, 0, 0, 0.3),
+        0 10px 20px rgba(10, 48, 122, 0.2),
+        0 4px 30px rgba(30, 144, 255, 0.3);
+    }
+
+    /* Capa de brillo superior para el botón principal */
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 15%;
+      right: 15%;
+      height: 35%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 100%);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    /* ⚪ BOTÓN SECUNDARIO: "Secondary" */
+    .btn-secondary {
+      color: #1e293b;
+      /* Fondo blanco sumamente translúcido */
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.2) 100%);
+      
+      /* Borde de cristal */
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      
+      /* Sombras para el relieve transparente y destello cálido */
+      box-shadow: 
+        inset 0 4px 4px rgba(255, 255, 255, 0.7),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.05),
+        0 10px 20px rgba(0, 0, 0, 0.05),
+        0 4px 20px rgba(255, 165, 0, 0.15); /* Simula el reflejo naranja cálido */
+    }
+
+    /* Capa de brillo superior para el botón secundario */
+    .btn-secondary::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 15%;
+      right: 15%;
+      height: 35%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 100%);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    /* Efectos de Interacción (Hover y Active) */
+    .glass-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+
+    .glass-btn:active {
+      transform: translateY(1px);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <button class="glass-btn btn-primary">Start project</button>
+  <button class="glass-btn btn-secondary">Secondary</button>
+
+</body>
+</html>

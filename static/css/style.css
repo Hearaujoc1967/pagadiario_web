@@ -1,0 +1,175 @@
+/* --- TOKENS Y VARIABLES --- */
+:root {
+    --font: "Inter", "SF Pro Display", system-ui, sans-serif;
+    --indigo: #6366f1;
+    --orange: #ffa24d;
+    --sh: rgba(64, 72, 128, .42);
+    --rim: linear-gradient(135deg, rgba(255, 255, 255, .95), rgba(255, 255, 255, .08) 36%, rgba(190, 175, 255, .6) 62%, rgba(140, 240, 230, .75));
+    --ink: #12131c;
+}
+
+/* --- ENTORNO Y FONDO --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    width: 100vw; height: 100vh; overflow: hidden;
+    background-image: url('https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?q=80&w=2000&auto=format&fit=crop');
+    background-size: cover; background-position: center;
+    font-family: var(--font); perspective: 1500px; position: relative;
+}
+
+body::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(220, 235, 245, 0.7) 0%, rgba(200, 220, 235, 0.5) 100%);
+    backdrop-filter: blur(5px); z-index: -1;
+}
+
+/* --- CONTENEDOR 3D DE LA TARJETA --- */
+.card-container {
+    position: absolute; top: 2vh; left: 5vw; right: 5vw;
+    height: calc(100vh - 2vh - 2vh - 55px); 
+    z-index: 4; transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* --- BASE METÁLICA --- */
+.stand-container {
+    position: absolute; bottom: 2vh; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; z-index: 3;
+}
+
+.stand-pillar {
+    width: 55px; height: 35px;
+    background: linear-gradient(to right, #455a64, #ffffff 40%, #90a4ae 60%, #37474f);
+    border-radius: 8px 8px 0 0;
+    box-shadow: inset 0 5px 10px rgba(255,255,255,0.9), inset 0 -5px 10px rgba(0,0,0,0.6);
+}
+
+.stand-base {
+    width: 140px; height: 20px; background: linear-gradient(to bottom, #b0bec5, #546e7a);
+    border-radius: 50%; box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    border-bottom: 2px solid rgba(255,255,255,0.8);
+}
+
+/* --- EL CRISTAL (FRENTE Y DORSO) --- */
+.glass-card {
+    position: absolute; width: 100%; height: 100%;
+    backface-visibility: hidden; border-radius: 45px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: inset 0 0 20px rgba(100, 255, 255, 0.2), 0 0 30px rgba(100, 255, 255, 0.15), 0 20px 40px rgba(0,0,0,0.2);
+    overflow: hidden; transform-style: preserve-3d; 
+    display: flex; flex-direction: column; padding: 20px;
+}
+
+.glass-card::before {
+    content: ''; position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px;
+    border: 1px solid rgba(100, 255, 255, 0.4); border-radius: 35px;
+    box-shadow: inset 0 0 15px rgba(100, 255, 255, 0.2); pointer-events: none;
+}
+
+.card-back { transform: rotateY(180deg); }
+
+.form-wrapper {
+    transform: scale(0.85);
+    transform-origin: top center;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    position: relative; z-index: 2;
+}
+
+/* --- ESTILOS DE LOS FORMULARIOS --- */
+.brand { text-align: center; margin-bottom: 15px; }
+.brand__logo { height: 50px; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3)); }
+
+.form { display: flex; flex-direction: column; gap: 12px; }
+.form-register { gap: 8px; }
+
+.fld {
+    position: relative; display: flex; align-items: center; height: 48px;
+    background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 999px; padding: 0 15px;
+    box-shadow: inset 0 2px 5px rgba(255,255,255,0.5);
+}
+
+.form-register .fld { height: 40px; } /* Campos más compactos en el registro */
+
+.fld input {
+    width: 100%; height: 100%; border: 0; background: transparent;
+    font: 600 14px var(--font); color: #1a202c; outline: none; padding-left: 10px;
+}
+.fld input::placeholder { color: rgba(26, 32, 44, 0.5); font-weight: 500; }
+.fld .ic { width: 18px; height: 18px; stroke: #1a202c; opacity: 0.7; }
+
+.btn {
+    height: 48px; border-radius: 999px; border: 0; font: 700 14px var(--font);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: transform 0.1s;
+}
+.btn--sm { height: 44px; margin-top: 4px; }
+.btn:active { transform: scale(0.98); }
+.btn--blue { background: linear-gradient(180deg, #4aa3ff, #1f6fe8); color: #fff; box-shadow: 0 5px 15px rgba(31, 111, 232, 0.4); }
+.btn--navy { background: linear-gradient(180deg, #2a4780, #12285a); color: #fff; box-shadow: 0 5px 15px rgba(18, 40, 90, 0.4); }
+
+/* --- FOOTER --- */
+.panel__foot {
+    margin-top: auto; display: flex; justify-content: space-between; align-items: center;
+    padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+.social { display: flex; gap: 8px; }
+.btn-round {
+    width: 36px; height: 36px; border-radius: 50%; background: #fff;
+    display: grid; place-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    text-decoration: none;
+}
+.btn-round svg { width: 18px; height: 18px; }
+
+/* =========================================================
+   TOGGLE SWITCH
+   ========================================================= */
+.vswitch {
+    --sw-t: .45s;
+    --sw-travel: 76px; 
+    --sw-ease: cubic-bezier(.45, 1.25, .5, 1);
+    
+    position: relative;
+    width: 120px; height: 44px;
+    border: 0; border-radius: 999px; cursor: pointer;
+    color: #3f4a78; font: 850 11px var(--font); letter-spacing: .5px;
+    background: rgba(255, 255, 255, 0.4);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8), inset 0 8px 12px rgba(255, 255, 255, 0.4);
+    transition: background-position var(--sw-t) ease;
+    display: block; overflow: hidden;
+}
+
+.vswitch__knob {
+    position: absolute; top: 50%; left: 4px;
+    width: 36px; height: 36px; border-radius: 50%;
+    transform: translateY(-50%);
+    transition: transform var(--sw-t) var(--sw-ease), background var(--sw-t) ease;
+    background: radial-gradient(circle at 35% 25%, #ffe2c0, #ff9f43 55%, #e8741a);
+    box-shadow: 0 0 15px 1px rgba(255, 150, 40, .5), 0 4px 8px rgba(190, 100, 20, .3);
+}
+
+.vswitch[aria-checked="true"] .vswitch__knob {
+    transform: translate(var(--sw-travel), -50%);
+    background: radial-gradient(circle at 35% 25%, #d4fff9, #5fe3d3 55%, #12b3b3);
+    box-shadow: 0 0 15px 1px rgba(18, 201, 201, .5), 0 4px 8px rgba(10, 150, 170, .3);
+}
+
+.vswitch__label {
+    position: absolute; inset: 0 0 0 auto; width: calc(100% - 48px);
+    display: grid; place-items: center; pointer-events: none;
+    transition: inset var(--sw-t) ease;
+}
+
+.vswitch[aria-checked="true"] .vswitch__label {
+    inset: 0 auto 0 0;
+}
+
+/* SOLUCIÓN AL TEXTO AL REVÉS EN LA CARA TRASERA */
+.card-back .switch-container {
+    transform: rotateY(180deg);
+}

@@ -1,0 +1,1360 @@
+.
+├── PROYECTO.md
+├── __pycache__
+│   ├── app.cpython-314.pyc
+│   ├── caja_api.cpython-314.pyc
+│   ├── capital_api.cpython-314.pyc
+│   ├── cierre_api.cpython-314.pyc
+│   ├── claves.cpython-314.pyc
+│   ├── cobradores_api.cpython-314.pyc
+│   ├── config.cpython-314.pyc
+│   ├── database.cpython-314.pyc
+│   ├── facebook_auth.cpython-314.pyc
+│   ├── gastos_api.cpython-314.pyc
+│   ├── github_auth.cpython-314.pyc
+│   ├── google_auth.cpython-314.pyc
+│   ├── hash_clave.cpython-314.pyc
+│   ├── notificaciones.cpython-314.pyc
+│   ├── oauth_registro.cpython-314.pyc
+│   ├── perfil_admin.cpython-314.pyc
+│   ├── prestamos_api.cpython-314.pyc
+│   ├── recuperacion.cpython-314.pyc
+│   ├── reportes_api.cpython-314.pyc
+│   ├── socios_api.cpython-314.pyc
+│   └── telefono.cpython-314.pyc
+├── _recuperados_del_home
+│   ├── api_routes
+│   │   ├── actualizar_aurora.py
+│   │   ├── api_series.py
+│   │   ├── api_series2.py
+│   │   ├── api_stats.py
+│   │   ├── api_top.py
+│   │   └── nueva_ruta.py
+│   ├── static_js
+│   │   ├── chk.js
+│   │   ├── chk0.js
+│   │   ├── chk1.js
+│   │   ├── chk2.js
+│   │   ├── chk3.js
+│   │   ├── chk4.js
+│   │   ├── chk5.js
+│   │   ├── chk6.js
+│   │   ├── chk_cli.js
+│   │   ├── chk_dash.js
+│   │   ├── chk_rep.js
+│   │   ├── chkx.js
+│   │   ├── fechas.js
+│   │   ├── filtro_pre.js
+│   │   ├── filtros.js
+│   │   ├── madre.js
+│   │   ├── salud_cli.js
+│   │   ├── series.js
+│   │   └── stats.js
+│   └── templates_html
+│       ├── bloque_cli.html
+│       ├── fechas_tag.html
+│       ├── filtros.html
+│       ├── filtros_tag.html
+│       ├── index.html
+│       ├── ligin.html
+│       ├── login.html
+│       ├── login.html (2)
+│       ├── login_antes_aurora_20261106_151345.html
+│       ├── login_antes_excelente_20261106_155855.html
+│       ├── menu_pre.html
+│       ├── stats_tag.html
+│       ├── tarjeta.html
+│       └── tarjetas.html
+├── app.py
+├── app.py.bak
+├── app.py.bak1
+├── app.py.bak10
+├── app.py.bak11
+├── app.py.bak12
+├── app.py.bak2
+├── app.py.bak3
+├── app.py.bak4
+├── app.py.bak5
+├── app.py.bak6
+├── app.py.bak7
+├── app.py.bak8
+├── app.py.bak9
+├── arbol.txt
+├── arrancar.sh
+├── basura
+│   ├── backups
+│   │   ├── _menu_usuario.html.bak
+│   │   ├── app.py.antes_landing
+│   │   ├── app.py.antes_ruta_landing
+│   │   ├── app.py.bak
+│   │   ├── app.py.bak2
+│   │   ├── app.py.bak3
+│   │   ├── app.py.bak4
+│   │   ├── app.py.bak5
+│   │   ├── app.py.bak_antes_campana_cliente
+│   │   ├── app.py.bak_antes_conectar_otp
+│   │   ├── app.py.bak_antes_ctx
+│   │   ├── app.py.bak_antes_datos_cliente
+│   │   ├── app.py.bak_antes_dotenv
+│   │   ├── app.py.bak_antes_email
+│   │   ├── app.py.bak_antes_email2
+│   │   ├── app.py.bak_antes_fix_final
+│   │   ├── app.py.bak_antes_fix_imports
+│   │   ├── app.py.bak_antes_fix_indent
+│   │   ├── app.py.bak_antes_fix_login
+│   │   ├── app.py.bak_antes_lang
+│   │   ├── app.py.bak_antes_leidas
+│   │   ├── app.py.bak_antes_notif
+│   │   ├── app.py.bak_antes_otp_canal
+│   │   ├── app.py.bak_antes_perfil
+│   │   ├── app.py.bak_antes_portal
+│   │   ├── app.py.bak_antes_registro
+│   │   ├── app.py.bak_antes_silenciar
+│   │   ├── app.py.bak_antes_solicitud_paso
+│   │   ├── app.py.bak_antes_solicitudes
+│   │   ├── app.py.bak_antes_tabs
+│   │   ├── app.py.bak_antes_tanishi
+│   │   ├── app.py.bak_antes_telefono57
+│   │   ├── app.py.bak_antes_waitress
+│   │   ├── app.py.bak_api_top
+│   │   ├── app.py.bak_avisos
+│   │   ├── app.py.bak_cajaapi
+│   │   ├── app.py.bak_capapi
+│   │   ├── app.py.bak_ciapi
+│   │   ├── app.py.bak_clientes
+│   │   ├── app.py.bak_cobapi
+│   │   ├── app.py.bak_cop
+│   │   ├── app.py.bak_cron
+│   │   ├── app.py.bak_ex
+│   │   ├── app.py.bak_facebook
+│   │   ├── app.py.bak_gasapi
+│   │   ├── app.py.bak_github
+│   │   ├── app.py.bak_google
+│   │   ├── app.py.bak_host
+│   │   ├── app.py.bak_oreg
+│   │   ├── app.py.bak_perfil
+│   │   ├── app.py.bak_port
+│   │   ├── app.py.bak_prestamos
+│   │   ├── app.py.bak_privado
+│   │   ├── app.py.bak_puerto
+│   │   ├── app.py.bak_registro
+│   │   ├── app.py.bak_repapi
+│   │   ├── app.py.bak_series
+│   │   ├── app.py.bak_soc
+│   │   ├── app.py.bak_soc2
+│   │   ├── app.py.bak_sol
+│   │   ├── app.py.bak_stats
+│   │   ├── app.py.bak_top
+│   │   ├── app.py.bak_validar
+│   │   ├── app.py.bak_ver
+│   │   ├── auth.css.bak
+│   │   ├── auth.js.bak
+│   │   ├── base.html.bak
+│   │   ├── base_cliente.html.bak
+│   │   ├── base_pw.html.bak
+│   │   ├── bot.js.bak
+│   │   ├── cliente_form.html.bak
+│   │   ├── clientes.html.bak
+│   │   ├── dashboard_pw.html.bak
+│   │   ├── database.py.bak_socket
+│   │   ├── facebook_auth.py.bak_diag
+│   │   ├── facebook_auth.py.bak_fb
+│   │   ├── facebook_auth.py.bak_https
+│   │   ├── facebook_auth.py.bak_oreg
+│   │   ├── facebook_auth.py.bak_pr
+│   │   ├── facebook_auth.py.bak_vinculo
+│   │   ├── gastos_api.py.bak_res
+│   │   ├── github_auth.py.bak
+│   │   ├── github_auth.py.bak_https
+│   │   ├── github_auth.py.bak_oreg
+│   │   ├── google_auth.py.bak
+│   │   ├── google_auth.py.bak_https
+│   │   ├── google_auth.py.bak_oreg
+│   │   ├── login.html.bak
+│   │   ├── navbar_pw.html.bak
+│   │   ├── notificaciones.py.antes_wa
+│   │   ├── notificaciones.py.bak2
+│   │   ├── notificaciones.py.bak3
+│   │   ├── notificaciones.py.bak4
+│   │   ├── notificaciones.py.bak_antes_sms
+│   │   ├── notificaciones.py.bak_antes_telefono57
+│   │   ├── notificaciones.py.bak_v2
+│   │   ├── notificaciones.py.bak_v3
+│   │   ├── perfil_admin.py.bak_notif
+│   │   ├── portal.html.bak
+│   │   ├── prestamo_form.html.bak
+│   │   ├── prestamos_api.py.bak1
+│   │   ├── prestamos_api.py.bak_dia
+│   │   ├── prestamos_api.py.bak_rep
+│   │   ├── prestamos_api.py.bak_salud
+│   │   ├── recuperacion.py.bak
+│   │   ├── reiniciar.sh.bak
+│   │   ├── reportes_api.py.bak_cb
+│   │   ├── reportes_api.py.bak_kpi
+│   │   ├── reportes_api.py.bak_tabla
+│   │   ├── restablecer.html.bak
+│   │   ├── restablecer.js.bak
+│   │   ├── run_pw.py.bak
+│   │   ├── run_pw.py.bak2
+│   │   ├── run_pw.py.bak_ssl
+│   │   ├── run_pw.py.bak_ssl2
+│   │   ├── sidebar_cliente_pw.html.bak
+│   │   ├── sidebar_pw.html.bak
+│   │   ├── start_bot.sh.bak
+│   │   └── style.css.bak
+│   ├── backups_html
+│   │   ├── modulo_clientes_20261017_052641
+│   │   ├── modulo_clientes_20261017_054524
+│   │   ├── modulo_clientes_FIX_20261017_060140
+│   │   └── modulo_clientes_v2_20261017_061719
+│   ├── cache
+│   ├── duplicados
+│   │   ├── authCopia.css
+│   │   ├── authCopia.js
+│   │   ├── indexCopia.html
+│   │   └── loginCopia.html
+│   ├── html_viejos
+│   ├── logs
+│   │   ├── bot.log
+│   │   └── flask.log
+│   ├── logs-dias
+│   └── scripts_viejos
+│       ├── actualizar_sidebars.py
+│       ├── agrupar_bloque_final.py
+│       ├── agrupar_subir_terminos.py
+│       ├── ajustar_altura_avatar.py
+│       ├── ajuste_condicional_avatar.py
+│       ├── ajuste_matematico_perfecto.py
+│       ├── ajuste_movil.py
+│       ├── aplicar_floating_labels.py
+│       ├── aplicar_parches_maestros.py
+│       ├── arbol.txt
+│       ├── arreglar_error_sintaxis.py
+│       ├── arreglar_js_widget.py
+│       ├── arreglar_medidor_visible.py
+│       ├── arreglar_menu_pais_solido.py
+│       ├── arreglar_registro_definitivo.py
+│       ├── arreglar_selector_pais.py
+│       ├── arreglar_solapamiento_confirmar.py
+│       ├── aurora_ajuste_final.py
+│       ├── aurora_deslizar_avatar.py
+│       ├── aurora_flip_cristal.py
+│       ├── aurora_vidrio_total.py
+│       ├── bajar_bloque_registro.py
+│       ├── barra_dentro_del_campo.py
+│       ├── debug_ojitos.py
+│       ├── eliminar_fantasma_pais.py
+│       ├── eliminar_hueco_rojo.py
+│       ├── espacio_fijo_avatar.py
+│       ├── fix_absolute_final.py
+│       ├── fix_ajustes_finales.py
+│       ├── fix_alert_final.py
+│       ├── fix_alert_glass.py
+│       ├── fix_avatar_arriba.py
+│       ├── fix_avatar_definitivo.py
+│       ├── fix_avatar_posicion.py
+│       ├── fix_avatar_posicion_exacta.py
+│       ├── fix_avatar_real.py
+│       ├── fix_avatar_y_ojito.py
+│       ├── fix_boton_otp.py
+│       ├── fix_cristal_login.py
+│       ├── fix_espacio_real.py
+│       ├── fix_estilo_original_labels.py
+│       ├── fix_final_definitivo.py
+│       ├── fix_final_logic.py
+│       ├── fix_floating_msgs.py
+│       ├── fix_floating_tamaño.py
+│       ├── fix_fuera_y_simetria.py
+│       ├── fix_hueco_meter.py
+│       ├── fix_icono_y_espacio.py
+│       ├── fix_layout_perfecto.py
+│       ├── fix_logica_boton.py
+│       ├── fix_login_alert.py
+│       ├── fix_login_completo.py
+│       ├── fix_login_definitivo.py
+│       ├── fix_login_html.py
+│       ├── fix_login_layout_avatar.py
+│       ├── fix_mensaje_dentro_campo.py
+│       ├── fix_mensaje_derecha_seguro.py
+│       ├── fix_modal_enviar.py
+│       ├── fix_ojitos_definitivo.py
+│       ├── fix_ojitos_y_mensaje.py
+│       ├── fix_override_total.py
+│       ├── fix_posiciones_exactas.py
+│       ├── fix_recuperar_todos.py
+│       ├── fix_revert_mess.py
+│       ├── fix_spacing_final.py
+│       ├── fix_superior_derecha.py
+│       ├── fix_timer_alerta.py
+│       ├── fix_todo_a_la_original.py
+│       ├── fix_ultra_preciso.py
+│       ├── fix_validacion_password.py
+│       ├── fix_validaciones_y_timer.py
+│       ├── fix_visibilidad_mensajes.py
+│       ├── formateo_fabrica_total.py
+│       ├── mensaje_como_toast.py
+│       ├── mover_bloque_forzado.py
+│       ├── mover_bloques_registro.py
+│       ├── mover_solo_avatar.py
+│       ├── patch_01_login_inactivo.py
+│       ├── patch_02_base_datos_apagada.py
+│       ├── patch_03_login_sin_base.py
+│       ├── patch_04_recuperacion.py
+│       ├── patch_04_recuperar_por_enlace.py
+│       ├── patch_05_claves.py
+│       ├── prueba_whatsapp.py
+│       ├── quitar_borde_pais.py
+│       ├── quitar_debug_mantener_posicion.py
+│       ├── quitar_solo_titulo.py
+│       ├── reconstruir_todo.py
+│       ├── reducir_espacio_avatar.py
+│       ├── reducir_espacio_titulo.py
+│       ├── reducir_inputs_registro.py
+│       ├── reset_absoluto_y_parches.py
+│       ├── reset_emergencia.py
+│       ├── restaurar_definitivo.py
+│       ├── restaurar_equilibrio_original.py
+│       ├── restaurar_espacios_compactos.py
+│       ├── restaurar_registro_completo.py
+│       ├── restaurar_simetria_perfecta.py
+│       ├── restaurar_todo.py
+│       ├── restaurar_todo_y_boton.py
+│       ├── script_maestro_total.py
+│       ├── solucion_absoluta.py
+│       ├── solucion_definitiva_final.py
+│       ├── solucion_definitiva_pais.py
+│       ├── solucion_final_maestra.py
+│       ├── solucion_quirurgica.py
+│       ├── solucion_real_scroll.py
+│       ├── sql_recuperacion.sql
+│       ├── subir_avatar.py
+│       ├── subir_bloque_inferior.py
+│       └── subir_bloque_registro.py
+├── bot_whatsapp
+│   ├── bot.js
+│   ├── bot.js.bak10
+│   ├── bot.js.bak_chrome
+│   ├── bot.js.bak_dbg
+│   ├── bot.js.bak_qr
+│   ├── bot.js.bak_sin_qr_web
+│   ├── bot.js.bak_single
+│   ├── bot.js.bak_tok
+│   ├── bot.js.bak_tok2
+│   ├── bot.js.bak_ver
+│   ├── bot.log
+│   ├── codigo.txt
+│   ├── node_modules
+│   │   ├── @babel
+│   │   ├── @isaacs
+│   │   ├── @pkgjs
+│   │   ├── @puppeteer
+│   │   ├── @tootallnate
+│   │   ├── @types
+│   │   ├── abort-controller
+│   │   ├── accepts
+│   │   ├── agent-base
+│   │   ├── ansi-regex
+│   │   ├── ansi-styles
+│   │   ├── archiver
+│   │   ├── archiver-utils
+│   │   ├── argparse
+│   │   ├── ast-types
+│   │   ├── async
+│   │   ├── b4a
+│   │   ├── balanced-match
+│   │   ├── bare-events
+│   │   ├── bare-fs
+│   │   ├── bare-path
+│   │   ├── bare-stream
+│   │   ├── bare-url
+│   │   ├── base64-js
+│   │   ├── basic-ftp
+│   │   ├── bluebird
+│   │   ├── body-parser
+│   │   ├── brace-expansion
+│   │   ├── buffer
+│   │   ├── buffer-crc32
+│   │   ├── bytes
+│   │   ├── call-bind-apply-helpers
+│   │   ├── call-bound
+│   │   ├── callsites
+│   │   ├── camelcase
+│   │   ├── chromium-bidi
+│   │   ├── cliui
+│   │   ├── color-convert
+│   │   ├── color-name
+│   │   ├── compress-commons
+│   │   ├── content-disposition
+│   │   ├── content-type
+│   │   ├── cookie
+│   │   ├── cookie-signature
+│   │   ├── core-util-is
+│   │   ├── cosmiconfig
+│   │   ├── crc-32
+│   │   ├── crc32-stream
+│   │   ├── cross-spawn
+│   │   ├── data-uri-to-buffer
+│   │   ├── debug
+│   │   ├── decamelize
+│   │   ├── degenerator
+│   │   ├── depd
+│   │   ├── devtools-protocol
+│   │   ├── dijkstrajs
+│   │   ├── dunder-proto
+│   │   ├── duplexer2
+│   │   ├── eastasianwidth
+│   │   ├── ee-first
+│   │   ├── emoji-regex
+│   │   ├── encodeurl
+│   │   ├── end-of-stream
+│   │   ├── env-paths
+│   │   ├── error-ex
+│   │   ├── es-define-property
+│   │   ├── es-errors
+│   │   ├── es-object-atoms
+│   │   ├── escalade
+│   │   ├── escape-html
+│   │   ├── escodegen
+│   │   ├── esprima
+│   │   ├── estraverse
+│   │   ├── esutils
+│   │   ├── etag
+│   │   ├── event-target-shim
+│   │   ├── events
+│   │   ├── events-universal
+│   │   ├── express
+│   │   ├── extract-zip
+│   │   ├── fast-fifo
+│   │   ├── fd-slicer
+│   │   ├── finalhandler
+│   │   ├── find-up
+│   │   ├── fluent-ffmpeg
+│   │   ├── foreground-child
+│   │   ├── forwarded
+│   │   ├── fresh
+│   │   ├── fs-extra
+│   │   ├── function-bind
+│   │   ├── get-caller-file
+│   │   ├── get-intrinsic
+│   │   ├── get-proto
+│   │   ├── get-stream
+│   │   ├── get-uri
+│   │   ├── glob
+│   │   ├── gopd
+│   │   ├── graceful-fs
+│   │   ├── has-symbols
+│   │   ├── hasown
+│   │   ├── http-errors
+│   │   ├── http-proxy-agent
+│   │   ├── https-proxy-agent
+│   │   ├── iconv-lite
+│   │   ├── ieee754
+│   │   ├── import-fresh
+│   │   ├── inherits
+│   │   ├── ip-address
+│   │   ├── ipaddr.js
+│   │   ├── is-arrayish
+│   │   ├── is-fullwidth-code-point
+│   │   ├── is-promise
+│   │   ├── is-stream
+│   │   ├── isarray
+│   │   ├── isexe
+│   │   ├── jackspeak
+│   │   ├── js-tokens
+│   │   ├── js-yaml
+│   │   ├── json-parse-even-better-errors
+│   │   ├── jsonfile
+│   │   ├── lazystream
+│   │   ├── lines-and-columns
+│   │   ├── locate-path
+│   │   ├── lodash
+│   │   ├── lru-cache
+│   │   ├── math-intrinsics
+│   │   ├── media-typer
+│   │   ├── merge-descriptors
+│   │   ├── mime
+│   │   ├── mime-db
+│   │   ├── mime-types
+│   │   ├── minimatch
+│   │   ├── minipass
+│   │   ├── mitt
+│   │   ├── ms
+│   │   ├── negotiator
+│   │   ├── netmask
+│   │   ├── node-fetch
+│   │   ├── node-int64
+│   │   ├── node-webpmux
+│   │   ├── normalize-path
+│   │   ├── object-inspect
+│   │   ├── on-finished
+│   │   ├── once
+│   │   ├── p-limit
+│   │   ├── p-locate
+│   │   ├── p-try
+│   │   ├── pac-proxy-agent
+│   │   ├── pac-resolver
+│   │   ├── package-json-from-dist
+│   │   ├── parent-module
+│   │   ├── parse-json
+│   │   ├── parseurl
+│   │   ├── path-exists
+│   │   ├── path-key
+│   │   ├── path-scurry
+│   │   ├── path-to-regexp
+│   │   ├── pend
+│   │   ├── picocolors
+│   │   ├── pngjs
+│   │   ├── process
+│   │   ├── process-nextick-args
+│   │   ├── progress
+│   │   ├── proxy-addr
+│   │   ├── proxy-agent
+│   │   ├── proxy-from-env
+│   │   ├── pump
+│   │   ├── puppeteer
+│   │   ├── puppeteer-core
+│   │   ├── qrcode
+│   │   ├── qrcode-terminal
+│   │   ├── qs
+│   │   ├── range-parser
+│   │   ├── raw-body
+│   │   ├── readable-stream
+│   │   ├── readdir-glob
+│   │   ├── require-directory
+│   │   ├── require-main-filename
+│   │   ├── resolve-from
+│   │   ├── router
+│   │   ├── safe-buffer
+│   │   ├── safer-buffer
+│   │   ├── semver
+│   │   ├── send
+│   │   ├── serve-static
+│   │   ├── set-blocking
+│   │   ├── setprototypeof
+│   │   ├── shebang-command
+│   │   ├── shebang-regex
+│   │   ├── side-channel
+│   │   ├── side-channel-list
+│   │   ├── side-channel-map
+│   │   ├── side-channel-weakmap
+│   │   ├── signal-exit
+│   │   ├── smart-buffer
+│   │   ├── socks
+│   │   ├── socks-proxy-agent
+│   │   ├── source-map
+│   │   ├── statuses
+│   │   ├── streamx
+│   │   ├── string-width
+│   │   ├── string-width-cjs
+│   │   ├── string_decoder
+│   │   ├── strip-ansi
+│   │   ├── strip-ansi-cjs
+│   │   ├── tar-fs
+│   │   ├── tar-stream
+│   │   ├── teex
+│   │   ├── text-decoder
+│   │   ├── toidentifier
+│   │   ├── tr46
+│   │   ├── tslib
+│   │   ├── type-is
+│   │   ├── typed-query-selector
+│   │   ├── undici-types
+│   │   ├── universalify
+│   │   ├── unpipe
+│   │   ├── unzipper
+│   │   ├── util-deprecate
+│   │   ├── vary
+│   │   ├── webdriver-bidi-protocol
+│   │   ├── webidl-conversions
+│   │   ├── whatsapp-web.js
+│   │   ├── whatwg-url
+│   │   ├── which
+│   │   ├── which-module
+│   │   ├── wrap-ansi
+│   │   ├── wrap-ansi-cjs
+│   │   ├── wrappy
+│   │   ├── ws
+│   │   ├── y18n
+│   │   ├── yargs
+│   │   ├── yargs-parser
+│   │   ├── yauzl
+│   │   ├── zip-stream
+│   │   └── zod
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── qr.png
+│   ├── start_bot.sh
+│   └── start_bot.sh.bak7
+├── caja_api.py
+├── capital_api.py
+├── cierre_api.py
+├── claves.py
+├── cobradores_api.py
+├── conexion.py
+├── config.py
+├── database.py
+├── facebook_auth.py
+├── flask_session
+│   ├── 0158d1056c0b6e22e4f6e9ea012057aa2f9a8b77e82ad80292f073f839093bcf
+│   ├── 1192cc80e32e5d3a581de6fd547e41fa7639a6cecb4bc49c249048cc9a233f40
+│   ├── 17193aa1606110570596338edd519df1ea2a0883f89ce651d67bb1c60ef79c4e
+│   ├── 17e2d2e21cc647663420fb394840deb9382eb090075c3a9fcb6b5389be3d7308
+│   ├── 1aba1d6d9e0aebd5503d8ac6bda8d847fee742567d80fd3d752a9089ed3de3e0
+│   ├── 1b5f97bb3e2f8ba9cfefd18b3120ea4d1fe8dde54c26488bb2a1eaa15682c7d0
+│   ├── 2b189351981df46db9c75f0da30aa930e96d68140c58459d103207b2e29b0bbd
+│   ├── 2ba5814f732d7542f21a47bb37fccb86ef6bb184de5c44555ee774190ee063f7
+│   ├── 2e39299404872c7aa886811c3b1b8082b858bfef7f5a91db4bb275ac63ccc502
+│   ├── 35871b158b836b5f5b9f936b2f5771247b6302f8841b3589b92c6fe92a8750df
+│   ├── 39ff2e807a98ff73c4188d84d61f4e725d80b2fb663216ca075aa09e013c87d2
+│   ├── 593ceb44d8c6ccdbe1433cd03dcd724f4c9d9b187ef00197aa1e6573dbf8ef94
+│   ├── 59a10e30a50f15f95ecb41393977a3a6986ff309a54f338a6edd30ab574c5261
+│   ├── 59b9bc4a7df2c0a30461d74dcae9bef1246fa08d222a37978f7b2be67d427134
+│   ├── 5bf2ce17c659d33bbc9e75b18bd124450c6a8ac72d85fd93a98e9a6f6642e58a
+│   ├── 61b892a411bdc9893249bff614dde6987abf6eb8f7c1424f90c8ca4b9396f70a
+│   ├── 66d67d59a804ca334a6664eccebdbe95ecab18d852dcdfc32df4becbf975574b
+│   ├── 6b7e925e3e759486c8570ee1f77f8dbf133f10368b442f0f925e2b41ce419e46
+│   ├── 7434f8c9d22135bbd1c125195c0f9dad77a24b539910e5c9811f7bb127944d6f
+│   ├── 7473feb30b58653e6d04f881f275436fb1e5a7330047cdd3063025b15f4c279a
+│   ├── 79bc207ee04a581ab2348ca1f3494e64cd0ec36128735b8c6bc85ddd8fe1938c
+│   ├── 7b28a3b8b76709133bc78cdb3db752625ed4fc971af898156ae3d2649af0bdae
+│   ├── 825103c87d1ed3a854fd5379efd246535e225e804539c54e5f6a1503e2dfaeca
+│   ├── 86d16d6eb2b17d04798a5200c8a29a4b7a624e533ed5a083a1da7ee600e9fcdc
+│   ├── 8de16066f267736a943b8488cef244ad3b554285b944d0cdff163de8bd87d2c0
+│   ├── a070faf40d6d0cfeef0273c3771398a0aba7f01261e207203c1adb23efa2ae37
+│   ├── a37b1d01b6bdaabba6d20cb0aac7918a4c422e92e121676643347bb57a92af1c
+│   ├── ab068d220c809000aec690c8789e141e4df474aa939e9cfbb862c45b36e9945d
+│   ├── ac9a5749fa52870e538937bd6c9088ad6b6db3ac97b23dbf6bacdf898b53ab6a
+│   ├── b290e4cf8fb53851006fd2e6a8f39fe5540922d479d6f8912fb0f2957a8a8519
+│   ├── bc010cb676ea9e8e7ca25daafb2fbe0c2ae247e8ab16cd0f94699e19f0becaa7
+│   ├── bfb861089bc8030405d92f5f1b40511953a6abf0b1be7ddc0a9858bde9e60f05
+│   ├── c1ab44695ccffcfcddf0f39ba02a7f5c5eafaebb01e84a7730684eeac156fd07
+│   ├── c6fada7a9fdb3453a222db83175200827dfe4b9836732ad481cefcb1cdbe2e96
+│   ├── c80170c79b1873d3d25166a2d61ea7068de9ba0d8272642dfd043dbdfbc29f19
+│   ├── cc1ee399156083985126d0656e2619ed38e646ed10944fd55658fb00e01d7d54
+│   ├── cc7df6a1a5940800642be82dd01a99d0bb2adf89ac0cdd416b6bcb4c78739b46
+│   ├── cf94f5a260e1425fb5e975fcefd20a6dd4d5c5841e49f8064808b464462ed451
+│   ├── d065c7081bd8727d92bcd73c578b0746e951f4d82094263c40046c97c59a1f12
+│   ├── d347b444d95633441adf4a8657e6ad5e411bc5443847c9a3f83388e0b3d3c2eb
+│   ├── d7d0cd1c1fcb69797df7a95cb6486df011930942d00b061c5c2bd83fcb4e04a2
+│   ├── d93b221e6533a39d39c48d2e7ef4a6829508b40894f0b07be809c52cf4aad9f8
+│   ├── db772d20be28f274713f05fa5d83426eae693fbeaeec7b9ca8784a7f81996554
+│   ├── dd17c06b1dadfbee8f457a2ff14b33e0c672180a0702e3148fc009843c0b94df
+│   ├── dd9cf55803f30cba2fcdb8967de9ce889df321176f0489049e0e5e1d2ca0c4e0
+│   ├── e1336f2579aee7cda44a6cd774c36bfcad12ee42a1d4bb0e9f25640bd173990b
+│   ├── e30f7062d52b990816637015cfb22dd4207d1753c8227eb361fa706960fb53d7
+│   ├── e718a4c8c219f4e30152debc646e91657529d39473c5e141f4f2a039edfa04cb
+│   ├── e85bede6314d037cfc979393f1ab75cbbea12d8f4546a99fe566758074ccb502
+│   ├── e957ec4e714158a5641c0cd4cea4d685832d32972cf8797d90133016753416ea
+│   ├── f63be5d3d577ee594f4a62ebb37708d143872ff5031b6720f46334827f8d0133
+│   ├── f753ef994af4ea6f4857119edb5c05bcd53b212030bc322797f5ad8b24eccfd4
+│   ├── f7a1e48be9307be836b340505909cc741c3a718a19153e2113ee8267063f5366
+│   ├── faf7134a34d5a68d0130a59c92c27b251fcb0faecfaf84a852da56995e9d103e
+│   ├── fc6d79157d6cc181ae35a816563376ceb38f42db864911229f51791521943142
+│   └── fcf95ffae44c974f3b20588a0128d477c56e992af49c390aecb645a4b4d3cd97
+├── flask_session_pw
+├── gastos_api.py
+├── gen_cert_pw.py
+├── github_auth.py
+├── google_auth.py
+├── hash_clave.py
+├── models
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-314.pyc
+│   │   ├── caja.cpython-314.pyc
+│   │   ├── capital.cpython-314.pyc
+│   │   ├── cierre.cpython-314.pyc
+│   │   ├── cliente.cpython-314.pyc
+│   │   ├── cobrador.cpython-314.pyc
+│   │   ├── comprobante.cpython-314.pyc
+│   │   ├── empresa.cpython-314.pyc
+│   │   ├── gasto.cpython-314.pyc
+│   │   ├── prestamo.cpython-314.pyc
+│   │   ├── reporte.cpython-314.pyc
+│   │   ├── socio.cpython-314.pyc
+│   │   ├── usuario.cpython-314.pyc
+│   │   ├── vcf_import.cpython-314.pyc
+│   │   └── zona.cpython-314.pyc
+│   ├── caja.py
+│   ├── capital.py
+│   ├── capital.py.bak_total
+│   ├── cierre.py
+│   ├── cliente.py
+│   ├── cobrador.py
+│   ├── comprobante.py
+│   ├── comprobante.py.bak_ref
+│   ├── empresa.py
+│   ├── gasto.py
+│   ├── prestamo.py
+│   ├── prestamo.py.bak_ver
+│   ├── reporte.py
+│   ├── reporte.py.bak_cb
+│   ├── socio.py
+│   ├── usuario.py
+│   ├── usuario.py.bak3
+│   ├── vcf_import.py
+│   ├── vcf_import.py.bak_qp
+│   └── zona.py
+├── notificaciones.py
+├── notificaciones.py.bak10
+├── notificaciones.py.bak7
+├── oauth_registro.py
+├── patch_06_registro_transaccion.py
+├── patch_07_independizar_bot.py
+├── patch_08_limites_otp.py
+├── patch_09_entradas_limpias.py
+├── patch_10_sin_whatsapp.py
+├── patch_11_limite_login.py
+├── patch_12_avatar_privado.py
+├── patch_13_login_v2.py
+├── patch_14_cambiar_password.py
+├── perfil_admin.py
+├── perfil_admin.py.bak3
+├── perfil_admin.py.bak4
+├── perfil_admin.py.bak5
+├── perfil_admin.py.bak6
+├── prestamos_api.py
+├── recuperacion.py
+├── recuperacion.py.bak3
+├── reiniciar.sh
+├── reportes_api.py
+├── requirements.txt
+├── routes
+│   ├── __init__.py
+│   ├── auth.py
+│   ├── clientes.py
+│   ├── dashboard.py
+│   └── prestamos.py
+├── run_pw.py
+├── socios_api.py
+├── ssl_pw
+│   ├── cert.pem
+│   └── key.pem
+├── start_flask.sh
+├── static
+│   ├── 2984756.jpg
+│   ├── 2984756N.png
+│   ├── 2986998.png
+│   ├── 2986998N.png
+│   ├── avatars
+│   │   └── 1.jpg
+│   ├── clientes.css
+│   ├── comprobantes
+│   │   ├── comprobante_186_1792753112.png
+│   │   └── comprobante_186_1792753860.png
+│   ├── cristal.png
+│   ├── css
+│   │   ├── animate.min.css
+│   │   ├── auth.css
+│   │   ├── auth.css.bak
+│   │   ├── auth.css.bak2
+│   │   ├── auth.css.bak3
+│   │   ├── auth.css.bak4
+│   │   ├── auth.css.bak_3d
+│   │   ├── auth.css.bak_3d10
+│   │   ├── auth.css.bak_3d11
+│   │   ├── auth.css.bak_3d12
+│   │   ├── auth.css.bak_3d13
+│   │   ├── auth.css.bak_3d14
+│   │   ├── auth.css.bak_3d15
+│   │   ├── auth.css.bak_3d16
+│   │   ├── auth.css.bak_3d17
+│   │   ├── auth.css.bak_3d2
+│   │   ├── auth.css.bak_3d3
+│   │   ├── auth.css.bak_3d4
+│   │   ├── auth.css.bak_3d5
+│   │   ├── auth.css.bak_3d6
+│   │   ├── auth.css.bak_3d7
+│   │   ├── auth.css.bak_3d8
+│   │   ├── auth.css.bak_3d9
+│   │   ├── auth.css.bak_v33
+│   │   ├── auth_Cilindro.css
+│   │   ├── auth_Cilindro2.css
+│   │   ├── auth_Cilindro3.css
+│   │   ├── auth_Glass.css
+│   │   ├── auth_Maravilla.css
+│   │   ├── bootstrap-select.min.css
+│   │   ├── bootstrap.min.css
+│   │   ├── calendar
+│   │   ├── colorpicker
+│   │   ├── custom.css
+│   │   ├── custom.css.actual_malo_2
+│   │   ├── custom.css.antes_ajustes
+│   │   ├── custom.css.antes_fix_fondo
+│   │   ├── custom.css.mio_roto_20261014
+│   │   ├── custom.min.css
+│   │   ├── datatables
+│   │   ├── editor
+│   │   ├── floatexamples.css
+│   │   ├── fonts
+│   │   ├── icheck
+│   │   ├── ion.rangeSlider.css
+│   │   ├── ion.rangeSlider.skinFlat.css
+│   │   ├── login_azul.css
+│   │   ├── maps
+│   │   ├── normalize.css
+│   │   ├── nprogress.css
+│   │   ├── progressbar
+│   │   ├── select
+│   │   └── switchery
+│   ├── disc
+│   │   ├── script.js
+│   │   └── style.css
+│   ├── img
+│   │   ├── 1.JPG
+│   │   ├── 543.png
+│   │   ├── base.png
+│   │   ├── cabezal.png
+│   │   ├── fondo.png
+│   │   ├── icono.png
+│   │   ├── logo_empresa_1790269347.jpg
+│   │   ├── user.png
+│   │   ├── vit_arco.png
+│   │   ├── vit_base.png
+│   │   ├── vit_cabezal.png
+│   │   ├── vit_vidrio_bot.png
+│   │   ├── vit_vidrio_mid.png
+│   │   └── vit_vidrio_top.png
+│   ├── js
+│   │   ├── auth.js
+│   │   ├── auth.js.bak
+│   │   ├── auth.js.bak10
+│   │   ├── auth.js.bak12
+│   │   ├── auth.js.bak2
+│   │   ├── auth.js.bak4
+│   │   ├── auth.js.bak5
+│   │   ├── auth.js.bak6
+│   │   ├── auth.js.bak7
+│   │   ├── auth.js.bak8
+│   │   ├── auth.js.bak9
+│   │   ├── auth.js.bak_3d
+│   │   ├── auth.js.bak_fb
+│   │   ├── auth.js.bak_set
+│   │   ├── auth.js.bak_set2
+│   │   ├── auth.js.bak_v2
+│   │   ├── auth.js.bak_v33
+│   │   ├── auth.js.bak_val3
+│   │   ├── auth.js.bak_val4
+│   │   ├── auth.js.bak_val5
+│   │   ├── auth_Cilindro.js
+│   │   ├── auth_Cilindro2.js
+│   │   ├── auth_Cilindro3.js
+│   │   ├── auth_Glass.js
+│   │   ├── auth_Maravilla.js
+│   │   ├── auth_Maravilla.js.bak_val
+│   │   ├── autocomplete
+│   │   ├── bootstrap-select.min.js
+│   │   ├── bootstrap.min.js
+│   │   ├── calendar
+│   │   ├── chartjs
+│   │   ├── colorpicker
+│   │   ├── compra.js
+│   │   ├── cropping
+│   │   ├── custom.js
+│   │   ├── custom.min.js
+│   │   ├── datatables
+│   │   ├── datepicker
+│   │   ├── dropzone
+│   │   ├── easypie
+│   │   ├── echart
+│   │   ├── editor
+│   │   ├── escena3d.js
+│   │   ├── escena3d.js.bak1
+│   │   ├── escena3d.js.bak10
+│   │   ├── escena3d.js.bak2
+│   │   ├── escena3d.js.bak3
+│   │   ├── escena3d.js.bak4
+│   │   ├── escena3d.js.bak5
+│   │   ├── escena3d.js.bak6
+│   │   ├── escena3d.js.bak7
+│   │   ├── escena3d.js.bak8
+│   │   ├── escena3d.js.bak9
+│   │   ├── flot
+│   │   ├── gasto.js
+│   │   ├── gauge
+│   │   ├── highcharts
+│   │   ├── highcharts.js
+│   │   ├── icheck
+│   │   ├── input_mask
+│   │   ├── ion_range
+│   │   ├── jquery-1.9.1.js
+│   │   ├── jquery-ui.js
+│   │   ├── jquery.min.js
+│   │   ├── knob
+│   │   ├── maps
+│   │   ├── moment
+│   │   ├── moris
+│   │   ├── nicescroll
+│   │   ├── nota_venta.js
+│   │   ├── notacredito.js
+│   │   ├── notadebito.js
+│   │   ├── notify
+│   │   ├── nprogress.js
+│   │   ├── pace
+│   │   ├── parsley
+│   │   ├── presupuesto.js
+│   │   ├── progressbar
+│   │   ├── restablecer.js
+│   │   ├── select
+│   │   ├── sidebar
+│   │   ├── skycons
+│   │   ├── sparkline
+│   │   ├── stacktable.js
+│   │   ├── switchery
+│   │   ├── tags
+│   │   ├── textarea
+│   │   ├── three.min.js
+│   │   ├── validator
+│   │   └── wizard
+│   ├── login_nuevo
+│   │   ├── app.js
+│   │   ├── img
+│   │   ├── style.css
+│   │   ├── style.css.antes_botones_panel
+│   │   ├── style.css.antes_color_final
+│   │   ├── style.css.antes_colores_tanishi
+│   │   ├── style.css.antes_fix_overlap
+│   │   ├── style.css.antes_fondo_limpio
+│   │   ├── style.css.antes_tanishi
+│   │   ├── style.css.antes_texto_panel
+│   │   ├── style.css.bak3
+│   │   ├── style.css.bak4
+│   │   ├── style.css.bak5
+│   │   ├── style.css.bak6
+│   │   └── style.css.bak7
+│   ├── metronic
+│   │   ├── css
+│   │   ├── js
+│   │   ├── media
+│   │   └── plugins
+│   ├── tanishi
+│   │   ├── estilos.css
+│   │   ├── estilos.css.antes_brand
+│   │   ├── estilos.css.antes_espacios
+│   │   ├── estilos.css.antes_header
+│   │   ├── img
+│   │   ├── tanishi.js
+│   │   └── tanishi.js.antes_limpieza
+│   ├── three.min.js
+│   └── vcf_uploads
+│       ├── vcf_1793041117.vcf
+│       └── vcf_1793041480.vcf
+├── static1
+│   ├── css
+│   │   └── auth.css
+│   └── js
+│       └── auth.js
+├── telefono.py
+└── templates
+    ├── _header.html
+    ├── _header.html.bak_drawers
+    ├── _sidebar.html
+    ├── _sidebar.html.bak_fix
+    ├── asignacion_form.html
+    ├── asignacion_form.html.bak_antes_base
+    ├── asignacion_form.html.bak_pw
+    ├── base.html
+    ├── base.html.bak_antes_portal
+    ├── base.html.bak_antes_sidebar2
+    ├── base.html.bak_antes_sidebar3
+    ├── base.html.bak_antes_theme
+    ├── base.html.bak_antes_theme2
+    ├── base.html.bak_debug
+    ├── base.html.bak_fix_real
+    ├── base_cliente.html
+    ├── base_cliente.html.antes_ajustes
+    ├── base_cliente.html.antes_custom_css
+    ├── base_cliente.html.antes_header
+    ├── base_pw.html
+    ├── base_pw.html.bak_ancho
+    ├── boton1.html
+    ├── caja.html
+    ├── caja.html.bak_antes_base
+    ├── caja.html.bak_det
+    ├── caja.html.bak_ico
+    ├── caja.html.bak_mod
+    ├── caja.html.bak_pw
+    ├── caja_editar_movimiento.html
+    ├── caja_editar_movimiento.html.bak_antes_base
+    ├── caja_editar_movimiento.html.bak_pw
+    ├── caja_movimiento.html
+    ├── caja_movimiento.html.bak_antes_base
+    ├── caja_movimiento.html.bak_pw
+    ├── cambiar_password.html
+    ├── capital.html
+    ├── capital.html.bak_antes_base
+    ├── capital.html.bak_graf
+    ├── capital.html.bak_mod
+    ├── capital.html.bak_pw
+    ├── capital_aporte.html
+    ├── capital_aporte.html.bak_antes_base
+    ├── capital_aporte.html.bak_pw
+    ├── cierre.html
+    ├── cierre.html.bak_antes_base
+    ├── cierre.html.bak_mod
+    ├── cierre.html.bak_pw
+    ├── cierre.html.bak_viv
+    ├── cilindro_login.html
+    ├── cliente_form.html
+    ├── cliente_form.html.bak2
+    ├── cliente_form.html.bak_antes_base
+    ├── cliente_form.html.bak_pw
+    ├── cliente_form.html.bak_tel
+    ├── cliente_ver.html
+    ├── cliente_ver.html.bak_sel
+    ├── clientes
+    │   ├── form.html
+    │   └── lista.html
+    ├── clientes.html
+    ├── clientes.html.bak2
+    ├── clientes.html.bak3
+    ├── clientes.html.bak4
+    ├── clientes.html.bak5
+    ├── clientes.html.bak_3d
+    ├── clientes.html.bak_activos
+    ├── clientes.html.bak_antes_base
+    ├── clientes.html.bak_antes_grafico
+    ├── clientes.html.bak_antes_limpieza
+    ├── clientes.html.bak_antes_modelo
+    ├── clientes.html.bak_antes_pw
+    ├── clientes.html.bak_cob
+    ├── clientes.html.bak_cols
+    ├── clientes.html.bak_diag
+    ├── clientes.html.bak_estado
+    ├── clientes.html.bak_fechas
+    ├── clientes.html.bak_filtros
+    ├── clientes.html.bak_js
+    ├── clientes.html.bak_js2
+    ├── clientes.html.bak_js3
+    ├── clientes.html.bak_metronic_final
+    ├── clientes.html.bak_metronic_final2
+    ├── clientes.html.bak_metronic_real
+    ├── clientes.html.bak_nowrap
+    ├── clientes.html.bak_rep
+    ├── clientes.html.bak_rotulo
+    ├── clientes.html.bak_salud
+    ├── clientes.html.bak_scripts
+    ├── clientes.html.bak_simetria
+    ├── clientes.html.bak_stats
+    ├── clientes.html.bak_tarjeta
+    ├── clientes.html.bak_tarjetas
+    ├── clientes.html.bak_thead
+    ├── clientes.html.bak_titulo
+    ├── clientes.html.bak_todos
+    ├── clientes.html.bak_vacio
+    ├── clientes.html.bak_ver
+    ├── cobrador_form.html
+    ├── cobrador_form.html.bak_antes_base
+    ├── cobrador_form.html.bak_pw
+    ├── cobradores.html
+    ├── cobradores.html.bak_antes_base
+    ├── cobradores.html.bak_antes_modelo
+    ├── cobradores.html.bak_avatar
+    ├── cobradores.html.bak_graf
+    ├── cobradores.html.bak_graf2
+    ├── cobradores.html.bak_graf3
+    ├── cobradores.html.bak_graf4
+    ├── cobradores.html.bak_graf5
+    ├── cobradores.html.bak_graf6
+    ├── cobradores.html.bak_importar
+    ├── cobradores.html.bak_mod
+    ├── codigo_nuevo.html
+    ├── codigo_viejo.html
+    ├── cuenta_pw.html
+    ├── cuenta_pw.html.bak3
+    ├── cuenta_pw.html.bak4
+    ├── cuenta_pw.html.bak5
+    ├── cuenta_pw.html.bak6
+    ├── cuenta_pw.html.bak7
+    ├── cuenta_pw.html.bak8
+    ├── cuenta_pw.html.bak9
+    ├── dashboard.html
+    ├── dashboard2.html
+    ├── dashboard2.html.bak_antes_base
+    ├── dashboard3.html
+    ├── dashboard_pw.html
+    ├── dashboard_pw.html.bak2
+    ├── dashboard_pw.html.bak3
+    ├── dashboard_pw.html.bak4
+    ├── dashboard_pw.html.bak_ajuste
+    ├── dashboard_pw.html.bak_esp
+    ├── dashboard_pw.html.bak_esp2
+    ├── dashboard_pw.html.bak_fijo
+    ├── dashboard_pw.html.bak_lin
+    ├── eliminar_cuenta.html
+    ├── empresa.html
+    ├── empresa.html.bak_antes_base
+    ├── empresa.html.bak_mod
+    ├── empresa.html.bak_nit
+    ├── empresa.html.bak_pw
+    ├── empresa.html.bak_viv
+    ├── flotantes.html
+    ├── gasto_form.html
+    ├── gasto_form.html.bak_antes_base
+    ├── gasto_form.html.bak_items
+    ├── gasto_form.html.bak_pw
+    ├── gasto_ver.html
+    ├── gasto_ver.html.bak_antes_base
+    ├── gasto_ver.html.bak_items
+    ├── gasto_ver.html.bak_pw
+    ├── gastos.html
+    ├── gastos.html.bak_antes_base
+    ├── gastos.html.bak_mod
+    ├── gastos.html.bak_pw
+    ├── gastos.html.bak_res
+    ├── icono.png
+    ├── importar_contactos.html
+    ├── importar_contactos.html.bak_antes_base
+    ├── importar_contactos.html.bak_pw
+    ├── includes
+    │   ├── _ki.html
+    │   ├── _ki.html.bak_bing
+    │   ├── _menu_cliente.html
+    │   ├── _menu_usuario.html
+    │   ├── _menu_usuario.html.bak_notif
+    │   ├── _menu_usuario.html.bak_perfil
+    │   ├── navbar_pw.html
+    │   ├── navbar_pw.html.bak2
+    │   ├── navbar_pw.html.bak3
+    │   ├── navbar_pw.html.bak4
+    │   ├── navbar_pw.html.bak_ancho
+    │   ├── navbar_pw.html.bak_antes_cajas
+    │   ├── navbar_pw.html.bak_antes_campana
+    │   ├── navbar_pw.html.bak_antes_campana_cliente
+    │   ├── navbar_pw.html.bak_antes_hdr
+    │   ├── navbar_pw.html.bak_antes_ki
+    │   ├── navbar_pw.html.bak_antes_tabs
+    │   ├── navbar_pw.html.bak_avisos
+    │   ├── navbar_pw.html.bak_campana2
+    │   ├── navbar_pw.html.bak_titulo
+    │   ├── sidebar_cliente_pw.html
+    │   ├── sidebar_cliente_pw.html.bak_antes_menu
+    │   ├── sidebar_pw.html
+    │   ├── sidebar_pw.html.bak2
+    │   ├── sidebar_pw.html.bak_act
+    │   ├── sidebar_pw.html.bak_antes_ki
+    │   ├── sidebar_pw.html.bak_antes_menu
+    │   └── sidebar_pw.html.bak_st
+    ├── login.html
+    ├── login.html.antes_color_final
+    ├── login.html.antes_tanishi
+    ├── login.html.antes_texto_panel
+    ├── login.html.bak2
+    ├── login.html.bak3
+    ├── login.html.bak4
+    ├── login.html.bak5
+    ├── login.html.bak_3d
+    ├── login.html.bak_antes_glass
+    ├── login.html.bak_antes_rediseno
+    ├── login.html.bak_antes_reset
+    ├── login.html.bak_antes_restauracion
+    ├── login.html.bak_arreglo
+    ├── login.html.bak_av
+    ├── login.html.bak_aviso
+    ├── login.html.bak_boton
+    ├── login.html.bak_facebook
+    ├── login.html.bak_fb
+    ├── login.html.bak_github
+    ├── login.html.bak_google
+    ├── login.html.bak_labelmal
+    ├── login.html.bak_luna
+    ├── login.html.bak_mara
+    ├── login.html.bak_mara.bak_forgot
+    ├── login.html.bak_privado
+    ├── login.html.bak_ver
+    ├── login.html.bak_ver2
+    ├── login1.html
+    ├── login1111.html
+    ├── login2.html
+    ├── login3.html
+    ├── login4.html
+    ├── login80.html
+    ├── loginACTUAL.html
+    ├── loginCristalUnificado.html
+    ├── loginORG666.html
+    ├── loginORIG.html
+    ├── loginORIGINAL.html
+    ├── loginR1.html (3)
+    ├── loginReg1.html
+    ├── loginULTIMOCRISTAL.html
+    ├── loginV.html
+    ├── login_04112026.html
+    ├── login_Badgrunt.html
+    ├── login_Cilindro.html
+    ├── login_Cilindro.html.bak_forgot
+    ├── login_Cilindro2.html
+    ├── login_Cilindro2.html.bak_forgot
+    ├── login_Cilindro3.html
+    ├── login_Cilindro3.html.bak_forgot
+    ├── login_ConTemayColor.html
+    ├── login_Cristal.html
+    ├── login_Cristal1.html
+    ├── login_CristalNuevo.html
+    ├── login_Crystal_Deslizante.html
+    ├── login_Crystal_Org.html
+    ├── login_EXELENTE.html
+    ├── login_EXELENTE.html.bak_val
+    ├── login_Glass.html
+    ├── login_Incompleto.html
+    ├── login_Maravilla.html
+    ├── login_Maravilla.html.bak_forgot
+    ├── login_Maravilla.html.bak_val
+    ├── login_N1.html
+    ├── login_N2.html
+    ├── login_N3.html
+    ├── login_Placeholder.html
+    ├── login_pw.html
+    ├── loginactual.html
+    ├── mi_perfil.html
+    ├── notificaciones_cliente.html
+    ├── pagadiario_auth_v2.html
+    ├── partials_cliente
+    │   ├── _footer.html
+    │   ├── _header.html
+    │   ├── _header.html.antes_ajustes
+    │   ├── _header.html.bak_original
+    │   ├── _header.html.bak_simplificado
+    │   ├── _sidebar.html
+    │   └── _sidebar.html.antes_ajustes
+    ├── perfil_pw.html
+    ├── perfil_pw.html.bak_col
+    ├── placeholder.html
+    ├── placeholder.html.bak_antes_base
+    ├── placeholder.html.bak_pw
+    ├── portal.html
+    ├── portal.html.antes_flash
+    ├── portal.html.antes_js_flash
+    ├── portal.html.antes_mover_css
+    ├── portal.html.antes_quitar_banners
+    ├── portal.html.antes_toast_credito
+    ├── portal.html.antes_toasts
+    ├── portal.html.antes_toasts2
+    ├── portal.html.bak_antes_datos
+    ├── portal.html.bak_antes_fix_mensaje
+    ├── portal.html.bak_antes_fix_otp_canal
+    ├── portal.html.bak_antes_fix_verificar
+    ├── portal.html.bak_antes_js_otp
+    ├── portal.html.bak_antes_otp_canal
+    ├── portal.html.bak_antes_pesos
+    ├── portal.html.bak_antes_tabs
+    ├── portal.html.bak_fix_detalle
+    ├── portal.html.bak_fix_valor
+    ├── portal.html.bak_mover_logout
+    ├── portal.html.roto_20261014
+    ├── prestamo_editar.html
+    ├── prestamo_editar.html.bak_antes_base
+    ├── prestamo_editar.html.bak_pw
+    ├── prestamo_escanear.html
+    ├── prestamo_escanear.html.bak_antes_base
+    ├── prestamo_escanear.html.bak_pw
+    ├── prestamo_form.html
+    ├── prestamo_form.html.bak2
+    ├── prestamo_form.html.bak_antes_base
+    ├── prestamo_form.html.bak_pw
+    ├── prestamo_form.html.bak_sel
+    ├── prestamo_pago.html
+    ├── prestamo_pago.html.bak_antes_base
+    ├── prestamo_pago.html.bak_mod
+    ├── prestamo_pago.html.bak_pw
+    ├── prestamo_ver.html
+    ├── prestamo_ver.html.bak_antes_base
+    ├── prestamo_ver.html.bak_antes_pw
+    ├── prestamo_ver.html.bak_mod
+    ├── prestamo_ver.html.bak_v1
+    ├── prestamo_ver.html.bak_v3
+    ├── prestamo_ver.html.bak_v4
+    ├── prestamo_ver.html.bak_v5
+    ├── prestamo_ver.html.bak_v6
+    ├── prestamo_ver.html.bak_v7
+    ├── prestamo_ver.html.bak_v8
+    ├── prestamos.html
+    ├── prestamos.html.bak_4c
+    ├── prestamos.html.bak_acciones
+    ├── prestamos.html.bak_antes_base
+    ├── prestamos.html.bak_antes_modelo
+    ├── prestamos.html.bak_col
+    ├── prestamos.html.bak_corte
+    ├── prestamos.html.bak_dt
+    ├── prestamos.html.bak_err
+    ├── prestamos.html.bak_filtro
+    ├── prestamos.html.bak_hc
+    ├── prestamos.html.bak_mod
+    ├── prestamos.html.bak_rango
+    ├── prestamos.html.bak_sp
+    ├── prestamos.html.bak_spd
+    ├── prestamos.html.bak_spd2
+    ├── register.html
+    ├── reportes.html
+    ├── reportes.html.bak_alt
+    ├── reportes.html.bak_antes_base
+    ├── reportes.html.bak_cb
+    ├── reportes.html.bak_cb2
+    ├── reportes.html.bak_cob
+    ├── reportes.html.bak_col
+    ├── reportes.html.bak_flujo
+    ├── reportes.html.bak_graf
+    ├── reportes.html.bak_lbl
+    ├── reportes.html.bak_mod
+    ├── reportes.html.bak_pw
+    ├── reportes.html.bak_sub
+    ├── reportes.html.bak_tablas
+    ├── reportes.html.bak_top5
+    ├── reportes.html.bak_uni
+    ├── reportes.html.bak_vis
+    ├── reportes.html.bak_vis2
+    ├── reportes.html.bak_vis3
+    ├── reportes.html.bak_viv
+    ├── reportes.html.nuevo
+    ├── restablecer.html
+    ├── restablecer.html.bak2
+    ├── restablecer.html.bak_ver
+    ├── socio_form.html
+    ├── socio_form.html.bak_antes_base
+    ├── socio_form.html.bak_pw
+    ├── socios.html
+    ├── socios.html.bak_antes_base
+    ├── socios.html.bak_det
+    ├── socios.html.bak_eje
+    ├── socios.html.bak_fecha
+    ├── socios.html.bak_mod
+    ├── socios.html.bak_pw
+    ├── solicitudes_pw.html
+    ├── tanishi
+    │   ├── index.html
+    │   ├── index.html.antes_brand
+    │   ├── index.html.antes_brand2
+    │   ├── index.html.antes_enlaces
+    │   ├── index.html.antes_limpieza
+    │   ├── index.html.antes_meta
+    │   ├── index.html.antes_pagadiario_web
+    │   ├── index.html.antes_pageshow
+    │   └── index_limpio.html
+    ├── usuario_form.html
+    ├── usuario_form.html.bak_antes_base
+    ├── usuario_form.html.bak_pw
+    ├── usuarios.html
+    ├── usuarios.html.bak_antes_base
+    ├── usuarios.html.bak_mod
+    ├── usuarios.html.bak_pw
+    ├── usuarios.html.bak_viv
+    ├── vitrina_vidrio (5).html
+    ├── zona_form.html
+    ├── zona_form.html.bak_antes_base
+    ├── zona_form.html.bak_pw
+    ├── zonas.html
+    ├── zonas.html.bak_antes_base
+    ├── zonas.html.bak_antes_datatables
+    ├── zonas.html.bak_antes_metronic
+    ├── zonas.html.bak_antes_modelo
+    ├── zonas.html.bak_avatar
+    ├── zonas.html.bak_avatar2
+    ├── zonas.html.bak_flechas
+    ├── zonas.html.bak_fuentes
+    ├── zonas.html.bak_paso2
+    ├── zonas.html.bak_paso3
+    ├── zonas.html.bak_scroll
+    ├── zonas.html.bak_select2
+    ├── zonas.html.bak_selects
+    └── zonas.html.bak_tarjetas
+
+333 directories, 1025 files

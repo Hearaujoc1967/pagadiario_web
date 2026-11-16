@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pagadiario - Acceso</title>
+  <link href="{{ url_for('static', filename='metronic/plugins/plugins.bundle.css') }}" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      --brand-color: #4F46E5;
+      --bg-color: #eef2f9;
+      --text-main: #0f172a;
+      --text-sub: #64748b;
+      --glass-bg: rgba(255, 255, 255, 0.35);
+      --glass-border: rgba(255, 255, 255, 0.7);
+      --glass-shadow: 0 25px 45px -10px rgba(0, 0, 0, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.8), inset 0 -1px 2px rgba(255, 255, 255, 0.2);
+      --input-bg: rgba(255, 255, 255, 0.5);
+      --input-border: rgba(255, 255, 255, 0.9);
+      --input-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02), inset 0 -2px 4px rgba(255, 255, 255, 1);
+    }
+
+    body.dark-mode {
+      --bg-color: #0b1120;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --glass-bg: rgba(15, 23, 42, 0.4);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --glass-shadow: 0 25px 45px -10px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.1), inset 0 -1px 2px rgba(0, 0, 0, 0.5);
+      --input-bg: rgba(15, 23, 42, 0.5);
+      --input-border: rgba(255, 255, 255, 0.05);
+      --input-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 -2px 4px rgba(255, 255, 255, 0.02);
+      --brand-color: #818cf8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      transition: background-color 0.5s ease, color 0.5s ease;
+      overflow: hidden;
+      padding: 10px; 
+    }
+
+    /* ==== ESFERAS DE LUZ ==== */
+    .bg-shape { position: absolute; border-radius: 50%; filter: blur(40px); z-index: 0; transition: all 0.5s ease; }
+    .shape-1 { width: 400px; height: 400px; background: rgba(96, 165, 250, 0.5); top: -100px; left: -100px; }
+    .shape-2 { width: 350px; height: 350px; background: rgba(167, 139, 250, 0.4); bottom: -50px; right: -50px; }
+    .shape-3 { width: 250px; height: 250px; background: rgba(255, 255, 255, 0.8); top: 30%; right: 10%; filter: blur(30px); }
+    body.dark-mode .shape-1 { background: rgba(30, 64, 175, 0.4); }
+    body.dark-mode .shape-2 { background: rgba(109, 40, 217, 0.3); }
+    body.dark-mode .shape-3 { background: rgba(30, 41, 59, 0.6); }
+
+    /* ==== CONTENEDOR PRINCIPAL ==== */
+    .card-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 360px;
+      perspective: 1000px;
+    }
+
+    .glass-container {
+      width: 100%;
+      height: 620px; /* Altura fija para simetría */
+      border-radius: 32px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      backdrop-filter: blur(16px) saturate(180%) url(#liquid-glass-filter);
+      -webkit-backdrop-filter: blur(16px) saturate(180%) url(#liquid-glass-filter);
+      transition: transform 0.1s ease-out, box-shadow 0.3s ease, background 0.5s ease;
+      transform-style: preserve-3d;
+      position: relative;
+      overflow: hidden; 
+    }
+
+    /* Botón Modo Oscuro */
+    .theme-toggle {
+      position: absolute; top: 15px; right: 15px;
+      width: 35px; height: 35px; border-radius: 50%;
+      background: var(--input-bg); border: 1px solid var(--glass-border);
+      box-shadow: var(--input-shadow); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 20; color: var(--text-main); transition: all 0.3s;
+    }
+    .theme-toggle:hover { transform: scale(1.1); }
+    .theme-toggle .sun-icon { display: none; }
+    body.dark-mode .theme-toggle .moon-icon { display: none; }
+    body.dark-mode .theme-toggle .sun-icon { display: block; }
+
+    /* ==== ANIMACIÓN DE DESLIZAMIENTO (Igual al código original) ==== */
+    .form-panel { 
+      position: absolute; 
+      top: 0; 
+      left: 0;
+      width: 100%; 
+      height: 100%;
+      padding: 25px 25px;
+      display: flex;
+      flex-direction: column; 
+      opacity: 0;
+      visibility: hidden;
+      transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.4s ease-in-out;
+    }
+
+    .form-panel.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0);
+    }
+
+    .form-panel.slide-out-left {
+      transform: translateX(-100%);
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    /* Contenedor interno para empujar el botón simétricamente */
+    .form-fields {
+      flex: 1; /* Toma todo el espacio disponible empujando el botón al fondo */
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Logo Pagadiario Oficial */
+    .brand {
+      text-align: center;
+      font-size: 1.8rem;
+      color: var(--brand-color);
+      margin-bottom: 10px;
+      transform: translateZ(30px);
+    }
+
+    /* Título */
+    .form-title { 
+      text-align: center; 
+      font-size: 1.5rem; 
+      font-weight: 800; 
+      margin-bottom: 15px; 
+      letter-spacing: -0.5px;
+      transform: translateZ(20px);
+    }
+
+    /* Redes sociales arriba */
+    .social-top { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; transform: translateZ(15px); }
+    .btn-social {
+      width: 45px; height: 45px; border-radius: 14px; background: var(--input-bg);
+      border: 1px solid var(--glass-border); box-shadow: var(--input-shadow);
+      display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;
+    }
+    .btn-social:hover { transform: translateY(-2px); background: rgba(255,255,255,0.8); }
+    .btn-social svg { width: 20px; height: 20px; }
+
+    /* Inputs Generales */
+    .input-field { position: relative; margin-bottom: 12px; display: flex; align-items: center; }
+    .input-field i { position: absolute; left: 15px; color: var(--text-sub); font-size: 0.85rem; pointer-events: none; }
+    .input-field input, .input-field select {
+      width: 100%; padding: 12px 12px 12px 40px; 
+      background: var(--input-bg); border: 1px solid var(--input-border);
+      border-radius: 14px; color: var(--text-main); font-size: 0.85rem; font-weight: 500;
+      outline: none; transition: all 0.3s ease; box-shadow: var(--input-shadow);
+    }
+    .input-field input::placeholder { color: var(--text-sub); }
+    .input-field input:focus, .input-field select:focus {
+      border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15), var(--input-shadow);
+    }
+    
+    /* Ajuste específico para el LOGIN */
+    #form-login .input-field { margin-bottom: 15px; }
+    #form-login .input-field input { padding: 14px 14px 14px 42px; font-size: 0.9rem; }
+    #form-login .input-field i { font-size: 1rem; }
+    
+    .toggle-eye { position: absolute; right: 12px; cursor: pointer; font-size: 1rem; color: var(--text-sub); user-select: none; }
+
+    /* Feedback de validación */
+    .campo-feedback { display: block; font-size: 0.7rem; font-weight: 600; color: #ef4444; margin: 0 0 0 15px; height: 0; overflow: hidden; transition: all 0.3s ease; }
+    .campo-feedback:not(:empty) { height: auto; margin-top: 2px; margin-bottom: 5px; }
+    .campo-feedback.ok { color: #10b981; }
+
+    /* Barra de fuerza */
+    .password-meter { display: flex; gap: 4px; margin: 0 0 4px 15px; width: calc(100% - 30px); }
+    .password-meter .segment { flex: 1; height: 3px; background: rgba(0,0,0,0.1); border-radius: 2px; transition: background 0.3s ease; }
+    body.dark-mode .password-meter .segment { background: rgba(255,255,255,0.1); }
+    .password-meter .segment.active-weak { background: #ef4444; }
+    .password-meter .segment.active-medium { background: #f59e0b; }
+    .password-meter .segment.active-strong { background: #10b981; }
+    .password-meter .segment.active-very { background: #3b82f6; }
+    .password-hint { font-size: 0.65rem; color: var(--text-sub); margin: 0 0 8px 15px; font-weight: 500; }
+
+    /* Checkboxes */
+    .form-checkbox { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 500; color: var(--text-sub); cursor: pointer; margin: 5px 0 10px 10px; }
+    .form-checkbox input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
+
+    /* Enlaces */
+    .options-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; font-size: 0.8rem; font-weight: 600; }
+    .text-link { color: var(--primary); text-decoration: none; cursor: pointer; }
+    .text-link:hover { text-decoration: underline; }
+
+    /* Botón Principal (Ya no tiene margin-top: auto, está al fondo del flex) */
+    .btn-primary {
+      width: 100%; padding: 15px; border-radius: 100px; border: none;
+      font-size: 1rem; font-weight: 700; color: #fff; cursor: pointer;
+      position: relative; background: var(--primary-gradient);
+      box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.4), inset 0 -3px 5px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease; display: flex; justify-content: center; align-items: center;
+    }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.05); }
+    .btn-primary:active:not(:disabled) { transform: translateY(1px); }
+    .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; box-shadow: none; }
+    .btn-arrow { position: absolute; right: 5px; width: 38px; height: 38px; border-radius: 50%; background: rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2); }
+
+    /* Botón de cambio inferior */
+    .switch-form-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-sub);
+      font-size: 0.8rem;
+      margin-top: 15px; 
+      margin-bottom: 5px;
+      cursor: pointer;
+      text-align: center;
+      width: 100%;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+    .switch-form-btn:hover { color: var(--primary); }
+
+
+    /* ===== CAPA LIQUID GLASS: campos, sociales y boton ===== */
+    :root{--soc-bg:linear-gradient(135deg,rgba(255,255,255,.7),rgba(255,255,255,.08) 55%,rgba(255,255,255,.4));
+      --rim:conic-gradient(from 200deg,rgba(255,255,255,.95),rgba(110,140,230,.35) 30%,rgba(80,200,255,.6) 55%,rgba(255,120,190,.55) 75%,rgba(255,255,255,.95))}
+    body.dark-mode{--soc-bg:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,.03) 55%,rgba(255,255,255,.12));
+      --rim:conic-gradient(from 200deg,rgba(255,255,255,.7),rgba(255,255,255,.1) 30%,rgba(120,200,255,.5) 55%,rgba(255,130,200,.5) 75%,rgba(255,255,255,.7))}
+    .input-field{border-radius:999px}
+    .input-field input,.input-field select{border:1.5px solid transparent;border-radius:999px;
+      background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.45));
+      box-shadow:inset 0 1.5px 1px #fff,inset 0 -4px 8px rgba(100,130,220,.16),0 8px 16px rgba(60,80,160,.18)}
+    #form-login .input-field input,#form-signup .input-field input{padding:14px 46px 14px 46px}
+    .input-field i{left:19px;z-index:2}
+    .input-field::before{content:"";position:absolute;inset:0;border-radius:999px;pointer-events:none;z-index:1;padding:1.5px;background:var(--rim);
+      -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;transition:background .2s}
+    .input-field::after{content:"";position:absolute;right:0;top:0;bottom:0;width:30%;border-radius:0 999px 999px 0;pointer-events:none;z-index:1;opacity:.55;
+      background:radial-gradient(circle at 80% 65%,rgba(255,150,80,.55),rgba(120,200,255,.35) 45%,transparent 70%);filter:blur(4px)}
+    .input-field:focus-within::before{background:var(--primary)}
+    .input-field input:focus{border-color:transparent;box-shadow:0 0 0 4px rgba(37,99,235,.18),0 8px 18px rgba(37,99,235,.25)}
+    .toggle-eye{z-index:3;right:18px;display:flex;align-items:center;color:var(--text-sub)}
+    .toggle-eye svg{width:20px;height:20px}
+    body.dark-mode .input-field input,body.dark-mode .input-field select{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.14));
+      box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -3px 6px rgba(255,255,255,.12),0 8px 16px rgba(0,0,0,.35)}
+    body.dark-mode .input-field::after{mix-blend-mode:screen;opacity:.9}
+    /* sociales */
+    .btn-social,.btn-social:hover{background:var(--soc-bg)}
+    .btn-social{position:relative;width:48px;height:48px;border-radius:16px;border:1.5px solid rgba(255,255,255,.9);
+      box-shadow:inset 0 2px 2px #fff,inset 0 -4px 8px rgba(100,130,220,.2),0 8px 16px rgba(60,80,160,.22)}
+    .btn-social:hover{transform:translateY(-3px)}.btn-social:active{transform:scale(.94)}
+    .btn-social::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.7;filter:blur(2px);
+      background:radial-gradient(circle at 90% 90%,rgba(255,140,80,.5),rgba(110,200,255,.4) 40%,transparent 65%)}
+    .btn-social svg{position:relative;z-index:1}
+    body.dark-mode .btn-social{border-color:rgba(255,255,255,.55);box-shadow:inset 0 2px 2px rgba(255,255,255,.8),inset 0 -4px 8px rgba(255,255,255,.15),0 8px 16px rgba(0,0,0,.3)}
+    body.dark-mode .btn-social::after{mix-blend-mode:screen;opacity:1}
+    body.dark-mode .btn-social svg[fill="#333"]{fill:#fff}
+    /* boton: default / hover / focus / pressed / loading / success */
+    .btn-primary{gap:10px;overflow:hidden;border:1px solid rgba(255,255,255,.55);font-weight:800;letter-spacing:.5px;
+      background:linear-gradient(180deg,#5aa9ff,#1f6bff);box-shadow:inset 0 2px 3px rgba(255,255,255,.7),inset 0 -6px 10px rgba(0,40,160,.35),0 0 18px rgba(40,120,255,.5)}
+    .btn-primary::after{content:"";position:absolute;left:8%;right:22%;top:3px;height:40%;border-radius:999px;background:linear-gradient(rgba(255,255,255,.5),rgba(255,255,255,0));pointer-events:none}
+    .btn-primary:hover:not(:disabled){transform:none;filter:none;background:linear-gradient(180deg,#ffc27a,#ff8a1f);box-shadow:inset 0 2px 3px rgba(255,255,255,.7),inset 0 -6px 10px rgba(160,70,0,.35),0 0 24px rgba(255,150,40,.7)}
+    .btn-primary:focus-visible{background:linear-gradient(180deg,#1d3a8a,#0b1a4d);outline:3px solid rgba(90,169,255,.8);outline-offset:3px}
+    .btn-primary:active:not(:disabled){transform:scale(.97);color:#0f172a;background:linear-gradient(180deg,#fff,#dbe6ff)}
+    .btn-primary.is-loading{pointer-events:none;background:linear-gradient(180deg,#ff6b6b,#d11a2a);box-shadow:inset 0 2px 3px rgba(255,255,255,.6),0 0 22px rgba(255,60,60,.7)}
+    .btn-primary.is-ok{pointer-events:none;background:linear-gradient(180deg,#4fe3a5,#0aa56b);box-shadow:inset 0 2px 3px rgba(255,255,255,.6),0 0 22px rgba(0,217,126,.7)}
+    .is-loading .btn-arrow,.is-ok .btn-arrow{opacity:0}
+    .spin{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:none}
+    .is-loading .spin{display:block}@keyframes sp{to{transform:rotate(360deg)}}
+    .btn-primary.shake{animation:shake .4s}@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+    /* ===== AJUSTES: posicion de campos y grosor de botones ===== */
+    .glass-container{height:min(640px,calc(100dvh - 48px))}
+    .form-fields{min-height:0;overflow-y:auto;scrollbar-width:none;padding:6px 5px;margin:-6px -5px}
+    .form-fields::-webkit-scrollbar{display:none}
+    #form-login .form-fields{justify-content:center;padding-bottom:30px}
+    #form-signup .input-field{margin-bottom:10px}
+    #form-signup .input-field input{padding-top:11px;padding-bottom:11px}
+    .btn-primary{flex-shrink:0;height:54px;padding:0 15px}
+  
+    /* ===== PAGADIARIO: el vidrio va en el contenedor de cada fila ===== */
+    .input-field{background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.45));box-shadow:inset 0 1.5px 1px #fff,inset 0 -4px 8px rgba(100,130,220,.16),0 8px 16px rgba(60,80,160,.18)}
+    body.dark-mode .input-field{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.14));box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -3px 6px rgba(255,255,255,.12),0 8px 16px rgba(0,0,0,.35)}
+    .input-field input,.input-field select{background:transparent!important;box-shadow:none!important;border-color:transparent!important}
+    .input-field:focus-within{box-shadow:0 0 0 4px rgba(37,99,235,.18),0 8px 18px rgba(37,99,235,.25)}
+    .input-field select{-webkit-appearance:none;appearance:none;flex:0 0 auto;width:auto;border:0;outline:none;padding:12px 2px 12px 44px;color:var(--text-main);font-weight:600;font-size:.85rem}
+    .input-field select option{color:#0f172a;background:#fff}
+    #form-signup .input-field select+input{padding-left:8px}
+    #form-signup .input-field.otp input{padding-right:6px}
+    .btn-mini{position:relative;z-index:3;flex:0 0 auto;margin-right:7px;border:1px solid rgba(255,255,255,.6);border-radius:999px;padding:.45rem .8rem;font:700 .75rem 'Plus Jakarta Sans',sans-serif;color:#fff;cursor:pointer;white-space:nowrap;background:linear-gradient(180deg,#5aa9ff,#1f6bff);box-shadow:inset 0 1px 2px rgba(255,255,255,.6),0 4px 10px rgba(40,120,255,.4)}
+    .btn-mini:disabled{background:linear-gradient(180deg,#cbd5e1,#94a3b8);box-shadow:none;cursor:not-allowed}
+    .campo-feedback{display:none!important}
+    .password-hint.fuerte{color:#10b981}.password-hint.debil{color:#ef4444}
+    .alert-flask{padding:.55rem .85rem;border-radius:14px;font-size:.8rem;font-weight:600;margin-bottom:10px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9)}
+    .alert-error{color:#b91c1c;border-left:4px solid #ef4444}.alert-success{color:#047857;border-left:4px solid #10b981}
+    .btn-primary.is-loading,.btn-primary.is-loading:disabled{background:linear-gradient(180deg,#ff6b6b,#d11a2a);box-shadow:inset 0 2px 3px rgba(255,255,255,.6),0 0 22px rgba(255,60,60,.7);opacity:1}
+    .btn-primary:disabled{opacity:.75}
+  
+    /* REGISTRO: panel segun contenido, pagina desplazable, avisos por campo */
+    html,body{overflow-y:auto!important}
+    body{align-items:flex-start!important}
+    .card-wrapper{margin:auto}
+    .glass-container{height:auto!important;min-height:min(640px,calc(100dvh - 48px))}
+    .form-panel.active{position:relative;height:auto;min-height:min(640px,calc(100dvh - 48px))}
+    .form-fields{overflow:visible!important;padding:0!important;margin:0!important}
+    .campo-feedback{display:block!important}
+
+    /* AVISO FLOTANTE: etiqueta sobre el borde superior de cada campo, sin alargar el formulario */
+    .input-field .campo-feedback{position:absolute!important;top:-9px!important;left:17px!important;margin:0!important;height:auto!important;display:block!important;z-index:5;pointer-events:none;white-space:nowrap;
+      background:#ef4444;color:#fff!important;border-radius:6px;padding:.2rem .55rem;font-size:.72rem!important;line-height:100%!important;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+    .input-field .campo-feedback.ok{background:hsl(150,100%,38%)}
+    .input-field .campo-feedback:empty{display:none!important}
+</style>
+</head>
+<body>
+  <svg style="display:none;"><filter id="liquid-glass-filter"><feTurbulence type="fractalNoise" baseFrequency="0.01 0.01" numOctaves="1" result="noise" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" /></filter></svg>
+
+  <div class="theme-toggle" id="themeToggle">
+    <svg class="moon-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    <svg class="sun-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+  </div>
+
+  <div class="bg-shape shape-1"></div>
+  <div class="bg-shape shape-2"></div>
+  <div class="bg-shape shape-3"></div>
+
+  <div class="card-wrapper">
+    <div class="glass-container" id="glassCard">
+
+      <!-- FORM LOGIN -->
+      <form id="form-login" class="form-panel active" method="post" action="{{ url_for('login') }}">
+        <div class="brand"><i class="fas fa-hand-holding-usd"></i></div>
+        <h2 class="form-title">Sign In</h2>
+        <div class="social-top">
+          <button type="button" class="btn-social" onclick="location.href='/auth/google'"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg></button>
+          <button type="button" class="btn-social" onclick="location.href='/auth/facebook'"><svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></button>
+          <button type="button" class="btn-social" onclick="location.href='/auth/github'"><svg viewBox="0 0 24 24" fill="#333"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></button>
+        </div>
+        <div class="form-fields">
+          {% if error %}
+          <div class="alert-flask alert-error">⚠️ {{ error }}</div>
+          {% endif %}
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert-flask alert-{{ 'error' if category == 'error' else 'success' }}">{{ message }}</div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <div class="input-field">
+            <i class="fas fa-user"></i>
+            <input type="text" id="login_identificador" name="txt_nombre_ususario" placeholder="Usuario o Cédula" required />
+          </div>
+          <div class="input-field">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="login_password" name="txt_pass" placeholder="Contraseña" required />
+            <span class="toggle-eye" onclick="toggleEye('login_password', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+          </div>
+          <div class="options-row">
+            <label class="form-checkbox" style="margin:0;"><input type="checkbox" id="show-password-login"> Mostrar contraseña</label>
+          </div>
+        </div>
+
+        <button type="submit"  class="btn-primary"><span class="spin"></span><span class="txt">Sign In</span><div class="btn-arrow"><i class="fas fa-arrow-right" style="color:#fff;font-size:.85rem;"></i></div></button>
+        <button type="button" class="switch-form-btn" id="sign-up-btn">Don't have an account? <strong>Sign Up</strong></button>
+      </form>
+
+      <!-- FORM REGISTRO -->
+      <form id="form-signup" class="form-panel" method="post" action="{{ url_for('registro_view') }}">
+        <div class="brand"><i class="fas fa-hand-holding-usd"></i></div>
+        <h2 class="form-title">Sign Up</h2>
+        <div class="social-top">
+          <button type="button" class="btn-social" onclick="location.href='/auth/google'"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg></button>
+          <button type="button" class="btn-social" onclick="location.href='/auth/facebook'"><svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></button>
+          <button type="button" class="btn-social" onclick="location.href='/auth/github'"><svg viewBox="0 0 24 24" fill="#333"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></button>
+        </div>
+        <div class="form-fields">
+          <div class="input-field">
+            <i class="fas fa-id-card"></i>
+            <input type="text" id="signup_cedula" name="cedula" placeholder="Cédula" required autocomplete="off" />
+          </div>
+          <small class="campo-feedback" id="feedback-cedula"></small>
+
+          <div class="input-field">
+            <i class="fas fa-user"></i>
+            <input type="text" id="signup_nombre" name="nombre" placeholder="Nombre completo" required autocomplete="off" />
+          </div>
+          <small class="campo-feedback" id="feedback-nombre"></small>
+
+          <div class="input-field">
+            <i class="fas fa-phone"></i>
+            <select id="signup_pais" aria-label="Código de país"><option value="57" selected>🇨🇴 +57</option><option value="58">🇻🇪 +58</option><option value="593">🇪🇨 +593</option><option value="51">🇵🇪 +51</option><option value="507">🇵🇦 +507</option><option value="52">🇲🇽 +52</option><option value="54">🇦🇷 +54</option><option value="56">🇨🇱 +56</option><option value="55">🇧🇷 +55</option><option value="34">🇪🇸 +34</option><option value="1">🇺🇸 +1</option></select>
+            <input type="tel" id="signup_telefono" name="telefono" placeholder="Teléfono (WhatsApp)" required autocomplete="off" inputmode="numeric" />
+          </div>
+          <small class="campo-feedback" id="feedback-telefono"></small>
+
+          <div class="input-field otp">
+            <i class="fas fa-shield-alt"></i>
+            <input type="text" id="signup_otp" name="codigo_otp" placeholder="Código de WhatsApp" inputmode="numeric" maxlength="8" autocomplete="one-time-code" required />
+            <button type="button" id="btn-enviar-otp" class="btn-mini">Enviar código</button>
+          </div>
+          <small class="campo-feedback" id="feedback-otp"></small>
+
+          <div class="input-field">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="signup_email" name="email" placeholder="Email" required autocomplete="off" />
+          </div>
+          <small class="campo-feedback" id="feedback-email"></small>
+
+          <div class="input-field">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="signup_password" name="password" placeholder="Contraseña" required minlength="8" />
+            <span class="toggle-eye" onclick="toggleEye('signup_password', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+          </div>
+          <div class="password-meter-wrapper">
+            <div class="password-meter" id="meter-password">
+              <div class="segment" data-seg="1"></div><div class="segment" data-seg="2"></div><div class="segment" data-seg="3"></div><div class="segment" data-seg="4"></div>
+            </div>
+            <div class="password-hint" id="password-hint">Usa 8 o más caracteres con letras, números y símbolos.</div>
+          </div>
+
+          <div class="input-field">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="signup_password2" name="password2" placeholder="Confirmar contraseña" required minlength="8" />
+            <span class="toggle-eye" onclick="toggleEye('signup_password2', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+          </div>
+          <small class="campo-feedback" id="feedback-password2"></small>
+
+          <div class="form-checkbox" style="margin-top:0;">
+            <input type="checkbox" id="confirm-terms" name="confirm" value="yes" required>
+            <label for="confirm-terms" style="cursor:pointer;">Acepto los términos y condiciones</label>
+          </div>
+          <small class="campo-feedback" id="feedback-terms"></small>
+        </div>
+
+        <button type="submit" id="btn-registrar" class="btn-primary" disabled><span class="spin"></span><span class="txt">Sign Up</span><div class="btn-arrow"><i class="fas fa-arrow-right" style="color:#fff;font-size:.85rem;"></i></div></button>
+        <button type="button" class="switch-form-btn" id="sign-in-btn">Already have an account? <strong>Sign In</strong></button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Scripts personalizados -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // === Mostrar/ocultar contraseña con el ojito ===
+    window.toggleEye = function(id, el) {
+      var input = document.getElementById(id);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        el.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        el.textContent = '👁';
+      }
+    };
+
+    // === Mostrar contraseña login (checkbox) ===
+    var toggleLogin = document.getElementById('show-password-login');
+    var passLogin = document.getElementById('login_password');
+    if (toggleLogin && passLogin) {
+      toggleLogin.addEventListener('change', function() {
+        passLogin.type = this.checked ? 'text' : 'password';
+      });
+    }
+
+    // === Estado de validaciones ===
+    var estado = {
+      cedula: false, nombre: false, telefono: false, email: false,
+      password: false, password2: false, terms: false
+    };
+
+    var btn = document.getElementById('btn-registrar');
+    function actualizarBoton() {
+      var ok = estado.cedula && estado.nombre && estado.telefono && estado.email &&
+               estado.password && estado.password2 && estado.terms;
+      if (btn) btn.disabled = !ok;
+    }
+
+    // === Mensajes elegantes ===
+    function setFeedback(id, msg, tipo) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = msg || '';
+      el.className = 'campo-feedback' + (tipo === 'ok' ? ' ok' : '');
+    }
+
+    // === Validar con backend ===
+    function validarCampo(campo, valor, feedbackId) {
+      var fd = new FormData();
+      fd.append('campo', campo);
+      fd.append('valor', valor);
+      fetch('/api/validar_campo', { method: 'POST', body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.existe) {
+            setFeedback(feedbackId, '⚠ Este ' + campo + ' ya está registrado', 'error');
+            return false;
+          } else {
+            setFeedback(feedbackId, '✓ Disponible', 'ok');
+            return true;
+          }
+        })
+        .catch(function() { setFeedback(feedbackId, '', ''); return false; });
+    }
+
+    // === Cédula ===
+    var cedula = document.getElementById('signup_cedula');
+    var timerCedula;
+    if (cedula) cedula.addEventListener('input', function() {
+      clearTimeout(timerCedula);
+      var v = this.value.trim();
+      if (v.length < 5) { setFeedback('feedback-cedula', '', ''); estado.cedula = false; actualizarBoton(); return; }
+      timerCedula = setTimeout(function() {
+        var fd = new FormData();
+        fd.append('campo', 'cedula'); fd.append('valor', v);
+        fetch('/api/validar_campo', { method: 'POST', body: fd })
+          .then(r => r.json())
+          .then(d => {
+            if (d.existe) { setFeedback('feedback-cedula', '⚠ Esta cédula ya está registrada', 'error'); estado.cedula = false; }
+            else { setFeedback('feedback-cedula', '✓ Disponible', 'ok'); estado.cedula = true; }
+            actualizarBoton();
+          });
+      }, 500);
+    });
+
+    // === Nombre ===
+    var nombre = document.getElementById('signup_nombre');
+    var timerNombre;
+    if (nombre) nombre.addEventListener('input', function() {
+      clearTimeout(timerNombre);
+      var v = this.value.trim();
+      if (v.length < 5) { setFeedback('feedback-nombre', '', ''); return; }
+      timerNombre = setTimeout(function() {
+        var fd = new FormData();
+        fd.append('campo', 'nombre'); fd.append('valor', v);
+        fetch('/api/validar_campo', { method: 'POST', body: fd })
+          .then(r => r.json())
+          .then(d => {
+            if (d.existe) {
+              var msg = '⚠ Este nombre ya está registrado';
+              setFeedback('feedback-nombre', msg, 'error');
+              estado.nombre = false;
+            } else {
+              setFeedback('feedback-nombre', '✓ Disponible', 'ok');
+              estado.nombre = true;
+            }
+            actualizarBoton();
+          });
+      }, 500);
+    });
+
+    // === Teléfono ===
+    var tel = document.getElementById('signup_telefono');
+    var timerTel;
+    if (tel) tel.addEventListener('input', function() {
+      clearTimeout(timerTel);
+      var d_ = this.value.replace(/\D/g,'').replace(/^0+/,''); var v = d_.length < 7 ? '' : document.getElementById('signup_pais').value + d_;
+      if (v.length < 7) { setFeedback('feedback-telefono', '', ''); estado.telefono = false; actualizarBoton(); return; }
+      timerTel = setTimeout(function() {
+        var fd = new FormData();
+        fd.append('campo', 'telefono'); fd.append('valor', v);
+        fetch('/api/validar_campo', { method: 'POST', body: fd })
+          .then(r => r.json())
+          .then(d => {
+            if (d.existe) { setFeedback('feedback-telefono', '⚠ Este teléfono ya está registrado', 'error'); estado.telefono = false; }
+            else { setFeedback('feedback-telefono', '✓ Disponible', 'ok'); estado.telefono = true; }
+            actualizarBoton();
+          });
+      }, 500);
+    });
+
+    // === Email ===
+    var email = document.getElementById('signup_email');
+    var timerEmail;
+    if (email) email.addEventListener('input', function() {
+      clearTimeout(timerEmail);
+      var v = this.value.trim();
+      var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!re.test(v)) { setFeedback('feedback-email', v ? '⚠ Email inválido' : '', v ? 'error' : ''); estado.email = false; actualizarBoton(); return; }
+      timerEmail = setTimeout(function() {
+        var fd = new FormData();
+        fd.append('campo', 'email'); fd.append('valor', v);
+        fetch('/api/validar_campo', { method: 'POST', body: fd })
+          .then(r => r.json())
+          .then(d => {
+            if (d.existe) { setFeedback('feedback-email', '⚠ Este email ya está registrado', 'error'); estado.email = false; }
+            else { setFeedback('feedback-email', '✓ Disponible', 'ok'); estado.email = true; }
+            actualizarBoton();
+          });
+      }, 500);
+    });
+
+    // === Contraseña + Barra de fuerza ===
+    var pass = document.getElementById('signup_password');
+    var meter = document.querySelectorAll('#meter-password .segment');
+    var hint = document.getElementById('password-hint');
+    if (pass) pass.addEventListener('input', function() {
+      var v = this.value;
+
+      // Calcular fortaleza (0 a 4)
+      var fuerza = 0;
+      if (v.length >= 8) fuerza++;
+      if (/[A-Z]/.test(v) && /[a-z]/.test(v)) fuerza++;
+      if (/\d/.test(v)) fuerza++;
+      if (/[^A-Za-z0-9]/.test(v)) fuerza++;
+
+      // Aplicar color a los segmentos
+      meter.forEach(function(seg, i) {
+        seg.className = 'segment';
+        if (i < fuerza) {
+          if (fuerza === 1) seg.classList.add('active-weak');
+          else if (fuerza === 2) seg.classList.add('active-medium');
+          else if (fuerza === 3) seg.classList.add('active-strong');
+          else seg.classList.add('active-very');
+        }
+      });
+
+      // Cambiar el texto del hint según la fuerza
+      if (hint) {
+        hint.classList.remove('fuerte', 'debil');
+        if (v.length === 0) {
+          hint.textContent = 'Usa 8 o más caracteres con letras, números y símbolos.';
+        } else if (fuerza === 1) {
+          hint.textContent = '⚠ Contraseña débil. Agrega mayúsculas y números.';
+          hint.classList.add('debil');
+        } else if (fuerza === 2) {
+          hint.textContent = 'Aceptable. Agrega números o símbolos para mejorar.';
+        } else if (fuerza === 3) {
+          hint.textContent = '✓ Contraseña fuerte.';
+          hint.classList.add('fuerte');
+        } else if (fuerza === 4) {
+          hint.textContent = '✓ Contraseña muy fuerte.';
+          hint.classList.add('fuerte');
+        }
+      }
+
+      estado.password = v.length >= 8;
+
+      // Revalidar confirmación
+      var p2 = document.getElementById('signup_password2');
+      if (p2 && p2.value) {
+        if (p2.value === v) { setFeedback('feedback-password2', '✓ Las contraseñas coinciden', 'ok'); estado.password2 = true; }
+        else { setFeedback('feedback-password2', '⚠ Las contraseñas no coinciden', 'error'); estado.password2 = false; }
+      }
+      actualizarBoton();
+    });
+
+    // === Confirmar contraseña ===
+    var pass2 = document.getElementById('signup_password2');
+    if (pass2) pass2.addEventListener('input', function() {
+      var p1 = document.getElementById('signup_password');
+      if (p1 && p1.value === this.value && this.value.length >= 8) {
+        setFeedback('feedback-password2', '✓ Las contraseñas coinciden', 'ok');
+        estado.password2 = true;
+      } else {
+        setFeedback('feedback-password2', this.value ? '⚠ Las contraseñas no coinciden' : '', this.value ? 'error' : '');
+        estado.password2 = false;
+      }
+      actualizarBoton();
+    });
+
+    // === Términos ===
+    var terms = document.getElementById('confirm-terms');
+    if (terms) terms.addEventListener('change', function() {
+      estado.terms = this.checked;
+      if (this.checked) setFeedback('feedback-terms', '', '');
+      else setFeedback('feedback-terms', '⚠ Debes aceptar los términos', 'error');
+      actualizarBoton();
+    });
+
+    // Estado inicial
+    actualizarBoton();
+  });
+  </script>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  function numero() {
+    var n = ($('signup_telefono').value || '').replace(/\D/g, '').replace(/^0+/, '');
+    return n ? $('signup_pais').value + n : '';
+  }
+  function msg(id, t, tipo) {
+    var el = $(id); if (!el) return;
+    el.textContent = t || '';
+    el.style.color = tipo === 'ok' ? '#198754' : '#d9534f';
+  }
+  $('btn-enviar-otp').addEventListener('click', function () {
+    var b = this, ced = $('signup_cedula').value.trim(), num = numero();
+    if (!ced || num.length < 9) { msg('feedback-otp', 'Escribe primero cédula y teléfono', 'error'); return; }
+    b.disabled = true;
+    var fd = new FormData();
+    fd.append('dni', ced); fd.append('canal', 'whatsapp'); fd.append('contacto', num);
+    fetch('/api/enviar_otp', { method: 'POST', body: fd }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.success) { msg('feedback-otp', '✓ Código enviado por WhatsApp a +' + num, 'ok'); setTimeout(function () { b.disabled = false; }, 45000); }
+      else { msg('feedback-otp', d.error || 'No se pudo enviar el código', 'error'); b.disabled = false; }
+    }).catch(function () { msg('feedback-otp', 'Error de conexión', 'error'); b.disabled = false; });
+  });
+  $('form-signup').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = $('btn-registrar'); btn.disabled = true;
+    var fd = new FormData();
+    fd.append('dni', $('signup_cedula').value.trim());
+    fd.append('nombre', $('signup_nombre').value.trim());
+    fd.append('telefono', numero());
+    fd.append('email', $('signup_email').value.trim());
+    fd.append('password', $('signup_password').value);
+    fd.append('password2', $('signup_password2').value);
+    fd.append('codigo_otp', $('signup_otp').value.trim());
+    fetch('/api/registro_cliente', { method: 'POST', body: fd }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.success) { alert('Registro exitoso. Ya puedes iniciar sesión con tu cédula y contraseña.'); var si = $('sign-in-btn'); if (si) si.click(); }
+      else { msg('feedback-otp', d.error || 'No se pudo registrar', 'error'); btn.disabled = false; }
+    }).catch(function () { msg('feedback-otp', 'Error de conexión', 'error'); btn.disabled = false; });
+  });
+})();
+</script>
+<script>
+(function () {
+  var box = document.createElement('div');
+  box.style.cssText = 'position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:6px;width:calc(100% - 24px);max-width:360px;pointer-events:none;';
+  document.body.appendChild(box);
+  function toast(t) {
+    var ok = t.charAt(0) === '\u2713';
+    var d = document.createElement('div');
+    d.textContent = t;
+    d.style.cssText = 'background:#fff;color:#07111f;font-weight:700;font-size:.8rem;padding:.6rem .9rem;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);border-left:5px solid ' + (ok ? '#198754' : '#d9534f') + ';opacity:0;transition:opacity .25s;';
+    box.appendChild(d);
+    requestAnimationFrame(function () { d.style.opacity = 1; });
+    setTimeout(function () { d.style.opacity = 0; setTimeout(function () { d.remove(); }, 300); }, 3500);
+  }
+  var last = {};
+  document.querySelectorAll('.campo-feedback').forEach(function (el) {
+    new MutationObserver(function () {
+      var t = (el.textContent || '').trim();
+      if (t && last[el.id] !== t) { last[el.id] = t; toast(t); }
+      if (!t) last[el.id] = '';
+    }).observe(el, { childList: true, characterData: true, subtree: true });
+  });
+})();
+</script>
+
+<!-- Capa Liquid Glass: tema, cambio de panel, ojito SVG y estado de carga del boton -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/></svg>';
+  // ojito (reemplaza el de emoji del script anterior)
+  window.toggleEye = function (id, el) {
+    var input = $(id); if (!input) return;
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    el.innerHTML = show ? EYE_OFF : EYE;
+  };
+  document.getElementById("glassCard").appendChild(document.getElementById("themeToggle"));
+  // tema claro/oscuro (se recuerda)
+  var body = document.body;
+  try { if (localStorage.getItem('pd_tema') === 'dark') body.classList.add('dark-mode'); } catch (e) {}
+  $('themeToggle').addEventListener('click', function () {
+    body.classList.toggle('dark-mode');
+    try { localStorage.setItem('pd_tema', body.classList.contains('dark-mode') ? 'dark' : 'light'); } catch (e) {}
+  });
+  // estado de los botones
+  var btns = document.querySelectorAll('.btn-primary');
+  btns.forEach(function (b) { b.dataset.txt = b.querySelector('.txt').textContent; });
+  function reset() {
+    btns.forEach(function (b) { b.classList.remove('is-loading'); b.querySelector('.txt').textContent = b.dataset.txt; });
+  }
+  function cargando(b) { b.classList.add('is-loading'); b.querySelector('.txt').textContent = 'Cargando...'; }
+  window.addEventListener('pageshow', reset);
+  $('form-login').addEventListener('submit', function () { cargando(this.querySelector('.btn-primary')); });
+  var br = $('btn-registrar');
+  $('form-signup').addEventListener('submit', function () { cargando(br); });
+  new MutationObserver(function () { if (!br.disabled) reset(); }).observe(br, { attributes: true, attributeFilter: ['disabled'] });
+  // cambio Sign In / Sign Up (el id sign-in-btn lo usa el registro al terminar)
+  function switchForm(t) {
+    var L = $('form-login'), R = $('form-signup');
+    if (t === 'register') { L.classList.remove('active'); L.classList.add('slide-out-left'); R.classList.remove('slide-out-left'); R.classList.add('active'); }
+    else { R.classList.remove('active'); R.classList.add('slide-out-left'); L.classList.remove('slide-out-left'); L.classList.add('active'); }
+    reset();
+  }
+  $('sign-up-btn').addEventListener('click', function () { switchForm('register'); });
+  $('sign-in-btn').addEventListener('click', function () { switchForm('login'); });
+});
+</script>
+<script>
+/* AVISO FLOTANTE: mueve cada aviso dentro de su caja y marca en verde los que empiezan con la palomita */
+document.querySelectorAll('.input-field + .campo-feedback').forEach(function (el) {
+  el.previousElementSibling.appendChild(el);
+  new MutationObserver(function () {
+    var ok = (el.textContent || '').trim().charAt(0) === '\u2713';
+    if (el.classList.contains('ok') !== ok) el.classList.toggle('ok', ok);
+  }).observe(el, { childList: true, characterData: true, subtree: true });
+});
+</script>
+</body>
+</html>

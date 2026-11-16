@@ -1,91 +1,98 @@
-{% extends "base.html" %}
-
+{% extends "base_pw.html" %}
 {% block title %}Cobradores - Pagadiario{% endblock %}
-
-{% block body %}
-
-{% include '_sidebar.html' %}<div class="main-content">
-    <div class="topbar">
-        <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-        <h4 class="mb-0 ms-2 flex-grow-1"><i class="fas fa-user-tie"></i> Cobradores</h4>
-        <span><i class="fas fa-user-circle"></i> <strong>{{ session.nombre }}</strong></span>
-    </div>
-
-    <div class="p-4">
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        <div class="card-panel">
-            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <h5 class="mb-0"><i class="fas fa-list"></i> Lista de Cobradores</h5>
-    <div>
-        <a href="{{ url_for('importar_contactos', tipo='cobradores') }}" class="btn btn-info">
-            <i class="fas fa-address-book"></i> Importar Contactos
-        </a>
-        <a href="{{ url_for('cobrador_nuevo') }}" class="btn btn-success">
-            <i class="fas fa-plus"></i> Añadir Cobrador
-        </a>
-    </div>
+{% block head %}<link href="{{ url_for('static', filename='metronic/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet"><style>.table-responsive{max-height:60vh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.table-responsive thead th{position:sticky;top:0;z-index:2;background:#fff}#pill_cob{scrollbar-width:none}#pill_cob::-webkit-scrollbar{display:none}table.dataTable thead th.sorting:before,table.dataTable thead th.sorting:after{opacity:.5!important}table.dataTable thead th.sorting_asc:before,table.dataTable thead th.sorting_desc:after{opacity:1!important}table.dataTable thead th{padding-right:24px!important;white-space:nowrap}.select2-container .select2-selection__rendered{font-size:.95rem!important}.select2-results__option{font-size:.95rem!important;padding:.5rem .75rem!important}</style>{% endblock %}
+{% block content %}
+<div class="d-flex flex-column gap-5 p-4">
+{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}
+<div class="alert alert-{{ category }} mb-0">{{ message }}</div>
+{% endfor %}{% endwith %}
+<h3 class="fw-bold text-gray-900 mb-0">Cobradores</h3>
+<div class="card border-0 overflow-hidden" style="background:linear-gradient(160deg,#7239ea,#4a1fa8)"><div class="card-body p-3">
+<div class="d-flex justify-content-between align-items-center mb-2"><div class="text-white fw-bold fs-7">Gestión de cobro</div><div id="rango_cob" class="btn btn-sm btn-light d-flex align-items-center px-3"><span id="cob_lbl" class="fw-bold text-gray-700">Este año</span><i class="ki-duotone ki-calendar-8 fs-2 ms-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i></div></div>
+<div id="cob_sub" class="text-white fs-8 opacity-75"></div><div id="cob_rng" class="text-white fs-8 fw-bold mb-2"></div>
+<div id="tabs_cob" class="d-flex gap-2 mb-2 overflow-auto flex-nowrap" style="scrollbar-width:none"><button type="button" data-v="rp" class="btn btn-sm btn-light fw-bold text-nowrap">Real vs. proy.</button><button type="button" data-v="mora" class="btn btn-sm btn-active-light btn-color-white text-nowrap">Mora</button><button type="button" data-v="cob" class="btn btn-sm btn-active-light btn-color-white text-nowrap">Cobrador</button></div>
+<div id="cob_chart"></div><div id="cob_msg" class="text-white fs-7"></div></div></div>
+{% set con = cobradores|selectattr('usuario_login')|list|length %}
+<div class="row g-3">
+<div class="col-4"><div class="card h-100 border-0" style="background:#00c2cb"><div class="card-body p-3"><div class="fs-2hx fw-bold text-white lh-1">{{ cobradores|length }}</div><div class="text-white fw-semibold fs-8 mt-1">Cobradores</div><div id="ch_tot" class="mt-2"></div></div></div></div>
+<div class="col-4"><div class="card h-100 border-0" style="background:#7239ea"><div class="card-body p-3"><div class="fs-2hx fw-bold text-white lh-1">{{ con }}</div><div class="text-white fw-semibold fs-8 mt-1">Con usuario</div><div id="ch_con" class="mt-2"></div></div></div></div>
+<div class="col-4"><div class="card h-100 border-0" style="background:#009ef7"><div class="card-body p-3"><div class="fs-2hx fw-bold text-white lh-1">{{ cobradores|length - con }}</div><div class="text-white fw-semibold fs-8 mt-1">Sin usuario</div><div id="ch_sin" class="mt-2"></div></div></div></div>
 </div>
-            
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Usuario del Sistema</th>
-                            <th>Login</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if cobradores %}
-                            {% for c in cobradores %}
-                                <tr>
-                                    <td>{{ c.id }}</td>
-                                    <td><strong>{{ c.nombre }}</strong></td>
-                                    <td>{{ c.usuario_nombre or '-' }}</td>
-                                    <td>{{ c.usuario_login or '-' }}</td>
-                                    <td>
-                                        <a href="{{ url_for('cobrador_editar', id_cobrador=c.id) }}" class="btn btn-sm btn-warning" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ url_for('cobrador_eliminar', id_cobrador=c.id) }}" 
-                                           class="btn btn-sm btn-danger" 
-                                           onclick="return confirm('¿Eliminar este cobrador?');" 
-                                           title="Eliminar">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="5" class="text-center text-muted py-4">
-                                    <i class="fas fa-inbox" style="font-size: 2rem;"></i>
-                                    <p class="mt-2">No hay cobradores registrados</p>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-            
-            <p class="text-muted mt-2 mb-0">
-                <i class="fas fa-info-circle"></i> Total: <strong>{{ cobradores|length }}</strong> cobrador(es)
-            </p>
-        </div>
-    </div>
+<div class="card"><div class="card-header border-0 pt-5"><h3 class="card-title fw-bold fs-4 text-gray-900">Lista de Cobradores</h3>
+<div class="card-toolbar gap-2"><a href="{{ url_for('importar_contactos', tipo='cobradores') }}" class="btn btn-sm btn-light-primary">Importar</a><a href="{{ url_for('cobrador_nuevo') }}" class="btn btn-sm btn-primary"><i class="ki-duotone ki-plus fs-3"><span class="path1"></span><span class="path2"></span></i>Nuevo</a></div></div>
+<div class="card-body py-3">
+<div class="position-relative mb-4"><i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4 top-50 translate-middle-y text-muted"><span class="path1"></span><span class="path2"></span></i><input type="text" id="buscar_cob" class="form-control form-control-solid w-100 ps-12" placeholder="Buscar nombre, usuario o login..."></div>
+<div class="d-flex flex-nowrap gap-1 mb-4 overflow-auto" id="pill_cob"><button type="button" class="btn btn-sm btn-light btn-active-primary text-nowrap px-3 active" data-f="todos">Todos</button><button type="button" class="btn btn-sm btn-light btn-active-primary text-nowrap px-3" data-f="con">Con usuario</button><button type="button" class="btn btn-sm btn-light btn-active-primary text-nowrap px-3" data-f="sin">Sin usuario</button></div>
+<select id="filtro_usu" class="form-select form-select-solid fs-7 mb-4"><option value="">Todos los usuarios</option></select>
+<div class="table-responsive">
+<table id="tabla_cob" class="table fs-7 table-row-dashed table-row-gray-300 align-middle gs-0 gy-2">
+<thead><tr class="fw-bold text-gray-500 fs-7 text-uppercase"><th>ID</th><th>Cobrador</th><th>Usuario</th><th>Login</th><th class="text-end">Acciones</th></tr></thead>
+<tbody>
+{% for c in cobradores %}
+<tr><td class="text-gray-600">{{ c.id }}</td>
+<td data-order="{{ c.nombre }}"><div class="d-flex align-items-center"><div class="symbol symbol-circle symbol-35px me-2 flex-shrink-0 d-flex align-items-center justify-content-center" style="background-color:#7239ea;color:white;min-width:35px;height:35px"><span class="fs-6 fw-bold">{{ (c.nombre or '-')[0]|upper }}</span></div><span class="text-gray-900 fw-bold">{{ c.nombre }}</span></div></td>
+<td class="text-gray-600" data-search="{{ c.usuario_nombre or '-' }}">{{ c.usuario_nombre or '-' }}</td>
+<td>{% if c.usuario_login %}<span class="badge badge-light-primary">{{ c.usuario_login }}</span>{% else %}<span class="badge badge-light-danger">Sin usuario</span>{% endif %}</td>
+<td class="text-end text-nowrap">
+<a href="{{ url_for('cobrador_editar', id_cobrador=c.id) }}" class="btn btn-icon btn-sm btn-light-warning" title="Editar"><i class="ki-duotone ki-pencil fs-3"><span class="path1"></span><span class="path2"></span></i></a>
+<a href="{{ url_for('cobrador_eliminar', id_cobrador=c.id) }}" class="btn btn-icon btn-sm btn-light-danger" title="Eliminar" onclick="return confirm('¿Eliminar este cobrador?');"><i class="ki-duotone ki-trash fs-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></a>
+</td></tr>
+{% endfor %}
+</tbody></table></div></div></div>
 </div>
-
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='metronic/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+<script>
+$(function(){
+var rows=$("#tabla_cob tbody tr"),tot=[],con=[],sin=[],c=0,u=0,s=0;
+rows.each(function(){var ok=$(this).children().eq(3).text().trim()!=="Sin usuario";c++;if(ok)u++;else s++;tot.push(c);con.push(ok?1:0);sin.push(ok?0:1)});
+function sp(id,t,d){if(!d.length)return;new ApexCharts(document.querySelector(id),{chart:{type:t,height:50,sparkline:{enabled:true}},series:[{data:d}],colors:["#ffffff"],stroke:{curve:"smooth",width:3},plotOptions:{bar:{columnWidth:"55%",borderRadius:2}},tooltip:{enabled:false}}).render()}
+sp("#ch_tot","line",tot);sp("#ch_con","bar",con);sp("#ch_sin","bar",sin);
+var L={lengthMenu:"Mostrar _MENU_",info:"_START_-_END_ de _TOTAL_",infoEmpty:"Sin datos",zeroRecords:"Sin resultados",paginate:{previous:"‹",next:"›"}};
+var t=$("#tabla_cob").DataTable({dom:"tip",language:L,pageLength:10,columnDefs:[{orderable:false,targets:-1}]}),f="todos",s=$("#filtro_usu");
+var us={};rows.each(function(){var v=$(this).children().eq(2).attr("data-search");if(v&&v!=="-")us[v]=1});
+Object.keys(us).sort().forEach(function(v){s.append($("<option>").val(v).text(v))});
+$.fn.dataTable.ext.search.push(function(st,d){if(st.nTable.id!=="tabla_cob")return true;var sin=$("<div>").html(d[3]).text().trim()==="Sin usuario";if(f==="con"&&sin)return false;if(f==="sin"&&!sin)return false;return !s.val()||d[2]===s.val()});
+$("#buscar_cob").on("keyup",function(){t.search(this.value).draw()});
+$("#pill_cob button").on("click",function(){$("#pill_cob button").removeClass("active");$(this).addClass("active");f=$(this).data("f");t.draw()});
+s.select2({width:"100%",minimumResultsForSearch:Infinity,theme:"bootstrap5"}).on("change",function(){t.draw()});
+});
+</script>
+<script src="{{ url_for('static', filename='js/highcharts/highcharts.js') }}"></script>
+<script>
+$(function(){
+var m=moment,D=null,V="rp",CH=null,txt="#e6fbfc";
+var SUB={rp:"Cobro real vs. proyectado por período",mora:"Saldo en mora actual por cobrador",cob:"Cobro real y proyectado por cobrador"};
+function fm(v){return "$"+Highcharts.numberFormat(v,0,",",".")}
+function draw(){
+if(!D)return;
+var cs=D.cobradores,nm=cs.map(function(x){return x.nombre});
+var o={chart:{backgroundColor:"transparent",height:360},title:{text:null},credits:{enabled:false},legend:{itemStyle:{color:"#ffffff"},itemHoverStyle:{color:"#ffffff"}},tooltip:{pointFormatter:function(){return this.series.name+": <b>"+fm(this.y)+"</b>"}}};
+var yv={title:{text:null},gridLineColor:"rgba(255,255,255,.25)",labels:{rotation:0,style:{color:txt},formatter:function(){return "$"+Highcharts.numberFormat(this.value/1e6,1,",",".")+" M"}}};
+if(V==="rp"){
+o.xAxis={categories:D.periodos,labels:{style:{color:txt}}};o.yAxis=yv;
+o.series=[{type:"column",name:"Cobro real",data:D.real,color:"#ffffff"},{type:"line",name:"Cobro proyectado",data:D.proy,color:"#7239ea"}];
+}else if(V==="mora"){
+o.chart.type="pie";
+o.plotOptions={pie:{innerSize:"60%",dataLabels:{enabled:false},showInLegend:true,borderWidth:0}};
+o.series=[{name:"En mora",data:cs.filter(function(x){return x.mora>0}).map(function(x){return {name:x.nombre,y:x.mora}})}];
+}else{
+o.chart.type="bar";o.chart.height=Math.max(360,cs.length*60+90);
+o.xAxis={categories:nm,labels:{style:{color:txt}}};o.yAxis=yv;
+o.series=[{name:"Cobro real",data:cs.map(function(x){return x.real}),color:"#ffffff"},{name:"Cobro proyectado",data:cs.map(function(x){return x.proy}),color:"#7239ea"}];
+}
+if(CH)CH.destroy();
+CH=Highcharts.chart("cob_chart",o);
+$("#cob_sub").text(SUB[V]);
+}
+$("#tabs_cob .btn").on("click",function(){V=$(this).data("v");$("#tabs_cob .btn").attr("class","btn btn-sm btn-active-light btn-color-white text-nowrap");$(this).attr("class","btn btn-sm btn-light fw-bold text-nowrap");draw()});
+function load(a,b){$("#cob_msg").text("");$.getJSON("/api/cobradores_graficos",{start:a,end:b},function(d){D=d;draw()}).fail(function(){$("#cob_msg").text("No se pudo cargar el gráfico")})}
+function cb(s,e,l){$("#cob_rng").text(s.format("DD/MM/YYYY")+" - "+e.format("DD/MM/YYYY"));$("#cob_lbl").text(l&&l!=="Rango personalizado"?l:"Personalizado");load(s.format("YYYY-MM-DD"),e.format("YYYY-MM-DD"))}
+var d=m().subtract(1,"days"),ms=m().subtract(1,"month");
+$("#rango_cob").daterangepicker({startDate:m().startOf("year"),endDate:m(),opens:"left",locale:{format:"DD/MM/YYYY",applyLabel:"Aplicar",cancelLabel:"Cancelar",customRangeLabel:"Rango personalizado"},ranges:{"Todo el período":[m("2000-01-01"),m()],"Hoy":[m(),m()],"Ayer":[d,d],"Últimos 7 días":[m().subtract(6,"days"),m()],"Últimos 30 días":[m().subtract(29,"days"),m()],"Este mes":[m().startOf("month"),m().endOf("month")],"El mes pasado":[ms.clone().startOf("month"),ms.clone().endOf("month")],"Este año":[m().startOf("year"),m()]}},cb);
+var dp=$("#rango_cob").data("daterangepicker");$("#rango_cob").off("click.daterangepicker focus.daterangepicker").on("click",function(){if(dp.isShowing){dp.hide()}else{dp.show()}});
+cb(m().startOf("year"),m(),"Este año");
+});
+</script>
 {% endblock %}

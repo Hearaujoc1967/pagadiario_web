@@ -1,0 +1,41 @@
+<!--begin::Aside-->
+<div id="kt_aside" class="aside aside-extended" data-kt-drawer="true" data-kt-drawer-name="aside" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="auto" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_aside_mobile_toggle">
+{% set grupos = [
+ ('portal','Mi Portal','fa-home',[('/portal','fa-hand-holding-usd','Mi Portal'),('/notificaciones_cliente','fa-bell','Notificaciones')]),
+ ('cuenta','Mi cuenta','fa-user',[('/mi_perfil','fa-user','Mi perfil'),('/cambiar_password','fa-key','Cambiar contraseña'),('/eliminar_cuenta','fa-user-slash','Eliminar cuenta'),('/logout','fa-sign-out-alt','Cerrar sesión')])
+] %}
+<div class="aside-primary d-flex flex-column align-items-lg-center flex-row-auto">
+  <div class="aside-logo py-10"><i class="fa fa-hand-holding-usd text-success fs-2qx"></i></div>
+  <div class="aside-nav d-flex flex-column align-items-center flex-column-fluid w-100 pt-5">
+    <ul class="nav flex-column" id="kt_aside_nav_tabs">
+    {% for id, titulo, icono, items in grupos %}
+      <li class="nav-item mb-2" title="{{ titulo }}">
+        <a class="nav-link btn btn-icon btn-active-color-primary {% if loop.first %}active{% endif %}" data-bs-toggle="tab" href="#tab_{{ id }}"><i class="fa {{ icono }} fs-2x"></i></a>
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+  <div class="aside-footer d-flex flex-column align-items-center flex-column-auto pb-5" id="kt_aside_footer">
+    <div class="d-flex align-items-center mb-2" id="kt_header_user_menu_toggle">
+      <div class="cursor-pointer symbol symbol-40px" data-kt-menu-trigger="click" data-kt-menu-overflow="true" data-kt-menu-placement="top-start">
+        <span class="symbol-label bg-primary text-white fw-bold fs-3">{{ (session.get('nombre') or 'U')[:1]|upper }}</span><img src="/static/avatars/{{ session.get('id') }}.jpg" alt="" class="position-absolute top-0 start-0 w-100 h-100 rounded" style="object-fit:cover" onerror="this.remove()">
+      </div>
+      {% include 'includes/_menu_cliente.html' %}
+    </div>
+  </div>
+</div>
+<div class="aside-secondary d-flex flex-row-fluid">
+  <div class="aside-workspace my-5 p-5"><div class="tab-content">
+  {% for id, titulo, icono, items in grupos %}
+    <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="tab_{{ id }}">
+      <h3 class="fw-bold text-dark mb-5">{{ titulo }}</h3>
+      <div class="menu menu-column menu-fit menu-rounded menu-title-gray-600 menu-icon-gray-400">
+      {% for url, ic, txt in items %}
+        <div class="menu-item"><a class="menu-link {% if request.path.startswith(url) %}active{% endif %}" href="{{ url }}"><span class="menu-icon"><i class="fa {{ ic }}"></i></span><span class="menu-title">{{ txt }}</span></a></div>
+      {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+  </div></div>
+</div>
+</div>
