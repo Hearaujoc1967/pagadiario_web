@@ -59,7 +59,7 @@ client.on('change_state', (st) => console.log('🔄 estado: ' + st));
 
 client.on('qr', async (qr) => {
     qrActual = qr;
-    console.log('\n✅ QR generado. Abre en el celular: http://127.0.0.1:3001/qr\n');
+    console.log('\n✅ QR generado. Abre en el celular: http://127.0.0.1:3002/qr\n');
     qrcode.generate(qr, { small: true });
 });
 
@@ -136,9 +136,9 @@ app.post('/send', async (req, res) => {
     }
 });
 
-app.listen(3001, '127.0.0.1', () => {
-    console.log('🚀 API WhatsApp escuchando en http://127.0.0.1:3001');
-    console.log('📱 QR en: http://127.0.0.1:3001/qr');
+app.listen(3002, '127.0.0.1', () => {
+    console.log('🚀 API WhatsApp escuchando en http://127.0.0.1:3002');
+    console.log('📱 QR en: http://127.0.0.1:3002/qr');
 });
 
 client.initialize();

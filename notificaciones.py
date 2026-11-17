@@ -136,7 +136,7 @@ def enviar_whatsapp_bot(destino, cuerpo):
     try:
         data = json.dumps({'numero': str(destino), 'mensaje': cuerpo}).encode()
         req = urllib.request.Request(
-            'http://127.0.0.1:3001/send',
+            'http://127.0.0.1:3002/send',
             data=data,
             headers={'Content-Type': 'application/json', 'x-bot-token': _token_bot()}
         )
